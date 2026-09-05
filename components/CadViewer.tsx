@@ -19,11 +19,14 @@ export default function CadViewer({
 }) {
   const [activated, setActivated] = useState(false);
   const [activeId, setActiveId] = useState(models[0]?.id);
-  const [loading, setLoading] = useState(true);
+  const [loadedId, setLoadedId] = useState<string | null>(null);
   const viewerRef = useRef<HTMLElement>(null);
   const imported = useRef(false);
 
   const active = models.find((m) => m.id === activeId) ?? models[0];
+  // Derived from which model has finished loading, so switching models resets
+  // the indicator without an effect writing state on every change.
+  const loading = Boolean(active) && loadedId !== active.id;
 
   useEffect(() => {
     if (!activated || imported.current) return;
@@ -36,19 +39,18 @@ export default function CadViewer({
     });
   }, [activated]);
 
-  useEffect(() => setLoading(true), [activeId]);
-
   useEffect(() => {
     const el = viewerRef.current;
-    if (!el) return;
-    const done = () => setLoading(false);
+    if (!el || !active) return;
+    // setState inside an event callback, not in the effect body.
+    const done = () => setLoadedId(active.id);
     el.addEventListener("load", done);
     el.addEventListener("error", done);
     return () => {
       el.removeEventListener("load", done);
       el.removeEventListener("error", done);
     };
-  }, [activated, activeId]);
+  }, [activated, active]);
 
   if (!activated) {
     return (

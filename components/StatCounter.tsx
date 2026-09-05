@@ -20,24 +20,24 @@ export default function StatCounter({
   duration?: number;
 }) {
   const reduced = useReducedMotion();
-  const [display, setDisplay] = useState(reduced ? value : 0);
+  const [counted, setCounted] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
   const hasStarted = useRef(false);
 
+  // Derived, not stored: under reduced motion the final value is shown outright
+  // rather than pushed into state from an effect.
+  const display = reduced ? value : counted;
+
   useEffect(() => {
-    if (reduced) {
-      setDisplay(value);
-      return;
-    }
-    if (!inView || hasStarted.current) return;
+    if (reduced || !inView || hasStarted.current) return;
     hasStarted.current = true;
 
     const start = performance.now();
     const step = (now: number) => {
       const progress = Math.min((now - start) / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3); // ease out cubic
-      setDisplay(Math.round(eased * value));
+      setCounted(Math.round(eased * value));
       if (progress < 1) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);

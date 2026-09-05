@@ -40,8 +40,10 @@ export default function Video({ sources, className, label, priority, blend }: Pr
   const blendStyle = blend ? { mixBlendMode: "screen" as const } : undefined;
 
   if (reduced) {
-    // eslint-disable-next-line @next/next/no-img-element -- poster is a fixed local asset
+    // The poster is a fixed local asset already sized by the media pipeline,
+    // and this component has no width/height to hand next/image.
     return (
+      // eslint-disable-next-line @next/next/no-img-element -- see above
       <img
         src={sources.poster}
         alt={label ?? ""}

@@ -18,8 +18,9 @@ export default function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  // Close the drawer on navigation, and never leave the body scroll-locked.
-  useEffect(() => setOpen(false), [pathname]);
+  // The drawer closes from the link's own onClick rather than an effect on
+  // pathname — it covers the viewport, so its links are the only way to
+  // navigate while it is open.
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => {
@@ -132,6 +133,7 @@ export default function SiteHeader() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={() => setOpen(false)}
                   className="border-b border-[var(--color-border)] py-4"
                   style={{
                     fontFamily: "var(--font-display)",
