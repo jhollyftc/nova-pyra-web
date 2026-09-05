@@ -14,9 +14,8 @@ type Datum = { label: string; value: number };
  *   the newest iteration is the most saturated. That encodes build order, not rank.
  * - Two of the three team charts are "lower is better" (driver inputs, standard
  *   deviation). Without an explicit direction label a reader scanning descending
- *   bars reads *declining performance*, which is backwards. The direction is
- *   inferred from first-vs-last here; in Phase 2 it should be an explicit
- *   `betterDirection` field on the chart schema rather than a guess.
+ *   bars reads *declining performance*, which is backwards. The direction is an
+ *   explicit field in the CMS, not inferred from whether the numbers rise.
  * - Every value is real DOM text, so the chart is legible to a screen reader
  *   without a separate table view.
  */
@@ -26,16 +25,18 @@ export default function TestingChart({
   unit,
   data,
   insight,
+  betterDirection,
 }: {
   title: string;
   subtitle: string;
   unit: string;
   data: Datum[];
   insight: string;
+  betterDirection: "higher" | "lower";
 }) {
   const reduced = useReducedMotion();
   const max = Math.max(...data.map((d) => d.value));
-  const lowerIsBetter = data[data.length - 1].value < data[0].value;
+  const lowerIsBetter = betterDirection === "lower";
 
   return (
     <figure className="hud-frame m-0 flex h-full flex-col p-6">

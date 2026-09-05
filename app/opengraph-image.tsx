@@ -1,9 +1,9 @@
 import { ImageResponse } from "next/og";
-import { team, getSeasonTelemetry } from "@/lib/content";
+import { getSettings, getSeasonTelemetry } from "@/lib/content";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = `${team.name} — FIRST Tech Challenge Team ${team.number}`;
+export const alt = "FIRST Tech Challenge team";
 
 /**
  * The social card. Built from the brand tokens rather than a screenshot so it
@@ -15,7 +15,7 @@ export const alt = `${team.name} — FIRST Tech Challenge Team ${team.number}`;
  * enough at this size. Revisit if the card ever looks off-brand.
  */
 export default async function Image() {
-  const t = getSeasonTelemetry();
+  const [t, team] = await Promise.all([getSeasonTelemetry(), getSettings()]);
 
   return new ImageResponse(
     (
@@ -47,7 +47,7 @@ export default async function Image() {
               color: "#8899AA",
             }}
           >
-            {`FTC Team ${team.number} · ${team.location}`}
+            {`FTC Team ${team.teamNumber} · ${team.location}`}
           </div>
 
           <div
@@ -59,7 +59,7 @@ export default async function Image() {
               lineHeight: 1.05,
             }}
           >
-            NOVA PYRA
+            {team.teamName.toUpperCase()}
           </div>
 
           <div style={{ marginTop: 20, fontSize: 40, color: "#E6E6E6" }}>

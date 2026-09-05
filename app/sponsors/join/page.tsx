@@ -7,9 +7,9 @@ import StatCounter from "@/components/StatCounter";
 import {
   getAwards,
   getImpactStats,
+  getSettings,
   getSponsors,
   getSponsorship,
-  team,
 } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -18,12 +18,14 @@ export const metadata: Metadata = {
     "Sponsor FIRST Tech Challenge Team 25619 Nova Pyra. Tiers from $1 to $1,000+, funding parts, travel and STEM outreach across St. Tammany Parish.",
 };
 
-export default function SponsorUsPage() {
-  const s = getSponsorship();
-  const stats = getImpactStats();
-  const awards = getAwards();
+export default async function SponsorUsPage() {
+  const [s, stats, awards, sponsors, settings] = await Promise.all([
+    getSponsorship(), getImpactStats(), getAwards(), getSponsors(), getSettings(),
+  ]);
 
-  const subject = encodeURIComponent(`Sponsorship enquiry — Nova Pyra FTC ${team.number}`);
+  const subject = encodeURIComponent(
+    `Sponsorship enquiry — ${settings.teamName} FTC ${settings.teamNumber}`,
+  );
 
   return (
     <>
@@ -68,7 +70,7 @@ export default function SponsorUsPage() {
       <Section
         eyebrow="Tiers"
         title="Every level helps"
-        intro={`${getSponsors().length} sponsors already back the team — from $1 to $1,000+.`}
+        intro={`${sponsors.length} sponsors already back the team — from $1 to $1,000+.`}
       >
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {s.tiers.map((tier, i) => (

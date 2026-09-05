@@ -8,9 +8,7 @@ import SeasonPulse from "@/components/home/SeasonPulse";
 import ImpactGrid from "@/components/home/ImpactGrid";
 import AwardsRibbon from "@/components/home/AwardsRibbon";
 import SponsorWall from "@/components/home/SponsorWall";
-import { video } from "@/lib/media";
 import {
-  team,
   getAwards,
   getEdp,
   getHeadlineSpecs,
@@ -19,53 +17,63 @@ import {
   getRobot,
   getSeason,
   getSeasonTelemetry,
+  getSettings,
   getSponsorLogos,
   getSponsors,
   getSubsystemHotspots,
 } from "@/lib/content";
 
-export default function HomePage() {
-  const robot = getRobot();
-  const season = getSeason();
-  const stats = getImpactStats();
-  const edp = getEdp();
-  const awards = getAwards();
+export default async function HomePage() {
+  // One await, in parallel — these are independent queries.
+  const [
+    settings, robot, season, stats, edp, awards,
+    telemetry, hotspots, specs, outreach, sponsorLogos, sponsors,
+  ] = await Promise.all([
+    getSettings(), getRobot(), getSeason(), getImpactStats(), getEdp(), getAwards(),
+    getSeasonTelemetry(), getSubsystemHotspots(), getHeadlineSpecs(),
+    getOutreachEvents(), getSponsorLogos(), getSponsors(),
+  ]);
 
   return (
     <>
       <Hero
-        logo={video("logo-animated")}
-        telemetry={getSeasonTelemetry()}
-        tagline={team.tagline}
-        teamNumber={team.number}
-        location={team.location}
+        logo={
+          settings.logoVideo
+            ? { mp4: settings.logoVideo, poster: settings.logoPoster }
+            : null
+        }
+        telemetry={telemetry}
+        tagline={settings.tagline}
+        teamName={settings.teamName}
+        teamNumber={settings.teamNumber}
+        location={settings.location}
       />
 
-      {/* 2 — Proof. Placed early: the most persuasive screen for sponsors and judges alike. */}
+      {/* Proof, placed early: the most persuasive screen for sponsors and judges alike. */}
       <section className="shell py-[calc(var(--section-gap)/2)]">
         <Reveal>
           <div className="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-4">
-            <StatCounter value={stats.peopleReached} label="People reached" />
-            <StatCounter value={stats.volunteerHours} label="Volunteer hours" />
+            <StatCounter value={stats?.peopleReached ?? 0} label="People reached" />
+            <StatCounter value={stats?.volunteerHours ?? 0} label="Volunteer hours" />
             <StatCounter value={awards.length} label="Awards won" />
-            <StatCounter value={stats.teamsmentored} label="Teams mentored" />
+            <StatCounter value={stats?.teamsMentored ?? 0} label="Teams mentored" />
           </div>
         </Reveal>
       </section>
 
       <Section
         eyebrow="The Robot"
-        title={`Meet ${robot.name}`}
+        title={`Meet ${robot?.name ?? "our robot"}`}
         href="/robot"
         hrefLabel="Full breakdown"
         id="robot"
       >
         <RobotHotspots
-          subsystems={getSubsystemHotspots()}
-          photo={robot.photo}
-          specs={getHeadlineSpecs()}
-          robotName={robot.name}
-          philosophy={robot.philosophy}
+          subsystems={hotspots}
+          photo={settings.robotPhoto}
+          specs={specs}
+          robotName={robot?.name ?? ""}
+          philosophy={robot?.philosophy ?? ""}
         />
       </Section>
 
@@ -77,14 +85,14 @@ export default function HomePage() {
         hrefLabel="Our process"
       >
         <ProcessRing
-          steps={edp.steps}
-          narrative={edp.narrative}
-          notebookPath={edp.notebookPath}
+          steps={edp?.steps ?? []}
+          narrative={edp?.narrative ?? ""}
+          notebookPath={edp?.notebook ?? null}
         />
       </Section>
 
       <Section
-        eyebrow={`${team.season} · ${season.gameName}`}
+        eyebrow={`${settings.season} · ${season?.gameName ?? ""}`}
         title="This season"
         href="/season"
         hrefLabel="Season detail"
@@ -95,24 +103,19 @@ export default function HomePage() {
       <Section
         eyebrow="Outreach & Impact"
         title="What we do off the field"
-        intro={`${stats.peopleReached} people reached across ${stats.eventsHosted} events this season.`}
+        intro={`${stats?.peopleReached ?? 0} people reached across ${stats?.eventsHosted ?? 0} events this season.`}
         href="/impact"
         hrefLabel="All outreach"
       >
-        <ImpactGrid events={getOutreachEvents()} />
+        <ImpactGrid events={outreach} />
       </Section>
 
-      <Section
-        eyebrow="Trophy Case"
-        title="Awards"
-        href="/awards"
-        hrefLabel="Full history"
-      >
+      <Section eyebrow="Trophy Case" title="Awards" href="/awards" hrefLabel="Full history">
         <AwardsRibbon awards={awards} />
       </Section>
 
       <Section eyebrow="Our Sponsors" title="Built by our community">
-        <SponsorWall sponsors={getSponsorLogos()} total={getSponsors().length} />
+        <SponsorWall sponsors={sponsorLogos} total={sponsors.length} />
       </Section>
     </>
   );

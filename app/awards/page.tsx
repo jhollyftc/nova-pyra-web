@@ -17,9 +17,8 @@ const TYPE_COLOR: Record<string, string> = {
   outreach: "var(--color-live)",
 };
 
-export default function AwardsPage() {
-  const awards = getAwards();
-  const timeline = getTimeline();
+export default async function AwardsPage() {
+  const [awards, timeline] = await Promise.all([getAwards(), getTimeline()]);
 
   // Group awards by season, newest season first.
   const seasons = [...new Set(awards.map((a) => a.season))].reverse();

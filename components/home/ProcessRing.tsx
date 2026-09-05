@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 
-type Step = { id: string; label: string; description: string };
+type Step = { _key?: string; label: string; description: string };
 
 /**
  * The six-step engineering design cycle as a ring on wide screens and a plain
@@ -17,7 +17,7 @@ export default function ProcessRing({
 }: {
   steps: Step[];
   narrative: string;
-  notebookPath: string;
+  notebookPath: string | null;
 }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const reduced = useReducedMotion();
@@ -48,7 +48,7 @@ export default function ProcessRing({
             const { x, y } = pointAt(i);
             const isActive = i === activeIdx;
             return (
-              <g key={step.id}>
+              <g key={step._key ?? step.label}>
                 <circle
                   cx={x}
                   cy={y}
@@ -94,7 +94,7 @@ export default function ProcessRing({
 
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-20">
           <motion.div
-            key={active.id}
+            key={active.label}
             className="text-center"
             initial={reduced ? false : { opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
@@ -126,7 +126,7 @@ export default function ProcessRing({
       {/* List — narrow screens */}
       <ol className="flex flex-col gap-4 sm:hidden">
         {steps.map((step, i) => (
-          <li key={step.id} className="flex gap-4">
+          <li key={step._key ?? step.label} className="flex gap-4">
             <span
               className="shrink-0 tabular-nums"
               style={{
@@ -170,6 +170,7 @@ export default function ProcessRing({
         </p>
 
         {/* The pit app embedded this 16.4 MB PDF in an iframe. On the web it is a link. */}
+        {notebookPath && (
         <a
           href={notebookPath}
           target="_blank"
@@ -204,6 +205,7 @@ export default function ProcessRing({
             </span>
           </span>
         </a>
+        )}
       </div>
     </div>
   );

@@ -22,18 +22,40 @@ import { fileURLToPath } from "node:url";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "..");
 
-// Minimal .env.local reader — avoids a dependency for four variables.
+// Minimal .env.local reader — avoids a dependency for two variables.
 for (const line of readFileSync(path.join(ROOT, ".env.local"), "utf8").split("\n")) {
   const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
   if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
 }
 
+/**
+ * Reuse the Sanity CLI's existing login rather than asking for a second token.
+ *
+ * `npx sanity login` already stores a user token; copying it into .env.local
+ * would duplicate a live credential into another file for no benefit. An
+ * explicit SANITY_API_WRITE_TOKEN still wins, which is what CI would use.
+ */
+function cliToken() {
+  const home = process.env.USERPROFILE ?? process.env.HOME;
+  const file = path.join(home ?? "", ".config", "sanity", "config.json");
+  if (!existsSync(file)) return undefined;
+  try {
+    return JSON.parse(readFileSync(file, "utf8")).authToken;
+  } catch {
+    return undefined;
+  }
+}
+
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET ?? "production";
-const token = process.env.SANITY_API_WRITE_TOKEN;
+const token = process.env.SANITY_API_WRITE_TOKEN || cliToken();
 
-if (!projectId || !token) {
-  console.error("Missing NEXT_PUBLIC_SANITY_PROJECT_ID or SANITY_API_WRITE_TOKEN in .env.local");
+if (!projectId) {
+  console.error("Missing NEXT_PUBLIC_SANITY_PROJECT_ID in .env.local");
+  process.exit(1);
+}
+if (!token) {
+  console.error("No Sanity credentials. Run `npx sanity login`, or set SANITY_API_WRITE_TOKEN.");
   process.exit(1);
 }
 
@@ -102,6 +124,7 @@ async function build() {
     location: "Mandeville, Louisiana",
     founded: String(team.founding ?? ""),
     logoVideo: await upload("/media/logo-animated.mp4", "file"),
+    logoPoster: await upload("/media/logo-animated.jpg"),
     robotPhoto: await upload("/images/robot-drakos.png"),
     teamPhoto: await upload("/images/team-photo.jpg"),
     socials: {
@@ -144,6 +167,7 @@ async function build() {
       color: p.color,
       summary: p.summary,
       clip: await upload(p.gifPath?.replace(/^\/images\/(.*)\.gif$/i, "/media/$1.mp4"), "file"),
+      clipPoster: await upload(p.gifPath?.replace(/^\/images\/(.*)\.gif$/i, "/media/$1.jpg")),
     }))),
   });
 
@@ -239,6 +263,7 @@ async function build() {
       teamsMentored: stats.allTime?.teamsmentored,
     },
     recapClip: await upload("/media/recap.mp4", "file"),
+    recapPoster: await upload("/media/recap.jpg"),
   });
 
   for (const e of outreach.events ?? []) {

@@ -1,40 +1,16 @@
 /**
  * The single boundary between the site and its content.
  *
- * Nothing in `app/` or `components/` may import a JSON file directly. Every read
- * goes through an accessor here, so Phase 2 can swap these bodies for Sanity
- * queries without touching a single component. The exported types are the
- * contract Sanity's schemas must satisfy.
- */
-import configJson from "@/content/config.json";
-import specsJson from "@/content/robot/specs.json";
-import edpJson from "@/content/process/edp.json";
-import statsJson from "@/content/outreach/stats.json";
-import outreachEventsJson from "@/content/outreach/events.json";
-import sponsorsJson from "@/content/outreach/sponsors.json";
-import sponsorshipJson from "@/content/sponsorship.json";
-import strategyJson from "@/content/robot/strategy.json";
-import evolutionJson from "@/content/robot/evolution.json";
-import problemsJson from "@/content/process/problems.json";
-import testingJson from "@/content/process/testing.json";
-import awardsJson from "@/content/story/awards.json";
-import membersJson from "@/content/story/members.json";
-import timelineJson from "@/content/story/timeline.json";
-import teamJson from "@/content/story/team.json";
-import seasonOverviewJson from "@/content/season/overview.json";
-import seasonGoalsJson from "@/content/season/goals.json";
-import seasonEventsJson from "@/content/season/events.json";
-
-/**
- * Every asset path from the content JSON must pass through here.
+ * Content lives in Sanity. Nothing in `app/` or `components/` talks to Sanity
+ * directly — every read goes through an accessor here, which is what let the
+ * CMS swap happen without rewriting a single page.
  *
- * The pit app's JSON mixes casing — `/images/Sponsors/MO.png`, `/images/Events/PES.JPG` —
- * and the media pipeline writes everything lowercase. Windows does not care;
- * Vercel's Linux hosts return 404. Normalising centrally means a new content
- * entry cannot reintroduce the bug.
+ * All accessors are async. Pages are server components, so they simply await;
+ * the two client components that need team details (the header and footer)
+ * receive them as props from the layout.
  */
-const asset = <T extends string | null | undefined>(p: T): T =>
-  (p ? (p.toLowerCase() as T) : p);
+import { client } from "@/sanity/lib/client";
+import * as Q from "./queries";
 
 /* ── Types ──────────────────────────────────────────────────────────── */
 
@@ -42,30 +18,28 @@ export type Subsystem = {
   id: string;
   name: string;
   tagline: string;
-  photo: string;
+  photo: string | null;
   materials: string;
   motors: string;
   rationale: string;
   tradeoffs: string;
-  color: string;
-  cadModelPath: string | null;
-  /** Marker position on the robot photo, as a percentage of the image box. */
   hotspot: { x: number; y: number } | null;
 };
+
+export type SponsorTier = "sustainer" | "firestarter" | "campfire" | "igniter" | "kindling";
 
 export type Sponsor = {
   id: string;
   name: string;
   tier: SponsorTier;
   logo: string | null;
-  description: string;
+  description: string | null;
+  url: string | null;
 };
 
-export type SponsorTier = "sustainer" | "firestarter" | "campfire" | "igniter" | "kindling";
-
 export type Award = {
-  season: string;
   award: string;
+  season: string;
   event: string;
   level: "qualifier" | "state" | "worlds";
 };
@@ -74,11 +48,11 @@ export type OutreachEvent = {
   id: string;
   name: string;
   date: string;
-  location: string;
-  reached: number;
-  summary: string;
-  tags: string[];
-  image: string | null;
+  location: string | null;
+  reached: number | null;
+  summary: string | null;
+  tags: string[] | null;
+  photos: string[] | null;
 };
 
 export type SeasonEvent = {
@@ -86,213 +60,288 @@ export type SeasonEvent = {
   name: string;
   date: string;
   location: string;
+  status: "completed" | "upcoming";
   rank: number;
   record: { wins: number; losses: number; ties: number };
   awards: string[];
   keyTakeaway: string;
+  isWorlds: boolean;
 };
 
 export type Goal = { goal: string; progress: number; status: string; note: string };
 
-/* ── Team & config ──────────────────────────────────────────────────── */
-
-export const team = {
-  number: configJson.team.number,
-  name: configJson.team.name,
-  tagline: configJson.team.tagline,
-  season: configJson.team.season,
-  /** Not in config.json — established in story/team.json and the sibling repos. */
-  founded: teamJson.founding,
-  location: "Mandeville, Louisiana",
+export type Value = { icon: string; label: string; description: string };
+export type Subteam = { icon: string; name: string; goal: string; challenge: string };
+export type Partner = { name: string; type: string; description: string };
+export type Story = {
+  foundingStory: string;
+  missionStatement: string;
+  values: Value[];
+  subteams: Subteam[];
+  partners: Partner[];
+};
+export type TimelineEntry = { title: string; year: string; type: string; description: string };
+export type ProblemCard = { id: string; problem: string; solution: string; result: string };
+export type EdpDoc = {
+  steps: { _key?: string; label: string; description: string }[];
+  narrative: string;
+  notebook: string | null;
+};
+export type EvolutionEntry = {
+  name: string;
+  subsystem: string;
+  version: string;
+  dateRange: string;
+  changes: string;
+  result: string;
+  photos: string[] | null;
+};
+export type SeasonDoc = {
+  gameName: string;
+  gameYear: string;
+  description: string;
+  strategy: string;
+  robotGoals: Goal[];
+  awardGoals: Goal[];
 };
 
-export const getTeamStory = () => ({
-  foundingStory: teamJson.foundingStory,
-  mission: teamJson.missionStatement,
-  values: teamJson.values,
-  partners: teamJson.partners,
-  subteams: teamJson.subteams,
-});
+export type Member = {
+  id: string;
+  name: string;
+  kind: "student" | "mentor";
+  role: string;
+  roleDescription?: string;
+  photo: string | null;
+  interests?: string;
+  funFact?: string;
+  whyRobotics?: string;
+  personalGoal?: string;
+  dreamOccupation?: string;
+  favoriteBook?: string;
+};
+
+export type Settings = {
+  teamName: string;
+  teamNumber: string;
+  tagline: string;
+  season: string;
+  location: string;
+  founded: string;
+  logoVideo: string | null;
+  logoPoster: string | null;
+  robotPhoto: string | null;
+  teamPhoto: string | null;
+  socials: {
+    instagram?: string;
+    youtube?: string;
+    facebook?: string;
+    github?: string;
+    cad?: string;
+  } | null;
+};
+
+export type TestingChart = {
+  id: string;
+  title: string;
+  subtitle: string;
+  unit: string;
+  betterDirection: "higher" | "lower";
+  data: { label: string; value: number }[];
+  insight: string;
+};
+
+/* ── Settings ───────────────────────────────────────────────────────── */
+
+export const getSettings = () => client.fetch<Settings>(Q.settingsQuery);
+
+/* ── Story & people ─────────────────────────────────────────────────── */
+
+export const getTeamStory = () => client.fetch<Story>(Q.storyQuery);
+
+/**
+ * Students and mentors, split.
+ *
+ * Names are stored first-name + last-initial. That is a deliberate privacy
+ * practice for minors on a public site, and the Studio's `member` schema
+ * validates against surnames rather than trusting it.
+ */
+export async function getMembers() {
+  const all = await client.fetch<Member[]>(Q.membersQuery);
+  return {
+    students: all.filter((m) => m.kind === "student"),
+    mentors: all.filter((m) => m.kind === "mentor"),
+  };
+}
+
+export const getTimeline = () => client.fetch<TimelineEntry[]>(Q.timelineQuery);
+export const getAwards = () => client.fetch<Award[]>(Q.awardsQuery);
 
 /* ── Robot ──────────────────────────────────────────────────────────── */
 
-export const getRobot = () => ({
-  name: specsJson.name,
-  philosophy: specsJson.philosophy,
-  photo: asset(specsJson.photo),
-  specs: specsJson.specs as Record<string, string>,
-  cadModelPath: specsJson.cadModelPath,
-  subsystems: getSubsystems(),
-});
+type RobotDoc = {
+  name: string;
+  philosophy: string;
+  specs: { label: string; value: string }[];
+  cobDescription: string;
+  cobCritical: string;
+  cobOptional: string;
+  cobBypass: string;
+  phases: {
+    label: string;
+    color: string;
+    summary: string;
+    clip: string | null;
+    clipPoster: string | null;
+  }[];
+};
 
-/**
- * The five subsystems. `photo` is the CAD render; the master-detail explorer on
- * /robot uses those.
- */
-export const getSubsystems = (): Subsystem[] =>
-  (specsJson.subsystems as Subsystem[]).map((s) => ({ ...s, photo: asset(s.photo) }));
+export const getRobot = () => client.fetch<RobotDoc>(Q.robotQuery);
+export const getSubsystems = () => client.fetch<Subsystem[]>(Q.subsystemsQuery);
+export const getEvolution = () => client.fetch<EvolutionEntry[]>(Q.evolutionQuery);
 
-/**
- * Subsystems that have a marker placed on the robot photo, for the front-page
- * hotspot explorer. Coordinates live in content/robot/specs.json so they can be
- * nudged without touching code.
- */
-export const getSubsystemHotspots = () =>
-  getSubsystems().filter(
-    (s): s is Subsystem & { hotspot: { x: number; y: number } } => s.hotspot !== null,
+/** Subsystems with a marker placed on the front-page robot photo. */
+export async function getSubsystemHotspots() {
+  const all = await getSubsystems();
+  return all.filter(
+    (s): s is Subsystem & { hotspot: { x: number; y: number } } =>
+      s.hotspot != null && typeof s.hotspot.x === "number",
   );
+}
 
-/** The three headline specs used on the front page, in display order. */
-export const getHeadlineSpecs = () => [
-  specsJson.specs.weight,
-  specsJson.specs.dimensions.replace(/\s*\(.*\)$/, ""),
-  specsJson.specs.driveType,
-];
-
-export const getStrategy = () => ({
-  cob: strategyJson.cob,
-  phases: strategyJson.phases,
-});
-
-/**
- * Design evolution. Photo paths are lowercased for the same Linux-casing reason
- * as the outreach images — `intake-gen1.JPG` on disk, lowercase in the JSON.
- */
-export const getEvolution = () =>
-  evolutionJson.versions.map((v) => ({
-    ...v,
-    // Two entries (Intake Gen 3 & 4, Shooter Gen 3) carry empty photo strings —
-    // the team never added those images. Drop them rather than rendering an
-    // <Image src="">, which makes the browser re-request the whole page.
-    photos: (v.photos ?? []).filter((p) => p && p.trim()).map(asset),
-  }));
+/** The first three specs, shown on the front page. Order is editable in Sanity. */
+export async function getHeadlineSpecs() {
+  const robot = await getRobot();
+  return (robot?.specs ?? []).slice(0, 3).map((s) => s.value.replace(/\s*\(.*\)$/, ""));
+}
 
 /* ── Engineering process ────────────────────────────────────────────── */
 
-export const getProblems = () => problemsJson.cards;
-export const getTestingCharts = () => testingJson.charts;
-
-export const getEdp = () => ({
-  steps: edpJson.steps,
-  narrative: edpJson.narrative,
-  notebookPath: edpJson.notebookPath,
-});
+export const getEdp = () => client.fetch<EdpDoc>(Q.processQuery);
+export const getProblems = () => client.fetch<ProblemCard[]>(Q.problemsQuery);
+export const getTestingCharts = () => client.fetch<TestingChart[]>(Q.chartsQuery);
 
 /* ── Season ─────────────────────────────────────────────────────────── */
 
-export const getSeason = () => ({
-  gameName: seasonOverviewJson.gameName,
-  gameYear: seasonOverviewJson.gameYear,
-  description: seasonOverviewJson.description,
-  strategy: seasonOverviewJson.strategy,
-  robotGoals: seasonGoalsJson.robotGoals as Goal[],
-  awardGoals: seasonGoalsJson.awardGoals as Goal[],
-  completed: seasonEventsJson.completed as SeasonEvent[],
-  upcoming: seasonEventsJson.upcoming as SeasonEvent[],
-});
+export async function getSeason() {
+  const [season, events] = await Promise.all([
+    client.fetch<SeasonDoc>(Q.seasonQuery),
+    client.fetch<SeasonEvent[]>(Q.seasonEventsQuery),
+  ]);
+  return {
+    ...season,
+    robotGoals: (season?.robotGoals ?? []) as Goal[],
+    awardGoals: (season?.awardGoals ?? []) as Goal[],
+    completed: events.filter((e) => e.status === "completed"),
+    upcoming: events.filter((e) => e.status === "upcoming"),
+  };
+}
 
 /**
- * Cumulative record across every completed event this season, and the Worlds
- * placement. Both appear in the hero telemetry strip, so they are derived once
- * here rather than being retyped into a config file that can drift.
+ * The hero's telemetry strip.
+ *
+ * The record and Worlds rank are summed from the competition results rather
+ * than typed anywhere, so adding an event in the Studio updates the front page
+ * by itself.
  */
-export const getSeasonTelemetry = () => {
-  const completed = seasonEventsJson.completed as SeasonEvent[];
+export async function getSeasonTelemetry() {
+  const [season, events, robot] = await Promise.all([
+    client.fetch<{ gameName: string }>(Q.seasonQuery),
+    client.fetch<SeasonEvent[]>(Q.seasonEventsQuery),
+    client.fetch<{ name: string }>(Q.robotQuery),
+  ]);
+
+  const completed = events.filter((e) => e.status === "completed");
   const record = completed.reduce(
     (acc, e) => ({
-      wins: acc.wins + e.record.wins,
-      losses: acc.losses + e.record.losses,
-      ties: acc.ties + e.record.ties,
+      wins: acc.wins + (e.record?.wins ?? 0),
+      losses: acc.losses + (e.record?.losses ?? 0),
+      ties: acc.ties + (e.record?.ties ?? 0),
     }),
     { wins: 0, losses: 0, ties: 0 },
   );
-  const worlds = completed.find((e) => e.name.includes("World"));
+  const worlds = completed.find((e) => e.isWorlds);
+
   return {
-    game: seasonOverviewJson.gameName,
-    robot: specsJson.name,
+    game: season?.gameName ?? "",
+    robot: robot?.name ?? "",
     record: `${record.wins}-${record.losses}-${record.ties}`,
     worldsRank: worlds ? `#${worlds.rank}` : null,
   };
-};
+}
 
 /* ── Outreach & impact ──────────────────────────────────────────────── */
 
-export const getImpactStats = () => statsJson.thisSeason;
-export const getAllTimeStats = () => statsJson.allTime;
+type ImpactCounts = {
+  peopleReached: number;
+  volunteerHours: number;
+  eventsHosted: number;
+  schoolsVisited: number;
+  teamsMentored: number;
+};
 
-/**
- * Image paths are lowercased to match the media pipeline's output. The pit app's
- * JSON still says `/images/Events/LATM.jpg`, which resolves on Windows but 404s
- * on Vercel's Linux hosts.
- *
- * Only 2 of the 7 events currently have a photo, so consumers must handle a null.
- */
-export const getOutreachEvents = (): OutreachEvent[] =>
-  (outreachEventsJson.events as OutreachEvent[]).map((e) => ({
-    ...e,
-    image: asset(e.image),
-  }));
+const getImpact = () =>
+  client.fetch<{
+    thisSeason: ImpactCounts;
+    allTime: ImpactCounts;
+    recapClip: string | null;
+    recapPoster: string | null;
+  }>(Q.impactQuery);
 
-/* ── Awards ─────────────────────────────────────────────────────────── */
-
-export const getAwards = () => awardsJson.awards as Award[];
-
-/* ── People & timeline ──────────────────────────────────────────────── */
-
-/**
- * Members are stored first-name + last-initial. That is a deliberate
- * minor-privacy convention carried over from the pit app and must not regress
- * on a public site — do not add surnames here or in the CMS.
- */
-export const getMembers = () => ({
-  students: membersJson.members.map((m) => ({ ...m, photo: asset(m.photo) })),
-  mentors: membersJson.mentors.map((m) => ({ ...m, photo: asset(m.photo) })),
-});
-
-export const getTimeline = () => timelineJson.milestones;
+export const getImpactStats = async () => (await getImpact()).thisSeason;
+export const getAllTimeStats = async () => (await getImpact()).allTime;
+export const getRecapClip = async () => (await getImpact()).recapClip;
+export const getRecapPoster = async () => (await getImpact()).recapPoster;
+export const getOutreachEvents = () => client.fetch<OutreachEvent[]>(Q.outreachQuery);
 
 /* ── Sponsors ───────────────────────────────────────────────────────── */
 
-/** Tier labels and thresholds. Hard-coded in the pit app's OutreachSection. */
 export const SPONSOR_TIERS: { id: SponsorTier; label: string; amount: string }[] = [
-  { id: "sustainer",   label: "Sustainer",   amount: "$1,000+"  },
+  { id: "sustainer", label: "Sustainer", amount: "$1,000+" },
   { id: "firestarter", label: "Firestarter", amount: "$500–999" },
-  { id: "campfire",    label: "Campfire",    amount: "$200–499" },
-  { id: "igniter",     label: "Igniter",     amount: "$50–199"  },
-  { id: "kindling",    label: "Kindling",    amount: "$1–49"    },
+  { id: "campfire", label: "Campfire", amount: "$200–499" },
+  { id: "igniter", label: "Igniter", amount: "$50–199" },
+  { id: "kindling", label: "Kindling", amount: "$1–49" },
 ];
 
-export const getSponsors = (): Sponsor[] =>
-  (sponsorsJson.sponsors as Sponsor[]).map((s) => ({ ...s, logo: asset(s.logo) }));
+export const getSponsors = () => client.fetch<Sponsor[]>(Q.sponsorsQuery);
 
-/**
- * The sponsorship pitch. Tiers, amounts and benefits are the team's real
- * published commitments, transcribed from novapyra.org/sponsor-us.html.
- */
-export const getSponsorship = () => {
-  const byId = new Map(sponsorshipJson.tiers.map((t) => [t.id, t.benefits]));
+export async function getSponsorsByTier() {
+  const sponsors = await getSponsors();
+  return SPONSOR_TIERS.map((tier) => ({
+    ...tier,
+    sponsors: sponsors.filter((s) => s.tier === tier.id),
+  }));
+}
+
+export const getSponsorLogos = async () => (await getSponsors()).filter((s) => s.logo);
+
+export async function getSponsorship() {
+  const [doc, sponsors] = await Promise.all([
+    client.fetch<{
+      intro: string;
+      contactEmail: string;
+      fiscalSponsor: string;
+      checkPayableTo: string;
+      taxNote: string;
+      whatItFunds: { label: string; description: string }[];
+      tiers: { tier: SponsorTier; benefits: string[] }[];
+    }>(Q.sponsorshipQuery),
+    getSponsors(),
+  ]);
+
+  const benefits = new Map((doc?.tiers ?? []).map((t) => [t.tier, t.benefits]));
+
   return {
-    intro: sponsorshipJson.intro,
-    whatItFunds: sponsorshipJson.whatItFunds,
-    contactEmail: sponsorshipJson.contactEmail,
-    contactEmailVerified: sponsorshipJson.contactEmailVerified,
-    fiscalSponsor: sponsorshipJson.fiscalSponsor,
-    checkPayableTo: sponsorshipJson.checkPayableTo,
-    taxNote: sponsorshipJson.taxNote,
+    intro: doc?.intro ?? "",
+    contactEmail: doc?.contactEmail ?? "",
+    fiscalSponsor: doc?.fiscalSponsor ?? "",
+    checkPayableTo: doc?.checkPayableTo ?? "",
+    taxNote: doc?.taxNote ?? "",
+    whatItFunds: doc?.whatItFunds ?? [],
     tiers: SPONSOR_TIERS.map((tier) => ({
       ...tier,
-      benefits: byId.get(tier.id) ?? [],
-      currentCount: (sponsorsJson.sponsors as Sponsor[]).filter((s) => s.tier === tier.id)
-        .length,
+      benefits: benefits.get(tier.id) ?? [],
+      currentCount: sponsors.filter((s) => s.tier === tier.id).length,
     })),
   };
-};
-
-export const getSponsorsByTier = () =>
-  SPONSOR_TIERS.map((tier) => ({
-    ...tier,
-    sponsors: getSponsors().filter((s) => s.tier === tier.id),
-  }));
-
-/** Sponsors that have a logo, for the front-page marquee. */
-export const getSponsorLogos = () => getSponsors().filter((s) => s.logo);
+}

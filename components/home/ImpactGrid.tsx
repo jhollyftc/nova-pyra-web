@@ -13,10 +13,10 @@ export default function ImpactGrid({ events }: { events: OutreachEvent[] }) {
     <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {events.map((e, i) => (
         <Reveal as="li" key={e.id} delay={i * 0.04} className="hud-frame flex flex-col">
-          {e.image ? (
+          {e.photos?.[0] ? (
             <div className="scanlines relative aspect-[16/10] w-full overflow-hidden">
               <Image
-                src={e.image}
+                src={e.photos![0]}
                 alt={e.name}
                 fill
                 className="object-cover"
@@ -61,7 +61,7 @@ export default function ImpactGrid({ events }: { events: OutreachEvent[] }) {
             >
               {e.summary}
             </p>
-            {e.image && (
+            {e.photos?.[0] && (
               <p className="micro mt-auto pt-2" style={{ color: "var(--color-accent)" }}>
                 {e.reached} people reached
               </p>

@@ -12,8 +12,8 @@ export const metadata: Metadata = {
     "How Nova Pyra engineers: the design cycle, problems solved, test data, and our engineering portfolio.",
 };
 
-export default function EngineeringPage() {
-  const edp = getEdp();
+export default async function EngineeringPage() {
+  const [edp, problems, charts] = await Promise.all([getEdp(), getProblems(), getTestingCharts()]);
 
   return (
     <>
@@ -25,9 +25,9 @@ export default function EngineeringPage() {
 
       <Section eyebrow="The Cycle" title="Engineering design process">
         <ProcessRing
-          steps={edp.steps}
-          narrative={edp.narrative}
-          notebookPath={edp.notebookPath}
+          steps={edp?.steps ?? []}
+          narrative={edp?.narrative ?? ""}
+          notebookPath={edp?.notebook ?? null}
         />
       </Section>
 
@@ -37,7 +37,7 @@ export default function EngineeringPage() {
         intro="The failures are the interesting part. Each of these cost us matches before it cost us a redesign."
       >
         <div className="grid gap-4 md:grid-cols-2">
-          {getProblems().map((c, i) => (
+          {problems.map((c, i) => (
             <Reveal key={c.id} delay={i * 0.05} className="hud-frame flex flex-col gap-4 p-6">
               <div>
                 <p className="micro" style={{ color: "var(--color-danger)" }}>
@@ -77,12 +77,13 @@ export default function EngineeringPage() {
         intro="Every claim about the robot traces back to a number we recorded."
       >
         <div className="grid gap-6 lg:grid-cols-3">
-          {getTestingCharts().map((chart, i) => (
+          {charts.map((chart, i) => (
             <Reveal key={chart.id} delay={i * 0.06}>
               <TestingChart
                 title={chart.title}
                 subtitle={chart.subtitle}
                 unit={chart.unit}
+                betterDirection={chart.betterDirection}
                 data={chart.data}
                 insight={chart.insight}
               />

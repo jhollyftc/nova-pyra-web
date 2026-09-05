@@ -132,6 +132,7 @@ export default function RobotExplorer({
               exit={reduced ? undefined : { opacity: 0, scale: 1.02 }}
               transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             >
+              {active.photo && (
               <Image
                 src={active.photo}
                 alt={`${active.name} — CAD render`}
@@ -140,6 +141,7 @@ export default function RobotExplorer({
                 className="h-auto w-full max-w-[420px] object-contain drop-shadow-[0_0_36px_rgba(17,115,241,0.35)]"
                 sizes="(max-width: 1024px) 90vw, 420px"
               />
+              )}
               <p className="micro mt-5 text-center" style={{ color: "var(--color-cyan)" }}>
                 {active.name}
               </p>

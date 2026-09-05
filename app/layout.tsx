@@ -3,7 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
-import { team } from "@/lib/content";
+import { getSettings } from "@/lib/content";
 
 const orbitron = localFont({
   src: [
@@ -24,22 +24,29 @@ const rajdhani = localFont({
   variable: "--font-rajdhani",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://novapyra.app"),
-  title: {
-    default: `${team.name} · FTC ${team.number}`,
-    template: `%s · ${team.name} FTC ${team.number}`,
-  },
-  description:
-    `FIRST Tech Challenge Team ${team.number} from ${team.location}. ${team.tagline}`,
-  openGraph: {
-    type: "website",
-    siteName: `${team.name} · FTC ${team.number}`,
-    locale: "en_US",
-  },
-};
+/** Built from the CMS, so the title and description follow a tagline change. */
+export async function generateMetadata(): Promise<Metadata> {
+  const s = await getSettings();
+  return {
+    metadataBase: new URL("https://novapyra.app"),
+    title: {
+      default: `${s.teamName} · FTC ${s.teamNumber}`,
+      template: `%s · ${s.teamName} FTC ${s.teamNumber}`,
+    },
+    description: `FIRST Tech Challenge Team ${s.teamNumber} from ${s.location}. ${s.tagline}`,
+    openGraph: {
+      type: "website",
+      siteName: `${s.teamName} · FTC ${s.teamNumber}`,
+      locale: "en_US",
+    },
+  };
+}
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // The header and footer are client components (drawer state, pathname), so
+  // settings are fetched here and passed down rather than fetched by them.
+  const settings = await getSettings();
+
   return (
     <html lang="en" className={`${orbitron.variable} ${rajdhani.variable}`}>
       <body>
@@ -49,9 +56,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Skip to content
         </a>
-        <SiteHeader />
+        <SiteHeader teamNumber={settings.teamNumber} />
         <main id="main">{children}</main>
-        <SiteFooter />
+        <SiteFooter settings={settings} />
       </body>
     </html>
   );

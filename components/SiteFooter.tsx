@@ -1,21 +1,11 @@
 import Link from "next/link";
-import { team } from "@/lib/content";
+import type { Settings } from "@/lib/content";
 
 /**
  * The pit app's /connect route was a grid of QR codes — right for a kiosk,
- * pointless in a browser. Those links live here instead.
- *
- * NOTE: two entries in the pit app's connect/links.json are unverified and are
- * deliberately omitted until confirmed — the Onshape CAD link is still the
- * literal placeholder `your-doc-id`, and `hello@novapyra.org` may not be a real
- * mailbox. Add them back once checked.
+ * pointless in a browser. Those links live here instead, and are now editable
+ * in the Studio under Site settings rather than hard-coded.
  */
-const SOCIAL = [
-  { href: "https://instagram.com/novapyra25619", label: "Instagram" },
-  { href: "https://youtube.com/@novapyra25619", label: "YouTube" },
-  { href: "https://github.com/novapyra25619", label: "GitHub" },
-];
-
 const EXPLORE = [
   { href: "/robot", label: "The Robot" },
   { href: "/engineering", label: "Engineering" },
@@ -31,7 +21,15 @@ const linkStyle = {
   color: "var(--color-text-secondary)",
 } as const;
 
-export default function SiteFooter() {
+export default function SiteFooter({ settings }: { settings: Settings }) {
+  const socials = [
+    { href: settings.socials?.instagram, label: "Instagram" },
+    { href: settings.socials?.youtube, label: "YouTube" },
+    { href: settings.socials?.facebook, label: "Facebook" },
+    { href: settings.socials?.github, label: "GitHub" },
+    { href: settings.socials?.cad, label: "CAD (Onshape)" },
+  ].filter((l): l is { href: string; label: string } => Boolean(l.href));
+
   return (
     <footer className="mt-[var(--section-gap)] border-t border-[var(--color-border)] bg-black">
       <div className="shell grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
@@ -45,11 +43,13 @@ export default function SiteFooter() {
               letterSpacing: "0.14em",
             }}
           >
-            NOVA PYRA
+            {settings.teamName.toUpperCase()}
           </div>
-          <p className="micro mt-2">FTC {team.number} · {team.location}</p>
+          <p className="micro mt-2">
+            FTC {settings.teamNumber} · {settings.location}
+          </p>
           <p className="mt-4 max-w-xs" style={linkStyle}>
-            {team.tagline}
+            {settings.tagline}
           </p>
         </div>
 
@@ -69,7 +69,7 @@ export default function SiteFooter() {
         <div>
           <h2 className="micro mb-4">Follow</h2>
           <ul className="space-y-2">
-            {SOCIAL.map((l) => (
+            {socials.map((l) => (
               <li key={l.href}>
                 <a href={l.href} target="_blank" rel="noopener noreferrer" style={linkStyle}>
                   {l.label}
@@ -92,8 +92,8 @@ export default function SiteFooter() {
         <div>
           <h2 className="micro mb-4">Support the team</h2>
           <p className="mb-4 max-w-xs" style={linkStyle}>
-            Nova Pyra runs on community support. Sponsorship funds parts, travel, and the outreach
-            we do across St. Tammany Parish.
+            {settings.teamName} runs on community support. Sponsorship funds parts, travel, and
+            the outreach we do across St. Tammany Parish.
           </p>
           <Link
             href="/sponsors/join"
@@ -116,9 +116,10 @@ export default function SiteFooter() {
       <div className="border-t border-[var(--color-border)]">
         <div className="shell flex flex-col gap-2 py-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="micro">
-            © {new Date().getFullYear()} {team.name} · FIRST Tech Challenge Team {team.number}
+            © {new Date().getFullYear()} {settings.teamName} · FIRST Tech Challenge Team{" "}
+            {settings.teamNumber}
           </p>
-          <p className="micro">{team.season} · DECODE</p>
+          <p className="micro">{settings.season}</p>
         </div>
       </div>
     </footer>

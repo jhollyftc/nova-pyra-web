@@ -12,15 +12,16 @@ export const metadata: Metadata = {
     "The businesses, foundations and families who fund FTC Team 25619 Nova Pyra.",
 };
 
-export default function SponsorsPage() {
-  const tiers = getSponsorsByTier().filter((t) => t.sponsors.length > 0);
+export default async function SponsorsPage() {
+  const [allTiers, sponsors] = await Promise.all([getSponsorsByTier(), getSponsors()]);
+  const tiers = allTiers.filter((t) => t.sponsors.length > 0);
 
   return (
     <>
       <PageHeader
         eyebrow="Thank You"
         title="Built by our community"
-        intro={`${getSponsors().length} sponsors fund our parts, our travel, and the outreach we run across St. Tammany Parish.`}
+        intro={`${sponsors.length} sponsors fund our parts, our travel, and the outreach we run across St. Tammany Parish.`}
       />
 
       {tiers.map((tier) => (

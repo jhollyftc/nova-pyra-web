@@ -3,7 +3,7 @@ import PageHeader from "@/components/PageHeader";
 import Section from "@/components/Section";
 import Reveal from "@/components/Reveal";
 import SeasonPulse from "@/components/home/SeasonPulse";
-import { getSeason, team } from "@/lib/content";
+import { getSeason, getSettings } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "This Season",
@@ -11,15 +11,15 @@ export const metadata: Metadata = {
     "Nova Pyra's 2025–2026 DECODE season: the challenge, our strategy, goals, and every event result.",
 };
 
-export default function SeasonPage() {
-  const season = getSeason();
+export default async function SeasonPage() {
+  const [season, settings] = await Promise.all([getSeason(), getSettings()]);
 
   return (
     <>
       <PageHeader
-        eyebrow={`${team.season} · ${season.gameName}`}
+        eyebrow={`${settings.season} · ${season?.gameName ?? ""}`}
         title="This season"
-        intro={season.description}
+        intro={season?.description}
       />
 
       <Section eyebrow="Approach" title="Our strategy">
@@ -28,7 +28,7 @@ export default function SeasonPage() {
             className="max-w-3xl"
             style={{ fontSize: "clamp(16px, 1.8vw, 19px)", lineHeight: 1.7 }}
           >
-            {season.strategy}
+            {season?.strategy}
           </p>
         </Reveal>
       </Section>

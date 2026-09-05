@@ -50,6 +50,7 @@ export default defineType({
             defineField({ name: "color", title: "Accent colour", type: "string", description: "A CSS colour, e.g. #22C55E" }),
             defineField({ name: "summary", title: "Summary", type: "text", rows: 3 }),
             defineField({ name: "clip", title: "Clip", type: "file", description: "MP4 loop. No GIFs." }),
+            defineField({ name: "clipPoster", title: "Clip still frame", type: "image" }),
           ],
           preview: { select: { title: "label", subtitle: "summary" } },
         },

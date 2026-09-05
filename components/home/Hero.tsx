@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import Video from "@/components/Video";
 import EmberField from "@/components/EmberField";
-import type { VideoSources } from "@/lib/media";
+import type { VideoSources } from "@/components/Video";
 
 type Telemetry = {
   game: string;
@@ -24,12 +24,14 @@ export default function Hero({
   logo,
   telemetry,
   tagline,
+  teamName,
   teamNumber,
   location,
 }: {
-  logo: VideoSources;
+  logo: VideoSources | null;
   telemetry: Telemetry;
   tagline: string;
+  teamName: string;
   teamNumber: string;
   location: string;
 }) {
@@ -86,13 +88,15 @@ export default function Hero({
           call regardless. The surrounding text and telemetry still stagger in.
         */}
         <div className="mt-8 w-full" style={{ maxWidth: "min(620px, 88vw)" }}>
-          <Video
-            sources={logo}
-            label="Nova Pyra — FTC Team 25619"
-            priority
-            blend
-            className="w-full"
-          />
+          {logo && (
+            <Video
+              sources={logo}
+              label={`${teamName} — FTC Team ${teamNumber}`}
+              priority
+              blend
+              className="w-full"
+            />
+          )}
         </div>
 
         <motion.h1

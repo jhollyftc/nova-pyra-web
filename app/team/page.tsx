@@ -3,7 +3,7 @@ import Image from "next/image";
 import PageHeader from "@/components/PageHeader";
 import Section from "@/components/Section";
 import Reveal from "@/components/Reveal";
-import { getMembers, getTeamStory, team } from "@/lib/content";
+import { getMembers, getTeamStory, getSettings } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Our Team",
@@ -15,7 +15,7 @@ type Person = {
   id: string;
   name: string;
   role: string;
-  photo: string;
+  photo: string | null;
   roleDescription?: string;
   interests?: string;
   funFact?: string;
@@ -27,6 +27,7 @@ function PersonCard({ person }: { person: Person }) {
   return (
     <article className="hud-frame flex flex-col overflow-hidden">
       <div className="relative aspect-square w-full overflow-hidden bg-[var(--color-surface)]/20">
+        {person.photo && (
         <Image
           src={person.photo}
           alt={person.name}
@@ -34,6 +35,7 @@ function PersonCard({ person }: { person: Person }) {
           className="object-cover"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 220px"
         />
+        )}
       </div>
       <div className="flex flex-1 flex-col gap-1.5 border-t border-[var(--color-border)] p-4">
         <h3
@@ -65,23 +67,25 @@ function PersonCard({ person }: { person: Person }) {
   );
 }
 
-export default function TeamPage() {
-  const story = getTeamStory();
-  const { students, mentors } = getMembers();
+export default async function TeamPage() {
+  const [story, { students, mentors }, settings] = await Promise.all([
+    getTeamStory(), getMembers(), getSettings(),
+  ]);
 
   return (
     <>
       <PageHeader
         eyebrow="Our Story"
         title="Who we are"
-        intro={`FIRST Tech Challenge Team ${team.number}, founded ${story.foundingStory ? team.founded : ""} in ${team.location}.`}
+        intro={`FIRST Tech Challenge Team ${settings.teamNumber}, founded ${settings.founded} in ${settings.location}.`}
       />
 
+      {settings.teamPhoto && (
       <section className="shell pt-[calc(var(--section-gap)/2)]">
         <Reveal>
           <figure className="hud-frame scanlines m-0 overflow-hidden">
             <Image
-              src="/images/team-photo.jpg"
+              src={settings.teamPhoto!}
               alt="The Nova Pyra team at the FIRST World Championship in Houston"
               width={1600}
               height={794}
@@ -95,12 +99,13 @@ export default function TeamPage() {
           </figcaption>
         </Reveal>
       </section>
+      )}
 
       <Section eyebrow="Origins" title="New fire">
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-14">
           <Reveal>
             <p style={{ fontSize: "clamp(15px, 1.7vw, 18px)", lineHeight: 1.7 }}>
-              {story.foundingStory}
+              {story?.foundingStory}
             </p>
           </Reveal>
           <Reveal delay={0.08}>
@@ -110,7 +115,7 @@ export default function TeamPage() {
                 className="mt-3 text-[var(--color-text-secondary)]"
                 style={{ fontSize: "clamp(15px, 1.7vw, 17px)", lineHeight: 1.65 }}
               >
-                {story.mission}
+                {story?.missionStatement}
               </p>
             </div>
           </Reveal>
@@ -119,7 +124,7 @@ export default function TeamPage() {
 
       <Section eyebrow="What we stand for" title="Values">
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {story.values.map((v, i) => (
+          {(story?.values ?? []).map((v, i) => (
             <Reveal as="li" key={v.label} delay={i * 0.05} className="hud-frame p-5">
               <span aria-hidden="true" style={{ fontSize: "26px" }}>
                 {v.icon}
@@ -149,7 +154,7 @@ export default function TeamPage() {
 
       <Section eyebrow="How we organise" title="Subteams">
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {story.subteams.map((s, i) => (
+          {(story?.subteams ?? []).map((s, i) => (
             <Reveal as="li" key={s.name} delay={i * 0.04} className="hud-frame p-5">
               <div className="flex items-center gap-3">
                 <span aria-hidden="true" style={{ fontSize: "22px" }}>
@@ -205,7 +210,7 @@ export default function TeamPage() {
 
       <Section eyebrow="FIRST & Industry" title="Partners">
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {story.partners.map((p, i) => (
+          {(story?.partners ?? []).map((p, i) => (
             <Reveal as="li" key={p.name} delay={i * 0.04} className="hud-frame p-5">
               <p className="micro" style={{ color: "var(--color-cyan)" }}>
                 {p.type}

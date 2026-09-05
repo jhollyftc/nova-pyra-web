@@ -16,7 +16,8 @@ type Pinned = Subsystem & { hotspot: { x: number; y: number } };
  * plain list — five 44px targets on a phone-width robot photo would overlap and
  * be unhittable, so the two layouts are genuinely different rather than scaled.
  *
- * Marker positions come from `hotspot` in content/robot/specs.json.
+ * Marker positions come from the subsystem`s `hotspot` field in Sanity, so they
+ * can be nudged in the Studio without a code change.
  */
 export default function RobotHotspots({
   subsystems,
@@ -26,7 +27,7 @@ export default function RobotHotspots({
   philosophy,
 }: {
   subsystems: Pinned[];
-  photo: string;
+  photo: string | null;
   specs: string[];
   robotName: string;
   philosophy: string;
@@ -50,15 +51,17 @@ export default function RobotHotspots({
               "radial-gradient(ellipse 65% 60% at 50% 50%, rgba(17,115,241,0.20), transparent 70%)",
           }}
         />
-        <Image
-          src={photo}
-          alt={`${robotName}, the Nova Pyra competition robot`}
-          width={900}
-          height={985}
-          priority
-          className="relative mx-auto h-auto w-full max-w-[520px] drop-shadow-[0_0_50px_rgba(17,115,241,0.28)]"
-          sizes="(max-width: 1024px) 60vw, 520px"
-        />
+        {photo && (
+          <Image
+            src={photo}
+            alt={`${robotName}, the competition robot`}
+            width={900}
+            height={985}
+            priority
+            className="relative mx-auto h-auto w-full max-w-[520px] drop-shadow-[0_0_50px_rgba(17,115,241,0.28)]"
+            sizes="(max-width: 1024px) 60vw, 520px"
+          />
+        )}
 
         <div className="absolute inset-0 mx-auto max-w-[520px]">
           {subsystems.map((s) => {
@@ -142,15 +145,17 @@ export default function RobotHotspots({
 
       {/* Phone: photo without markers, then the same content as a list */}
       <div className="md:hidden">
-        <Image
-          src={photo}
-          alt={`${robotName}, the Nova Pyra competition robot`}
-          width={900}
-          height={985}
-          priority
-          className="mx-auto h-auto w-full max-w-[340px] drop-shadow-[0_0_36px_rgba(17,115,241,0.28)]"
-          sizes="90vw"
-        />
+        {photo && (
+          <Image
+            src={photo}
+            alt={`${robotName}, the competition robot`}
+            width={900}
+            height={985}
+            priority
+            className="mx-auto h-auto w-full max-w-[340px] drop-shadow-[0_0_36px_rgba(17,115,241,0.28)]"
+            sizes="90vw"
+          />
+        )}
       </div>
 
       <div>

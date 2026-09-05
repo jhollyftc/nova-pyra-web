@@ -5,8 +5,7 @@ import Reveal from "@/components/Reveal";
 import StatCounter from "@/components/StatCounter";
 import Video from "@/components/Video";
 import ImpactGrid from "@/components/home/ImpactGrid";
-import { video } from "@/lib/media";
-import { getAllTimeStats, getImpactStats, getOutreachEvents } from "@/lib/content";
+import { getAllTimeStats, getImpactStats, getOutreachEvents, getRecapClip, getRecapPoster } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Outreach & Impact",
@@ -14,9 +13,10 @@ export const metadata: Metadata = {
     "How Nova Pyra promotes STEM across St. Tammany Parish — events, schools reached, teams mentored, and volunteer hours.",
 };
 
-export default function ImpactPage() {
-  const season = getImpactStats();
-  const allTime = getAllTimeStats();
+export default async function ImpactPage() {
+  const [season, allTime, events, recap, recapPoster] = await Promise.all([
+    getImpactStats(), getAllTimeStats(), getOutreachEvents(), getRecapClip(), getRecapPoster(),
+  ]);
 
   return (
     <>
@@ -33,7 +33,7 @@ export default function ImpactPage() {
             <StatCounter value={season.volunteerHours} label="Volunteer hours" />
             <StatCounter value={season.eventsHosted} label="Events" />
             <StatCounter value={season.schoolsVisited} label="Schools visited" />
-            <StatCounter value={season.teamsmentored} label="Teams mentored" />
+            <StatCounter value={season.teamsMentored} label="Teams mentored" />
           </div>
         </Reveal>
 
@@ -47,7 +47,7 @@ export default function ImpactPage() {
                   ["Volunteer hours", allTime.volunteerHours],
                   ["Events", allTime.eventsHosted],
                   ["Schools visited", allTime.schoolsVisited],
-                  ["Teams mentored", allTime.teamsmentored],
+                  ["Teams mentored", allTime.teamsMentored],
                 ].map(([label, value]) => (
                   <div
                     key={label as string}
@@ -69,15 +69,17 @@ export default function ImpactPage() {
                 ))}
               </dl>
             </div>
-            <div className="scanlines hud-frame overflow-hidden">
-              <Video sources={video("recap")} className="w-full" label="Season recap" />
-            </div>
+            {recap && (
+              <div className="scanlines hud-frame overflow-hidden">
+                <Video sources={{ mp4: recap, poster: recapPoster }} className="w-full" label="Season recap" />
+              </div>
+            )}
           </div>
         </Reveal>
       </Section>
 
       <Section eyebrow="Events" title="Where we showed up">
-        <ImpactGrid events={getOutreachEvents()} />
+        <ImpactGrid events={events} />
       </Section>
     </>
   );

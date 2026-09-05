@@ -6,24 +6,21 @@ import Reveal from "@/components/Reveal";
 import Video from "@/components/Video";
 import CadViewer from "@/components/CadViewer";
 import RobotExplorer from "@/components/home/RobotExplorer";
-import { video, hasVideo } from "@/lib/media";
-import {
-  getRobot,
-  getStrategy,
-  getEvolution,
-  getSubsystems,
-  getHeadlineSpecs,
-} from "@/lib/content";
+import { getRobot, getEvolution, getSubsystems, getHeadlineSpecs } from "@/lib/content";
 
-const SPEC_LABELS: Record<string, string> = {
-  weight: "Weight",
-  dimensions: "Dimensions",
-  driveType: "Drivetrain",
-  driveMotors: "Drive motors",
-  topSpeed: "Top speed",
-  electronics: "Electronics",
-  battery: "Battery",
-};
+/**
+ * CAD models stay in public/, not Sanity.
+ *
+ * They are 6.9–16.5 MB Draco-compressed binaries that change once a season, and
+ * pushing them through the CMS would burn asset storage for no editing benefit.
+ * They are also loaded only behind an explicit button, so they never affect page
+ * weight. Update these paths if a model is replaced.
+ */
+const CAD_MODELS = [
+  { id: "full", label: "Full robot", src: "/robot-draco.glb" },
+  { id: "intake", label: "Intake", src: "/intake-draco.glb" },
+  { id: "shooter", label: "Shooter", src: "/shooter-draco.glb" },
+];
 
 export const metadata: Metadata = {
   title: "The Robot",
@@ -31,29 +28,34 @@ export const metadata: Metadata = {
     "DRAKOS — the Nova Pyra competition robot for the DECODE season. Specs, subsystems, strategy, CAD and design evolution.",
 };
 
-export default function RobotPage() {
-  const robot = getRobot();
-  const strategy = getStrategy();
-  const evolution = getEvolution();
-  const subsystems = getSubsystems();
+export default async function RobotPage() {
+  const [robot, evolution, subsystems, headlineSpecs] = await Promise.all([
+    getRobot(),
+    getEvolution(),
+    getSubsystems(),
+    getHeadlineSpecs(),
+  ]);
 
-  const models = [
-    { id: "full", label: "Full robot", src: robot.cadModelPath },
-    ...subsystems
-      .filter((s) => s.cadModelPath && s.cadModelPath !== robot.cadModelPath)
-      .map((s) => ({ id: s.id, label: s.name, src: s.cadModelPath as string })),
-  ];
+  const cob = [
+    { label: "Critical", value: robot?.cobCritical, color: "var(--color-cyan)" },
+    { label: "Optional", value: robot?.cobOptional, color: "var(--color-warn)" },
+    { label: "Bypass", value: robot?.cobBypass, color: "var(--color-danger)" },
+  ].filter((c) => c.value);
 
   return (
     <>
-      <PageHeader eyebrow="The Robot" title={robot.name} intro={robot.philosophy} />
+      <PageHeader
+        eyebrow="The Robot"
+        title={robot?.name ?? "Our robot"}
+        intro={robot?.philosophy}
+      />
 
       <Section eyebrow="Specifications" title="At a glance">
         <Reveal>
           <dl className="grid gap-px border border-[var(--color-border)] bg-[var(--color-border)] sm:grid-cols-2 lg:grid-cols-3">
-            {Object.entries(robot.specs).map(([key, value]) => (
-              <div key={key} className="bg-black p-5">
-                <dt className="micro">{SPEC_LABELS[key] ?? key}</dt>
+            {(robot?.specs ?? []).map((spec) => (
+              <div key={spec.label} className="bg-black p-5">
+                <dt className="micro">{spec.label}</dt>
                 <dd
                   className="mt-2"
                   style={{
@@ -63,7 +65,7 @@ export default function RobotPage() {
                     lineHeight: 1.4,
                   }}
                 >
-                  {value}
+                  {spec.value}
                 </dd>
               </div>
             ))}
@@ -74,9 +76,9 @@ export default function RobotPage() {
       <Section eyebrow="Subsystems" title="How it works">
         <RobotExplorer
           subsystems={subsystems}
-          specs={getHeadlineSpecs()}
-          robotName={robot.name}
-          philosophy={robot.philosophy}
+          specs={headlineSpecs}
+          robotName={robot?.name ?? ""}
+          philosophy={robot?.philosophy ?? ""}
         />
       </Section>
 
@@ -126,33 +128,34 @@ export default function RobotPage() {
       <Section
         eyebrow="Game Strategy"
         title="Critical, optional, bypass"
-        intro={strategy.cob.description}
+        intro={robot?.cobDescription}
       >
-        <Reveal>
-          <div className="mb-10 grid gap-4 sm:grid-cols-3">
-            {[
-              { label: "Critical", value: strategy.cob.critical, color: "var(--color-cyan)" },
-              { label: "Optional", value: strategy.cob.optional, color: "var(--color-warn)" },
-              { label: "Bypass", value: strategy.cob.bypass, color: "var(--color-danger)" },
-            ].map((c) => (
-              <div key={c.label} className="hud-frame p-6">
-                <p className="micro" style={{ color: c.color }}>
-                  {c.label}
-                </p>
-                <p className="mt-3" style={{ fontSize: "16px", lineHeight: 1.45 }}>
-                  {c.value}
-                </p>
-              </div>
-            ))}
-          </div>
-        </Reveal>
+        {cob.length > 0 && (
+          <Reveal>
+            <div className="mb-10 grid gap-4 sm:grid-cols-3">
+              {cob.map((c) => (
+                <div key={c.label} className="hud-frame p-6">
+                  <p className="micro" style={{ color: c.color }}>
+                    {c.label}
+                  </p>
+                  <p className="mt-3" style={{ fontSize: "16px", lineHeight: 1.45 }}>
+                    {c.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        )}
 
         <div className="grid gap-6 lg:grid-cols-3">
-          {strategy.phases.map((phase, i) => (
-            <Reveal key={phase.id} delay={i * 0.06} className="hud-frame overflow-hidden">
-              {phase.gifPath && hasVideo(phase.gifPath) && (
+          {(robot?.phases ?? []).map((phase, i) => (
+            <Reveal key={phase.label} delay={i * 0.06} className="hud-frame overflow-hidden">
+              {phase.clip && (
                 <div className="scanlines">
-                  <Video sources={video(phase.gifPath)} className="w-full" />
+                  <Video
+                    sources={{ mp4: phase.clip, poster: phase.clipPoster }}
+                    className="w-full"
+                  />
                 </div>
               )}
               <div className="border-t border-[var(--color-border)] p-5">
@@ -186,22 +189,22 @@ export default function RobotPage() {
         intro="The same models we design and iterate in — rendered in your browser."
       >
         <Reveal>
-          <CadViewer models={models} />
+          <CadViewer models={CAD_MODELS} />
         </Reveal>
       </Section>
 
       <Section
         eyebrow="Design Evolution"
         title="What we changed, and why"
-        intro="Six generations of intake and shooter. Each entry records what changed and what it bought us."
+        intro="Each entry records what changed and what it bought us."
       >
         <ol className="flex flex-col gap-4">
           {evolution.map((v, i) => (
             <Reveal as="li" key={`${v.subsystem}-${v.version}`} delay={i * 0.03}>
               <article className="hud-frame grid gap-6 p-6 md:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
-                {v.photos.length > 0 && (
+                {(v.photos ?? []).length > 0 && (
                   <div className="grid grid-cols-2 gap-2 self-start">
-                    {v.photos.map((p) => (
+                    {(v.photos ?? []).map((p: string) => (
                       <Image
                         key={p}
                         src={p}

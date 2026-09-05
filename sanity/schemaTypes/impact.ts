@@ -27,6 +27,7 @@ export default defineType({
       fields: counts(),
     }),
     defineField({ name: "recapClip", title: "Season recap clip", type: "file", description: "MP4. No GIFs." }),
+    defineField({ name: "recapPoster", title: "Recap still frame", type: "image" }),
   ],
   preview: { prepare: () => ({ title: "Outreach totals" }) },
 });

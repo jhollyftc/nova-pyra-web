@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { team } from "@/lib/content";
 
 const NAV = [
   { href: "/robot", label: "Robot" },
@@ -14,7 +13,7 @@ const NAV = [
   { href: "/awards", label: "Awards" },
 ];
 
-export default function SiteHeader() {
+export default function SiteHeader({ teamNumber }: { teamNumber: string }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -47,7 +46,7 @@ export default function SiteHeader() {
             NOVA PYRA
           </span>
           <span className="micro hidden sm:inline" style={{ letterSpacing: "0.2em" }}>
-            {team.number}
+            {teamNumber}
           </span>
         </Link>
 
