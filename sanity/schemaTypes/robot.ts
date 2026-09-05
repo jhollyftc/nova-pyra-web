@@ -1,11 +1,71 @@
 import { defineField, defineType } from "sanity";
 
+/**
+ * One document per season's robot.
+ *
+ * Was a singleton, which quietly assumed the team would only ever have one
+ * machine. Making it a collection is what lets INTO THE DEEP, DECODE and next
+ * season's BIOBUZZ robot all live on the site, with the current one leading.
+ */
 export default defineType({
   name: "robot",
-  title: "The robot",
+  title: "Robot",
   type: "document",
   fields: [
     defineField({ name: "name", title: "Robot name", type: "string", validation: (r) => r.required() }),
+    defineField({
+      name: "slug",
+      title: "URL slug",
+      type: "slug",
+      options: { source: "name", maxLength: 60 },
+      description: "Its address on the site, e.g. /robot/drakos.",
+      validation: (r) => r.required(),
+    }),
+    defineField({
+      name: "season",
+      title: "Season",
+      type: "string",
+      description: "e.g. 2025–2026",
+      validation: (r) => r.required(),
+    }),
+    defineField({
+      name: "gameName",
+      title: "Game",
+      type: "string",
+      description: "e.g. DECODE, INTO THE DEEP, BIOBUZZ",
+      validation: (r) => r.required(),
+    }),
+    defineField({
+      name: "isCurrent",
+      title: "This is the current robot",
+      type: "boolean",
+      description:
+        "Exactly one robot should have this on. It is the one /robot shows by " +
+        "default and the one named in the front page telemetry.",
+      initialValue: false,
+    }),
+    defineField({
+      name: "status",
+      title: "Status",
+      type: "string",
+      options: {
+        list: [
+          { title: "Competed", value: "competed" },
+          { title: "In development", value: "in-development" },
+        ],
+        layout: "radio",
+      },
+      initialValue: "competed",
+      description:
+        "An in-development robot can be published with only a name and a game — " +
+        "specs and subsystems can be filled in as the season goes.",
+    }),
+    defineField({
+      name: "order",
+      title: "Order",
+      type: "number",
+      description: "Newest first. Lower numbers appear earlier in the season switcher.",
+    }),
     defineField({
       name: "philosophy",
       title: "Design philosophy",
@@ -57,5 +117,12 @@ export default defineType({
       ],
     }),
   ],
-  preview: { select: { title: "name" }, prepare: ({ title }) => ({ title: `Robot — ${title ?? ""}` }) },
+  orderings: [{ title: "Newest first", name: "order", by: [{ field: "order", direction: "asc" }] }],
+  preview: {
+    select: { title: "name", season: "season", game: "gameName", current: "isCurrent" },
+    prepare: ({ title, season, game, current }) => ({
+      title: current ? `${title} (current)` : title,
+      subtitle: [season, game].filter(Boolean).join(" · "),
+    }),
+  },
 });

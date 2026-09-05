@@ -27,7 +27,6 @@ import post from "./post";
 export const SINGLETONS = [
   "siteSettings",
   "teamStory",
-  "robot",
   "engineeringProcess",
   "impact",
   "season",

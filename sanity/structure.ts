@@ -65,7 +65,8 @@ export const structure: StructureResolver = (S) =>
           S.list()
             .title("The robot")
             .items([
-              singleton(S, "robot", "Overview & strategy"),
+              // No longer a singleton: one document per season's robot.
+              S.documentTypeListItem("robot").title("Robots by season"),
               S.documentTypeListItem("subsystem").title("Subsystems"),
               S.documentTypeListItem("evolutionEntry").title("Design evolution"),
             ]),

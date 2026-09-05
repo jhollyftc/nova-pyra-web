@@ -21,18 +21,32 @@ export const settingsQuery = groq`*[_id == "siteSettings"][0]{
   socials, scouting
 }`;
 
-export const robotQuery = groq`*[_id == "robot"][0]{
-  name, philosophy, specs,
+/** The robot shown by default: whichever is flagged current, newest as a fallback. */
+export const currentRobotQuery = groq`*[_type == "robot"] | order(isCurrent desc, order asc)[0]{
+  _id, name, season, gameName, status, isCurrent, "slug": slug.current,
+  philosophy, specs,
   cobDescription, cobCritical, cobOptional, cobBypass,
   phases[]{ label, color, summary, ${fileUrl("clip")}, ${img("clipPoster", 900)} }
 }`;
 
-export const subsystemsQuery = groq`*[_type == "subsystem"] | order(order asc){
+export const robotBySlugQuery = groq`*[_type == "robot" && slug.current == $slug][0]{
+  _id, name, season, gameName, status, isCurrent, "slug": slug.current,
+  philosophy, specs,
+  cobDescription, cobCritical, cobOptional, cobBypass,
+  phases[]{ label, color, summary, ${fileUrl("clip")}, ${img("clipPoster", 900)} }
+}`;
+
+/** Just enough to build the season switcher. */
+export const robotListQuery = groq`*[_type == "robot"] | order(order asc){
+  "slug": slug.current, name, season, gameName, status, isCurrent
+}`;
+
+export const subsystemsQuery = groq`*[_type == "subsystem" && robot._ref == $robotId] | order(order asc){
   "id": slug.current, name, tagline, ${img("photo", 640)},
   hotspot, materials, motors, rationale, tradeoffs
 }`;
 
-export const evolutionQuery = groq`*[_type == "evolutionEntry"] | order(order asc){
+export const evolutionQuery = groq`*[_type == "evolutionEntry" && robot._ref == $robotId] | order(order asc){
   name, subsystem, version, dateRange, changes, result,
   "photos": photos[].asset->url
 }`;

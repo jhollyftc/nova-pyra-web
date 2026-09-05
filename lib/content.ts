@@ -188,8 +188,17 @@ export const getAwards = () => client.fetch<Award[]>(Q.awardsQuery);
 
 /* ── Robot ──────────────────────────────────────────────────────────── */
 
-type RobotDoc = {
+export type RobotSummary = {
+  slug: string;
   name: string;
+  season: string;
+  gameName: string;
+  status: "competed" | "in-development";
+  isCurrent: boolean;
+};
+
+export type RobotDoc = RobotSummary & {
+  _id: string;
   philosophy: string;
   specs: { label: string; value: string }[];
   cobDescription: string;
@@ -205,13 +214,27 @@ type RobotDoc = {
   }[];
 };
 
-export const getRobot = () => client.fetch<RobotDoc>(Q.robotQuery);
-export const getSubsystems = () => client.fetch<Subsystem[]>(Q.subsystemsQuery);
-export const getEvolution = () => client.fetch<EvolutionEntry[]>(Q.evolutionQuery);
+/** The robot flagged current, falling back to the first by order. */
+export const getRobot = () => client.fetch<RobotDoc>(Q.currentRobotQuery);
+
+export const getRobotBySlug = (slug: string) =>
+  client.fetch<RobotDoc | null>(Q.robotBySlugQuery, { slug });
+
+/** Every robot, for the season switcher. */
+export const getRobotList = () => client.fetch<RobotSummary[]>(Q.robotListQuery);
+
+// Subsystems and evolution entries belong to one robot, so they cannot be
+// fetched without knowing which.
+export const getSubsystems = (robotId: string) =>
+  client.fetch<Subsystem[]>(Q.subsystemsQuery, { robotId });
+
+export const getEvolution = (robotId: string) =>
+  client.fetch<EvolutionEntry[]>(Q.evolutionQuery, { robotId });
 
 /** Subsystems with a marker placed on the front-page robot photo. */
 export async function getSubsystemHotspots() {
-  const all = await getSubsystems();
+  const robot = await getRobot();
+  const all = robot ? await getSubsystems(robot._id) : [];
   return all.filter(
     (s): s is Subsystem & { hotspot: { x: number; y: number } } =>
       s.hotspot != null && typeof s.hotspot.x === "number",
@@ -257,7 +280,7 @@ export async function getSeasonTelemetry() {
   const [season, events, robot] = await Promise.all([
     client.fetch<{ gameName: string }>(Q.seasonQuery),
     client.fetch<SeasonEvent[]>(Q.seasonEventsQuery),
-    client.fetch<{ name: string }>(Q.robotQuery),
+    client.fetch<{ name: string }>(Q.currentRobotQuery),
   ]);
 
   const completed = events.filter((e) => e.status === "completed");
