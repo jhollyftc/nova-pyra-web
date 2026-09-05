@@ -24,6 +24,19 @@ const rajdhani = localFont({
   variable: "--font-rajdhani",
 });
 
+/**
+ * Re-fetch content at most once a minute.
+ *
+ * Without this, every page is prerendered once at build time and a Studio edit
+ * would never appear until someone pushed code — which would defeat the point
+ * of having a CMS. Applies to every nested route.
+ *
+ * A Sanity webhook hitting revalidatePath would make publishes instant rather
+ * than eventual; 60s is the simpler thing that works, and a team site does not
+ * need sub-minute propagation.
+ */
+export const revalidate = 60;
+
 /** Built from the CMS, so the title and description follow a tagline change. */
 export async function generateMetadata(): Promise<Metadata> {
   const s = await getSettings();

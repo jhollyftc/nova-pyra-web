@@ -15,9 +15,25 @@ export default defineType({
       description: "Where sponsorship enquiries go. The call-to-action mails this address.",
       validation: (r) => r.required().email(),
     }),
+    defineField({
+      name: "donateUrl",
+      title: "Online donation URL",
+      type: "url",
+      description:
+        "The Hack Club Bank donation page for the team. Embedded directly on the page so " +
+        "people can give without leaving the site, with a plain link as a fallback. Leave " +
+        "empty to hide the online option entirely.",
+    }),
     defineField({ name: "fiscalSponsor", title: "Fiscal sponsor", type: "string" }),
     defineField({ name: "checkPayableTo", title: "Cheques payable to", type: "string" }),
     defineField({ name: "taxNote", title: "Tax note", type: "string" }),
+    defineField({
+      name: "sponsorLetter",
+      title: "Sponsorship form (PDF)",
+      type: "file",
+      options: { accept: ".pdf" },
+      description: "The printable form to enclose with a cheque.",
+    }),
     defineField({
       name: "whatItFunds",
       title: "What sponsorship funds",

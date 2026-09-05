@@ -63,7 +63,9 @@ export const sponsorsQuery = groq`*[_type == "sponsor"] | order(order asc, name 
 }`;
 
 export const sponsorshipQuery = groq`*[_id == "sponsorship"][0]{
-  intro, contactEmail, fiscalSponsor, checkPayableTo, taxNote, whatItFunds, tiers
+  intro, contactEmail, donateUrl, fiscalSponsor, checkPayableTo, taxNote,
+  "sponsorLetter": sponsorLetter.asset->url,
+  whatItFunds, tiers
 }`;
 
 export const storyQuery = groq`*[_id == "teamStory"][0]{

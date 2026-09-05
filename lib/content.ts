@@ -332,6 +332,8 @@ export async function getSponsorship() {
     client.fetch<{
       intro: string;
       contactEmail: string;
+      donateUrl: string | null;
+      sponsorLetter: string | null;
       fiscalSponsor: string;
       checkPayableTo: string;
       taxNote: string;
@@ -346,6 +348,8 @@ export async function getSponsorship() {
   return {
     intro: doc?.intro ?? "",
     contactEmail: doc?.contactEmail ?? "",
+    donateUrl: doc?.donateUrl ?? null,
+    sponsorLetter: doc?.sponsorLetter ?? null,
     fiscalSponsor: doc?.fiscalSponsor ?? "",
     checkPayableTo: doc?.checkPayableTo ?? "",
     taxNote: doc?.taxNote ?? "",

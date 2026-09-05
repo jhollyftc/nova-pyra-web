@@ -4,6 +4,7 @@ import PageHeader from "@/components/PageHeader";
 import Section from "@/components/Section";
 import Reveal from "@/components/Reveal";
 import StatCounter from "@/components/StatCounter";
+import DonateEmbed from "@/components/DonateEmbed";
 import {
   getAwards,
   getImpactStats,
@@ -134,6 +135,18 @@ export default async function SponsorUsPage() {
         </ul>
       </Section>
 
+      {s.donateUrl && (
+        <Section
+          eyebrow="Donate online"
+          title="Give now"
+          intro="Any amount helps. Card payments are processed by Hack Club Bank, our fiscal sponsor."
+        >
+          <Reveal>
+            <DonateEmbed url={s.donateUrl} teamName={settings.teamName} />
+          </Reveal>
+        </Section>
+      )}
+
       <Section eyebrow="Get in touch" title="Talk to us">
         <Reveal>
           <div className="hud-frame flex flex-col items-start gap-6 p-8">
@@ -171,6 +184,24 @@ export default async function SponsorUsPage() {
                   <span className="text-[var(--color-text-muted)]">
                     — our fiscal sponsor
                   </span>
+                </dd>
+              </div>
+              <div>
+                <dt className="micro">Sponsorship form</dt>
+                <dd className="mt-1.5" style={{ fontSize: "15px" }}>
+                  {s.sponsorLetter ? (
+                    <a
+                      href={s.sponsorLetter}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline underline-offset-4"
+                      style={{ color: "var(--color-gold)" }}
+                    >
+                      Download the form (PDF)
+                    </a>
+                  ) : (
+                    <span className="text-[var(--color-text-muted)]">Ask us for a copy</span>
+                  )}
                 </dd>
               </div>
               <div>
