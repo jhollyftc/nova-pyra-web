@@ -13,11 +13,17 @@ export default function StatCounter({
   label,
   suffix = "",
   duration = 1800,
+  compact = false,
 }: {
   value: number;
   label: string;
   suffix?: string;
   duration?: number;
+  /**
+   * Hero variant: sized against the shorter viewport axis so the row still fits
+   * above the fold on a short screen. The standalone pages use the default.
+   */
+  compact?: boolean;
 }) {
   const reduced = useReducedMotion();
   const [counted, setCounted] = useState(0);
@@ -44,12 +50,14 @@ export default function StatCounter({
   }, [inView, value, duration, reduced]);
 
   return (
-    <div ref={ref} className="flex flex-col items-center gap-2">
+    <div ref={ref} className={`flex flex-col items-center ${compact ? "gap-1" : "gap-2"}`}>
       <div
         className="glow-text text-[var(--color-accent)] leading-none tabular-nums"
         style={{
           fontFamily: "var(--font-display)",
-          fontSize: "clamp(38px, 7vw, 76px)",
+          fontSize: compact
+            ? "clamp(24px, min(6vw, 6.4vh), 60px)"
+            : "clamp(38px, 7vw, 76px)",
           fontWeight: 900,
         }}
       >
@@ -60,7 +68,7 @@ export default function StatCounter({
         className="text-center leading-tight text-[var(--color-text-secondary)]"
         style={{
           fontFamily: "var(--font-body)",
-          fontSize: "clamp(12px, 1.2vw, 15px)",
+          fontSize: compact ? "clamp(9px, 1.35vh, 13px)" : "clamp(12px, 1.2vw, 15px)",
           letterSpacing: "0.12em",
           textTransform: "uppercase",
         }}

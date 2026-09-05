@@ -1,6 +1,4 @@
 import Section from "@/components/Section";
-import Reveal from "@/components/Reveal";
-import StatCounter from "@/components/StatCounter";
 import Hero from "@/components/home/Hero";
 import RobotHotspots from "@/components/home/RobotHotspots";
 import ProcessRing from "@/components/home/ProcessRing";
@@ -47,19 +45,13 @@ export default async function HomePage() {
         teamName={settings.teamName}
         teamNumber={settings.teamNumber}
         location={settings.location}
+        stats={[
+          { value: stats?.peopleReached ?? 0, label: "People reached" },
+          { value: stats?.volunteerHours ?? 0, label: "Volunteer hours" },
+          { value: awards.length, label: "Awards won" },
+          { value: stats?.teamsMentored ?? 0, label: "Teams mentored" },
+        ]}
       />
-
-      {/* Proof, placed early: the most persuasive screen for sponsors and judges alike. */}
-      <section className="shell py-[calc(var(--section-gap)/2)]">
-        <Reveal>
-          <div className="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-4">
-            <StatCounter value={stats?.peopleReached ?? 0} label="People reached" />
-            <StatCounter value={stats?.volunteerHours ?? 0} label="Volunteer hours" />
-            <StatCounter value={awards.length} label="Awards won" />
-            <StatCounter value={stats?.teamsMentored ?? 0} label="Teams mentored" />
-          </div>
-        </Reveal>
-      </section>
 
       <Section
         eyebrow="The Robot"

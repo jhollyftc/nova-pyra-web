@@ -15,6 +15,8 @@ type Props = {
   /** Decorative loops get aria-hidden; anything meaningful must pass a label. */
   label?: string;
   priority?: boolean;
+  /** Merged after the blend mode, so callers can cap width and height. */
+  style?: React.CSSProperties;
   /**
    * Screen-blend the clip so a pure-black background drops out.
    *
@@ -40,10 +42,10 @@ type Props = {
  * Under `prefers-reduced-motion: reduce` this degrades to the poster frame, so
  * motion-sensitive visitors get a still image rather than a looping animation.
  */
-export default function Video({ sources, className, label, priority, blend }: Props) {
+export default function Video({ sources, className, label, priority, blend, style }: Props) {
   const reduced = useReducedMotion();
   // The poster carries the same black background, so it blends too.
-  const blendStyle = blend ? { mixBlendMode: "screen" as const } : undefined;
+  const blendStyle = { ...(blend ? { mixBlendMode: "screen" as const } : {}), ...style };
 
   if (reduced && sources.poster) {
     // The poster is a fixed asset already sized by the CMS, and this component
