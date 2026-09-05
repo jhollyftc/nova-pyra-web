@@ -10,8 +10,33 @@ no code, no terminal, no deploy.
 Sign in with the Sanity account you were invited with. It works on a phone, though a laptop is
 easier for anything with photos.
 
-Changes go live within about a minute of pressing **Publish**. Nothing is live until you publish —
-drafts are private, so it is safe to start something and come back to it.
+Nothing is live until you publish — drafts are private, so it is safe to start something and come
+back to it.
+
+Published changes appear **within 15 minutes**. To make them appear in seconds instead, wire up the
+webhook once — see below.
+
+### Making publishes instant (one-time, 2 minutes)
+
+At [sanity.io/manage](https://sanity.io/manage) -> the project -> **API** -> **Webhooks** -> Create:
+
+| Field | Value |
+|---|---|
+| Name |  |
+| URL |  |
+| Dataset |  |
+| Trigger on | Create, Update, Delete |
+| HTTP method | POST |
+| API version |  |
+| Secret | the value of  in Vercel -> Settings -> Environment Variables |
+
+The endpoint rejects anything without a valid signature, so the secret has to match exactly. Until
+this exists the site still updates, just on the 15-minute window.
+
+**Why the window is 15 minutes and not 1:** every time it expires, the next visitor's page load
+re-runs that page's Sanity queries. A full render of the site costs 42 queries, and the free plan
+allows 250,000 a month — so a 1-minute window could be exhausted by search-engine crawlers alone.
+The webhook removes the trade-off entirely: instant publishes *and* near-zero query usage.
 
 ## What lives where
 
