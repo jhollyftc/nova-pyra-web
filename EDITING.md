@@ -1,97 +1,103 @@
 # Editing the site
 
-Until the CMS is in (see the bottom of this file), all content lives as JSON in `content/`.
-Editing is: change a file, check it locally, deploy.
+All content lives in **Sanity**. You edit it in a browser, publish, and the site updates —
+no code, no terminal, no deploy.
 
-## The three commands
+## The editor
 
-```bash
-npm run dev                  # http://localhost:3000 — live-reloads as you save
-npm run build                # catches mistakes before they reach the site
-npx vercel deploy --prod     # pushes it live to nova-pyra-web.vercel.app
-```
+**https://nova-pyra-web.vercel.app/studio**
 
-You do not need `npm run dev` running to deploy, but it is the fastest way to see a change.
+Sign in with the Sanity account you were invited with. It works on a phone, though a laptop is
+easier for anything with photos.
 
-## Where things live
+Changes go live within about a minute of pressing **Publish**. Nothing is live until you publish —
+drafts are private, so it is safe to start something and come back to it.
 
-| To change… | Edit |
+## What lives where
+
+The Studio's left-hand menu is grouped by what you are trying to do, not by how the data is stored.
+
+| To change… | Go to |
 |---|---|
-| Team name, number, tagline, season | `content/config.json` |
-| Robot name, specs, subsystems, hotspot positions | `content/robot/specs.json` |
-| Game strategy, AUTO/TELEOP/ENDGAME | `content/robot/strategy.json` |
-| Design evolution entries | `content/robot/evolution.json` |
-| Engineering design process steps | `content/process/edp.json` |
-| Problem → solution cards | `content/process/problems.json` |
-| Test data charts | `content/process/testing.json` |
-| Outreach events and photos | `content/outreach/events.json` |
-| People-reached / hours / schools numbers | `content/outreach/stats.json` |
-| **Sponsor list, tiers, logos** | `content/outreach/sponsors.json` |
-| **Sponsorship pitch, benefits, contact email** | `content/sponsorship.json` |
-| Students and mentors | `content/story/members.json` |
-| Awards | `content/story/awards.json` |
-| Team timeline | `content/story/timeline.json` |
-| Founding story, mission, values, subteams, partners | `content/story/team.json` |
-| Season description and strategy | `content/season/overview.json` |
-| Season goals and progress bars | `content/season/goals.json` |
-| Event results (rank, record, awards) | `content/season/events.json` |
+| Add an outreach event, with photos | **Outreach → Events** |
+| People reached, volunteer hours, schools | **Outreach → Totals** |
+| Write a season update | **Outreach → Season updates** |
+| Add or edit a sponsor, upload a logo | **Sponsors → Sponsor list** |
+| Sponsorship pitch, tier benefits, contact email | **Sponsors → Pitch & tier benefits** |
+| Add a competition result | **Competition → Results** |
+| Season goals and progress bars | **Competition → This season** |
+| Awards | **Competition → Awards** |
+| Robot specs, strategy, match clips | **The robot → Overview & strategy** |
+| A subsystem's description or marker position | **The robot → Subsystems** |
+| Design evolution entries | **The robot → Design evolution** |
+| Design cycle, engineering portfolio PDF | **Engineering → Process & portfolio** |
+| Problem → solution cards | **Engineering → Problem → solution** |
+| Test data charts | **Engineering → Test data** |
+| Students and mentors | **The team → People** |
+| Founding story, values, subteams, partners | **The team → Story, values & partners** |
+| Team timeline | **The team → Timeline** |
+| Team name, tagline, logo, social links | **Site settings** |
 
-Every file opens with an `_instructions` key explaining its own fields. Read it before editing.
+Every field has a description under it explaining what it is for. Read those first.
 
-**The season record and Worlds rank in the hero are not typed anywhere** — they are summed from
-`content/season/events.json`. Add an event there and the hero updates itself.
+## Things worth knowing
 
-## Rules that will bite you if you break them
+**The hero's record and Worlds rank are not typed anywhere.** They are added up from
+**Competition → Results**. Add an event with its win-loss-tie record and the front page updates
+itself.
 
-**JSON is strict.** No trailing comma after the last item in a list, all strings in double quotes.
-If the site won't start, that is almost always why — `npm run build` will point at the line.
+**Student names are first name + last initial** — "Hailey V." The editor will refuse a full
+surname. This is deliberate: it is a public site and most of the team are minors.
 
-**Student names stay first-name + last-initial.** That is a deliberate privacy convention for
-minors, inherited from the pit app. Do not add surnames.
+**Photos are resized automatically.** Upload straight from a phone; the site serves a correctly
+sized, modern-format version. You do not need to shrink anything first.
 
-**Never edit anything in `public/`.** It is generated. Your changes will be wiped the next time
-anyone runs `npm run media`.
+**Sponsor logos sit on a dark tile with no white box behind them.** So:
 
-## Adding images
+- Best: ask the sponsor for a **transparent PNG** or an **SVG**.
+- If all you have is a logo on a white background, clean it first:
+  ```bash
+  node scripts/clean-logo.mjs path/to/logo.jpg
+  ```
+  That writes `logo-clean.png` beside it — upload that. It removes the background without
+  punching holes in white lettering inside the logo, trims the empty margin, and warns if the
+  result is too dark to read on the tile.
 
-Put the original in `assets-src/`, then:
+**The 3D models are not in the CMS.** They are large files that change once a season and live in
+`public/` — replacing one is a code change.
 
-```bash
-npm run media          # processes everything; needs ffmpeg installed
-npm run check:assets   # with a server running, confirms nothing 404s
-```
+## Adding someone to the editor
 
-Reference it from the JSON by its path under `public/` — e.g. `/images/team-photo.jpg`.
+sanity.io/manage → your project → **Members** → Invite.
 
-**Adding a sponsor logo:** drop the file into `public/images/sponsors/`, run `npm run media`, and
-the pipeline flood-fills its background out, trims it, and converts it to PNG. Then point the
-sponsor's `logo` at the `.png`. Watch the output — it warns if a logo is too dark to read on the
-tile. A transparent PNG or an SVG is always the better thing to ask a sponsor for.
+Be aware of a real limitation: on Sanity's **free plan there are only two roles, Administrator and
+Viewer**. Viewer is read-only, so anyone who needs to edit *anything* has to be an Administrator,
+and can therefore change *everything*. The grouped menu is a convenience, not a lock.
 
-**Filenames are lowercased automatically.** Do not fight it: the site is served from Linux, where
-`Logo.PNG` and `logo.png` are different files, and mixed casing was already breaking twelve
-sponsor logos.
+In practice: invite people you trust, and rely on the safety nets — every document keeps its full
+history, so any change can be reviewed and reverted. If you later need "students can only edit
+their own profile", that requires Sanity's paid Growth plan.
 
-## Deploying
+## Backing up
 
-```bash
-npx vercel deploy --prod
-```
-
-Takes about two minutes. If it fails, run `npm run build` locally — the error will be clearer.
-
-Commit your changes too, so the repo matches what is live:
+Worth doing once a season, and before anything risky:
 
 ```bash
-git add -A
-git commit -m "Update sponsor list"
+npx sanity dataset export production backup.tar.gz
 ```
 
-## This is temporary
+## For developers
 
-The plan is for content to move into **Sanity**, giving a browser-based editor at `/studio` so
-students can add an outreach event or update their own profile without touching JSON, git, or a
-terminal. `lib/content.ts` was built as the single boundary for exactly that reason: nothing else
-in the codebase reads these files, so the swap does not touch any page or component.
+Code changes still go through git:
 
-Until then, edits go through this file and through you.
+```bash
+npm run dev            # http://localhost:3000
+npm run build          # must pass before pushing
+npm run check:assets   # against a running server; catches broken images
+git push               # deploys automatically, ~1 minute
+```
+
+`--webpack` is required on both dev and build — see the README for why.
+
+Content is read only through `lib/content.ts`, which is the single boundary between the site and
+Sanity. Nothing else queries the CMS directly; keep it that way.

@@ -1,7 +1,0 @@
-{
-  "_instructions": "Current season overview. Update 'gameName' and 'description' at the start of each season.",
-  "gameName": "DECODE",
-  "gameYear": "2025–2026",
-  "description": "DECODE is a fast-paced alliance challenge where robots shoot and sort spherical \"artifacts\" into alliance-specific goals to score points and build patterns.",
-  "strategy": "Using our COB framework, we prioritize Classifying Artifacts & Parking (Critical), Double Park (Optional), and bypass Score Depot & Pattern when not beneficial. Our high-inertia flywheel shooter and custom intake enable rapid 3-ball cycles. With 7 autonomous paths and the ability to shoot from any launch line, we adapt to any alliance and maximize scoring in every phase."
-}

@@ -7,10 +7,9 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "media": "node scripts/transcode-media.mjs",
     "check:assets": "node scripts/check-assets.mjs",
-    "import:content": "node scripts/import-content.mjs",
-    "studio": "sanity dev"
+    "studio": "sanity dev",
+    "clean-logo": "node scripts/clean-logo.mjs"
   },
   "dependencies": {
     "@google/model-viewer": "^4.2.0",

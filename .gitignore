@@ -35,3 +35,11 @@ yarn-error.log*
 # `npm run media` processes, and they exist nowhere else.
 
 .vercel
+
+# Generated staging assets for the one-time Sanity import. Sanity now serves
+# every image and clip from its own CDN, so these are no longer shipped.
+# public/*.glb and public/draco/ ARE committed — the 3D viewer loads them
+# directly, and they are too large to be worth putting through the CMS.
+/public/images
+/public/media
+/public/notebook.pdf

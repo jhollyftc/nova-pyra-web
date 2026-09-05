@@ -1,7 +1,7 @@
 # Nova Pyra — team website
 
 The public site for **FIRST Tech Challenge Team 25619 Nova Pyra**, Mandeville, Louisiana.
-Target domain: **novapyra.app**.
+Live at **https://nova-pyra-web.vercel.app**; target domain **novapyra.app**.
 
 It exists to do three things: recruit sponsors, give judges a linkable home for the engineering
 work, and act as an outreach hub the team can publish to themselves.
@@ -10,70 +10,84 @@ work, and act as an outreach hub the team can publish to themselves.
 
 ```bash
 npm install
-npm run dev      # http://localhost:3000
+npm run dev            # http://localhost:3000
+npm run build          # must pass before pushing
+npm run check:assets   # against a running server; catches broken images
 ```
+
+Needs `.env.local` — copy `.env.local.example` and fill in the Sanity project id.
 
 **`--webpack` is required on both `dev` and `build`, not optional.** Tailwind is pinned to exactly
 4.0.3 and its toolchain breaks under Turbopack on Node v24; see the pinned `overrides` in
 `package.json`. If a build dies with `TypeError: Cannot convert undefined or null to object` in
-`@tailwindcss/postcss`, check that `@tailwindcss/node` resolved to 4.0.14 and not a 4.3.x.
+`@tailwindcss/postcss`, check that `@tailwindcss/node` resolved to 4.0.14 and not a 4.3.x — the
+caret range floats it otherwise, and that mismatch crashes the PostCSS plugin.
+
+Pushing to `main` deploys to production automatically, in about a minute.
 
 ## Layout
 
 | Path | What it is |
 |---|---|
 | `app/` | Routes. One page per section, all statically prerendered. |
+| `app/studio/` | The embedded Sanity Studio. |
 | `components/` | Shared UI. `components/home/` holds the front-page bands. |
-| `content/` | All copy and data, as JSON. Every file carries an `_instructions` key. |
-| `lib/content.ts` | **The only boundary between the site and its content.** |
-| `assets-src/` | Team-supplied original photos, before processing. |
-| `public/` | Generated — see below. Committed, because Vercel cannot rebuild it. |
-| `scripts/` | The media pipeline and the asset checker. |
+| `sanity/` | Schemas, Studio structure, client. |
+| `lib/content.ts` | **The only boundary between the site and Sanity.** |
+| `lib/queries.ts` | GROQ queries, one per page's needs. |
+| `public/` | Only the GLB models and their Draco decoder. |
+| `scripts/` | The asset checker and the sponsor-logo cleaner. |
 
 ### Two rules worth keeping
 
-**Nothing imports a JSON file directly.** Every read goes through an accessor in `lib/content.ts`.
-That indirection is what will let Sanity drop in without touching a single component.
+**Nothing queries Sanity directly.** Every read goes through an accessor in `lib/content.ts`. That
+indirection is what let the whole site move from JSON files to a CMS without restructuring a single
+page — only the accessors became async.
 
-**Every asset path goes through `asset()` in that same file**, which lowercases it. The content
-JSON inherited mixed casing from the pit app (`/images/Sponsors/MO.png`); Windows does not care and
-Vercel's Linux hosts return 404. Normalising centrally means new content cannot reintroduce it.
+**Images are projected to plain URLs in `lib/queries.ts`**, not returned as Sanity refs, so
+components receive strings and stay unaware of where content comes from.
 
-## Media
+## Content
 
-`public/` is generated from `../ftc-pit-app/public` plus `assets-src/`:
+Everything is edited at [/studio](https://nova-pyra-web.vercel.app/studio) — see
+[EDITING.md](EDITING.md), which is written for the students and mentors who use it.
 
-```bash
-npm run media          # needs ffmpeg on PATH
-npm run check:assets   # against a running server; PORT=3111 to change port
-```
+Content was migrated from the pit app's JSON in September 2026 (108 documents, 60 assets). The
+importer, the media-transcoding pipeline and the original JSON are in git history if a dataset ever
+needs re-seeding; `npx sanity dataset export` is the supported backup route.
 
-The pit app's assets are 364 MB, 303 MB of it in GIFs (one is 42 MB) — fine for a kiosk on local
-disk, unusable on the web. The pipeline transcodes every GIF to MP4 + WebM + a poster frame, cuts
-the studio background from the robot photo *only if it is not already transparent*, and lowercases
-every filename. Result: **85 MB**. Do not copy assets across by hand.
+The CMS resizes and reformats every uploaded image on the fly, which is what stops the original
+asset problem recurring — the pit app's `public/` was 364 MB, 303 MB of it GIFs, one of them 42 MB,
+all of which had to be transcoded by hand before it could go on the web.
 
-GLB models and the 16 MB engineering notebook are committed but never load on page view — the 3D
-viewer sits behind an explicit button.
+## Things that are deliberate
 
-## Before this goes live
+- **The hero logo has no entrance animation.** It is screen-blended so its black background drops
+  out, and `mix-blend-mode` only blends against the nearest ancestor stacking context — any
+  wrapper with opacity or a transform traps the blend and the black box becomes visible.
+- **CAD models live in `public/`, not the CMS.** 6.9–16.5 MB binaries that change once a season and
+  load only behind an explicit button, so they never affect page weight.
+- **Test charts state "higher/lower is better" explicitly.** Two of the three measure things where
+  lower is better; without the label, falling bars read as declining performance.
+- **Every animation has a `prefers-reduced-motion` path.** Videos fall back to their poster frame.
 
-- [ ] **Confirm the sponsorship contact address.** `content/sponsorship.json` still uses
-      `hello@novapyra.org`, inherited and unverified. The sponsor CTA mails it.
-- [ ] **Sustainer and Firestarter list identical benefits** — transcribed faithfully from
-      novapyra.org/sponsor-us.html, but it gives a $500 sponsor no reason to give $1,000.
-- [ ] The Onshape CAD link in the pit app is still the placeholder `your-doc-id`, so it is omitted
-      from the footer. Add the real one.
-- [ ] Check every route on a phone. The layouts are written for 360px–2560px but have not been
-      eyeballed.
+## Known limitations
+
+- **Sanity's free plan has two roles: Administrator and Viewer.** Viewer is read-only, so every
+  editor is an administrator and can change anything. The grouped Studio menu is a convenience,
+  not a permission boundary. Document history makes mistakes recoverable; real per-user
+  permissions need the paid Growth plan.
+- **No route has been checked on a physical phone.** Layouts are written for 360px–2560px but have
+  not been eyeballed on a device.
+- Stat counters server-render as `0` and count up on view, so a scraper without JS sees zeros.
 
 ## Not yet built
 
-Sanity CMS (`/studio`, schemas, the one-time importer) — the content layer is shaped for it.
-The DNS cutover to the `novapyra.app` apex. A season blog.
+The DNS cutover to the `novapyra.app` apex. A public page for season updates — the `post` schema
+exists and is editable, but nothing renders it yet.
 
 ## Related repos
 
-`ftc-pit-app` is the source of the content and the design tokens. It is a **1920×1080 Electron
+`ftc-pit-app` is the origin of the content and the design tokens. It is a **1920×1080 Electron
 kiosk** and is deliberately untouched by this project — it has to keep working offline at
-competitions.
+competitions, and still reads its own local JSON.

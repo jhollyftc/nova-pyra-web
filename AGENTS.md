@@ -13,9 +13,11 @@ Heed deprecation notices.
   component.
 - Tailwind classes are for layout, borders and spacing. Typography uses inline `style={{}}` with
   `clamp()`, matching the pattern established in `ftc-pit-app`.
-- Content lives in `content/` as typed JSON behind `lib/content.ts`. Nothing imports a JSON file
-  directly — this indirection is what lets Phase 2 swap in Sanity without touching any component.
+- Content lives in **Sanity**, read only through `lib/content.ts`. Nothing queries Sanity directly.
+  Keep that boundary — it is what let the site move from JSON files to a CMS without restructuring
+  a single page.
 - Every animation must have a `prefers-reduced-motion: reduce` path. Use the `useReducedMotion`
   hook from `framer-motion`.
 - Media: no GIFs. Video goes through `components/Video.tsx`, which handles posters and reduced
-  motion. Run `npm run media` to regenerate from the pit app's assets.
+  motion. Images come from the Sanity CDN and are resized on the fly — never commit media to
+  `public/`, which now holds only the GLB models.
