@@ -8,10 +8,14 @@ import type { Sponsor } from "@/lib/content";
 /**
  * Sponsor logo marquee.
  *
- * Departs from the plan's greyscale-to-colour treatment: the logos are a mix of
- * white-background JPEGs, transparent PNGs and SVGs, and this page exists to
- * recruit sponsors — who reasonably expect their brand shown properly. Each logo
- * therefore sits on a light chip in full colour.
+ * Logos sit on a dark brand tile in full colour, not on a white chip. That is
+ * only possible because scripts/process-logos.mjs flood-fills the background out
+ * of every raster first — the supplied files were mostly opaque white-background
+ * JPEGs, and the two SVGs are filled white, so on a light chip Netchex was
+ * invisible.
+ *
+ * Full colour rather than a greyscale-to-colour hover: this page exists to
+ * recruit sponsors, who reasonably expect their brand shown properly.
  *
  * Under reduced motion the marquee becomes a static wrapped grid.
  */
@@ -27,15 +31,16 @@ export default function SponsorWall({
   const chip = (s: Sponsor, key: string) => (
     <li
       key={key}
-      className="flex h-20 w-40 shrink-0 items-center justify-center rounded-md border border-[var(--color-border)] bg-white/90 p-3"
+      className="flex h-24 w-44 shrink-0 items-center justify-center rounded-md border border-[var(--color-border)] p-4 transition-colors"
+      style={{ background: "rgba(17, 115, 241, 0.05)" }}
     >
       <Image
         src={s.logo as string}
         alt={s.name}
-        width={160}
-        height={80}
+        width={176}
+        height={96}
         className="max-h-full w-auto object-contain"
-        sizes="160px"
+        sizes="176px"
       />
     </li>
   );

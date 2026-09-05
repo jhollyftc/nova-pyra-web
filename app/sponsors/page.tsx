@@ -34,14 +34,17 @@ export default function SponsorsPage() {
                 className="hud-frame flex flex-col gap-4 p-5"
               >
                 {s.logo && (
-                  <div className="flex h-24 w-full items-center justify-center rounded-md bg-white/90 p-3">
+                  <div
+                    className="flex h-28 w-full items-center justify-center rounded-md border border-[var(--color-border)] p-4"
+                    style={{ background: "rgba(17, 115, 241, 0.05)" }}
+                  >
                     <Image
                       src={s.logo}
                       alt={s.name}
-                      width={220}
-                      height={96}
+                      width={240}
+                      height={112}
                       className="max-h-full w-auto object-contain"
-                      sizes="220px"
+                      sizes="240px"
                     />
                   </div>
                 )}

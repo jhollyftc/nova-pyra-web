@@ -16,6 +16,7 @@ import { spawn } from "node:child_process";
 import { mkdir, readdir, copyFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import processLogos from "./process-logos.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.resolve(HERE, "../../ftc-pit-app/public");
@@ -200,6 +201,9 @@ async function main() {
   }
 
   await processLocalAssets();
+
+  // Last: sponsor logos need the originals already copied into public/.
+  await processLogos();
 
   await writeFile(path.join(OUT, "media", "manifest.json"), JSON.stringify(manifest, null, 2));
 

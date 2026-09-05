@@ -1,5 +1,5 @@
 {
-  "_instructions": "Sponsors list. 'tier' must be 'sustainer', 'firestarter', 'campfire', 'igniter', 'kindling', or 'former'. 'logo' is a /public path or null.",
+  "_instructions": "Sponsors list. 'tier' must be 'sustainer', 'firestarter', 'campfire', 'igniter', 'kindling', or 'former'. 'logo' is a /public path or null. Logos are normalised to transparent PNG by scripts/process-logos.mjs and sit directly on the dark tile; SVGs are left as vectors.",
   "sponsors": [
     {
       "id": "ddg",
@@ -12,28 +12,28 @@
       "id": "kelly-cook-foundation",
       "name": "Kelly Gene Cook Sr. Charitable Foundation",
       "tier": "sustainer",
-      "logo": "/images/Sponsors/cook_foundation.jpeg",
+      "logo": "/images/Sponsors/cook_foundation.png",
       "description": "Houston, TX foundation supporting STEM education and Nova Pyra's program development."
     },
     {
       "id": "northshore-oncology",
       "name": "Northshore Oncology Associates",
       "tier": "sustainer",
-      "logo": "/images/Sponsors/NorthshoreOconologyAssociates.jpeg",
+      "logo": "/images/Sponsors/NorthshoreOconologyAssociates.png",
       "description": "Covington, LA medical organization committed to supporting STEM and robotics in the local community."
     },
     {
       "id": "st-tammany-schools",
       "name": "St. Tammany Parish Schools",
       "tier": "sustainer",
-      "logo": "/images/Sponsors/stpsb.jpeg",
+      "logo": "/images/Sponsors/stpsb.png",
       "description": "Our school district, providing institutional support and resources that make our program possible at Mandeville Junior High."
     },
     {
       "id": "ryan-katherine-harvey",
       "name": "Ryan & Katherine Harvey",
       "tier": "sustainer",
-      "logo": "/images/Sponsors/RyanKatherineHarvey.jpg",
+      "logo": "/images/Sponsors/RyanKatherineHarvey.png",
       "description": "Mandeville, LA community supporters and dedicated Nova Pyra boosters."
     },
     {
@@ -110,7 +110,7 @@
       "id": "kidz-klub-house",
       "name": "Kidz Klub House",
       "tier": "campfire",
-      "logo": "/images/Sponsors/KidzKlubHouse_Logo.jpeg",
+      "logo": "/images/Sponsors/KidzKlubHouse_Logo.png",
       "description": "Mandeville, LA youth facility and community partner."
     },
     {

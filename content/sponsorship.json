@@ -1,7 +1,7 @@
 {
   "_instructions": "Sponsor tiers, benefits and donation details. Transcribed 2026-09-05 from the team's existing page at https://novapyra.org/sponsor-us.html — these are the team's real published commitments, not drafts. Note: Sustainer and Firestarter currently list identical benefits on that page; if that is an oversight, fix it here and on the old site together so the two never disagree.",
-  "contactEmail": "hello@novapyra.org",
-  "contactEmailVerified": false,
+  "contactEmail": "novapyra25619@gmail.com",
+  "contactEmailVerified": true,
   "fiscalSponsor": "Hack Club",
   "checkPayableTo": "Hack Club",
   "taxNote": "Your contribution may also be tax-deductible.",
@@ -54,11 +54,16 @@
     },
     {
       "id": "igniter",
-      "benefits": ["Thank you letter", "Name/logo on website"]
+      "benefits": [
+        "Thank you letter",
+        "Name/logo on website"
+      ]
     },
     {
       "id": "kindling",
-      "benefits": ["Thank you letter"]
+      "benefits": [
+        "Thank you letter"
+      ]
     }
   ]
 }

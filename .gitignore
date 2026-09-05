@@ -33,3 +33,5 @@ yarn-error.log*
 #
 # /assets-src is also committed: it holds the team-supplied originals that
 # `npm run media` processes, and they exist nowhere else.
+
+.vercel
