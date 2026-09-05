@@ -36,6 +36,19 @@ export default defineType({
     }),
     defineField({ name: "teamPhoto", title: "Team photo", type: "image", options: { hotspot: true } }),
     defineField({
+      name: "scouting",
+      title: "Team record links",
+      description:
+        "Third-party sites that carry the team's official results. Useful to judges and to " +
+        "other teams scouting us.",
+      type: "object",
+      fields: [
+        defineField({ name: "ftcEvents", title: "FTC Events", type: "url" }),
+        defineField({ name: "ftcScout", title: "FTCScout", type: "url" }),
+        defineField({ name: "ftcStats", title: "FTCStats", type: "url" }),
+      ],
+    }),
+    defineField({
       name: "socials",
       title: "Social links",
       type: "object",

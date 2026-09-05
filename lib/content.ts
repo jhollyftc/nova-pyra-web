@@ -142,6 +142,12 @@ export type Settings = {
     github?: string;
     cad?: string;
   } | null;
+  /** Third-party sites carrying the team's official results. */
+  scouting: {
+    ftcEvents?: string;
+    ftcScout?: string;
+    ftcStats?: string;
+  } | null;
 };
 
 export type TestingChart = {

@@ -30,6 +30,15 @@ export default function SiteFooter({ settings }: { settings: Settings }) {
     { href: settings.socials?.cad, label: "CAD (Onshape)" },
   ].filter((l): l is { href: string; label: string } => Boolean(l.href));
 
+  // Third-party sites carrying the team's official results — the audience for
+  // these is judges and other teams scouting us, not casual visitors.
+  // The Orange Alliance is deliberately absent: it is no longer maintained.
+  const scouting = [
+    { href: settings.scouting?.ftcEvents, label: "FTC Events" },
+    { href: settings.scouting?.ftcScout, label: "FTCScout" },
+    { href: settings.scouting?.ftcStats, label: "FTCStats" },
+  ].filter((l): l is { href: string; label: string } => Boolean(l.href));
+
   return (
     <footer className="mt-[var(--section-gap)] border-t border-[var(--color-border)] bg-black">
       <div className="shell grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
@@ -63,6 +72,16 @@ export default function SiteFooter({ settings }: { settings: Settings }) {
                 </Link>
               </li>
             ))}
+            <li className="pt-2">
+              <a
+                href="https://firstinspires.org/ftc"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={linkStyle}
+              >
+                Start an FTC Team
+              </a>
+            </li>
           </ul>
         </div>
 
@@ -76,17 +95,22 @@ export default function SiteFooter({ settings }: { settings: Settings }) {
                 </a>
               </li>
             ))}
-            <li>
-              <a
-                href="https://firstinspires.org/ftc"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={linkStyle}
-              >
-                Start an FTC Team
-              </a>
-            </li>
           </ul>
+
+          {scouting.length > 0 && (
+            <>
+              <h2 className="micro mb-4 mt-8">Our record</h2>
+              <ul className="space-y-2">
+                {scouting.map((l) => (
+                  <li key={l.href}>
+                    <a href={l.href} target="_blank" rel="noopener noreferrer" style={linkStyle}>
+                      {l.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
 
         <div>

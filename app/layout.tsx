@@ -25,17 +25,20 @@ const rajdhani = localFont({
 });
 
 /**
- * Re-fetch content at most once a minute.
+ * Content freshness. Applies to every nested route.
  *
- * Without this, every page is prerendered once at build time and a Studio edit
- * would never appear until someone pushed code — which would defeat the point
- * of having a CMS. Applies to every nested route.
+ * Every expiry replays that page's Sanity queries, so this window — not visitor
+ * count — is what drives API usage. A full site render costs 42 queries
+ * (measured), and the free plan allows 250k a month, so the worst case is
+ * 42 x (2,592,000 / revalidate). At 60s that is 1.8M and blows the limit on
+ * crawler traffic alone; at 900s it is ~121k, under half, even if every route
+ * is hit in every window all month.
  *
- * A Sanity webhook hitting revalidatePath would make publishes instant rather
- * than eventual; 60s is the simpler thing that works, and a team site does not
- * need sub-minute propagation.
+ * 15 minutes is therefore the ceiling on how stale content can get WITHOUT the
+ * webhook. With /api/revalidate wired up in Sanity, publishes flush the cache
+ * immediately and this is only a safety net for a missed webhook.
  */
-export const revalidate = 60;
+export const revalidate = 900;
 
 /** Built from the CMS, so the title and description follow a tagline change. */
 export async function generateMetadata(): Promise<Metadata> {

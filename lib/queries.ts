@@ -18,7 +18,7 @@ export const settingsQuery = groq`*[_id == "siteSettings"][0]{
   ${img("logoPoster", 900)},
   ${img("robotPhoto", 900)},
   ${img("teamPhoto", 1600)},
-  socials
+  socials, scouting
 }`;
 
 export const robotQuery = groq`*[_id == "robot"][0]{
