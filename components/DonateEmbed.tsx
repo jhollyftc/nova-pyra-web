@@ -7,6 +7,11 @@ import { useState } from "react";
  * the site — this is the team's actual money path, so it should be the lowest
  * friction thing on the page.
  *
+ * Sized to sit beside the tier cards rather than fill the screen: the amount
+ * someone types only means something if they can still see which level it buys.
+ * 58vh is the ceiling so the form and at least one tier card share a viewport on
+ * a laptop; HCB scrolls internally if its own content needs more room.
+ *
  * `dark=true` matches the site's ground. The plain link below is not decoration:
  * third-party frames get blocked by privacy extensions, strict corporate
  * networks and some in-app browsers, and a donation form that silently fails to
@@ -27,7 +32,7 @@ export default function DonateEmbed({ url, teamName }: { url: string; teamName: 
             title={`Donate to ${teamName}`}
             onError={() => setFailed(true)}
             className="block w-full"
-            style={{ height: "clamp(560px, 70vh, 760px)", border: 0, colorScheme: "dark" }}
+            style={{ height: "clamp(440px, 58vh, 620px)", border: 0, colorScheme: "dark" }}
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
           />

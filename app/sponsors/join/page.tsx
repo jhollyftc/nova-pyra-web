@@ -112,85 +112,93 @@ export default async function SponsorUsPage() {
         </div>
       </Section>
 
+      {/*
+        Tiers and the donation form share one section on purpose. They used to be
+        separate, so clicking "Give now" scrolled the tiers off screen exactly
+        when someone needed them — the amount you type only means something if
+        you can see which level it buys. On wide screens the form sticks beside
+        the tiers as they scroll; below lg it stacks, form first, because the
+        anchor that brought you here was about giving.
+      */}
       <Section
-        eyebrow="Tiers"
-        title="Every level helps"
+        id="donate"
+        eyebrow="Tiers & giving"
+        title="Choose a level"
         intro={`${sponsors.length} sponsors already back the team — from $1 to $1,000+.`}
       >
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {s.tiers.map((tier, i) => (
-            <Reveal
-              as="li"
-              key={tier.id}
-              delay={i * 0.05}
-              className="hud-frame flex flex-col p-6"
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:gap-10">
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+            {s.tiers.map((tier, i) => (
+              <Reveal
+                as="li"
+                key={tier.id}
+                delay={i * 0.05}
+                className="hud-frame flex flex-col p-6"
+              >
+                <div className="flex items-baseline justify-between gap-3">
+                  <h3
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      fontWeight: 900,
+                      fontSize: "19px",
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                      color: "var(--color-gold)",
+                    }}
+                  >
+                    {tier.label}
+                  </h3>
+                  <span
+                    className="shrink-0 tabular-nums"
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      fontWeight: 700,
+                      fontSize: "14px",
+                      color: "var(--color-accent)",
+                    }}
+                  >
+                    {tier.amount}
+                  </span>
+                </div>
+
+                <ul className="mt-5 flex flex-col gap-2.5">
+                  {tier.benefits.map((b) => (
+                    <li key={b} className="flex gap-3">
+                      <span
+                        aria-hidden="true"
+                        className="mt-2 block h-1 w-1 shrink-0 rounded-full"
+                        style={{ background: "var(--color-accent)" }}
+                      />
+                      <span
+                        className="text-[var(--color-text-secondary)]"
+                        style={{ fontSize: "14.5px", lineHeight: 1.5 }}
+                      >
+                        {b}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
+                {tier.currentCount > 0 && (
+                  <p className="micro mt-auto pt-5">
+                    {tier.currentCount} current sponsor{tier.currentCount === 1 ? "" : "s"}
+                  </p>
+                )}
+              </Reveal>
+            ))}
+          </ul>
+
+          {s.donateUrl && (
+            <div
+              className="order-first lg:order-last lg:sticky lg:self-start"
+              style={{ top: "calc(var(--header-height) + 20px)" }}
             >
-              <div className="flex items-baseline justify-between gap-3">
-                <h3
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    fontWeight: 900,
-                    fontSize: "19px",
-                    letterSpacing: "0.06em",
-                    textTransform: "uppercase",
-                    color: "var(--color-gold)",
-                  }}
-                >
-                  {tier.label}
-                </h3>
-                <span
-                  className="shrink-0 tabular-nums"
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    fontWeight: 700,
-                    fontSize: "14px",
-                    color: "var(--color-accent)",
-                  }}
-                >
-                  {tier.amount}
-                </span>
-              </div>
-
-              <ul className="mt-5 flex flex-col gap-2.5">
-                {tier.benefits.map((b) => (
-                  <li key={b} className="flex gap-3">
-                    <span
-                      aria-hidden="true"
-                      className="mt-2 block h-1 w-1 shrink-0 rounded-full"
-                      style={{ background: "var(--color-accent)" }}
-                    />
-                    <span
-                      className="text-[var(--color-text-secondary)]"
-                      style={{ fontSize: "14.5px", lineHeight: 1.5 }}
-                    >
-                      {b}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              {tier.currentCount > 0 && (
-                <p className="micro mt-auto pt-5">
-                  {tier.currentCount} current sponsor{tier.currentCount === 1 ? "" : "s"}
-                </p>
-              )}
-            </Reveal>
-          ))}
-        </ul>
+              <p className="micro mb-3">Donate online</p>
+              <DonateEmbed url={s.donateUrl} teamName={settings.teamName} />
+            </div>
+          )}
+        </div>
       </Section>
-
-      {s.donateUrl && (
-        <Section
-          id="donate"
-          eyebrow="Donate online"
-          title="Give now"
-          intro="Any amount helps. Card payments are processed by Hack Club Bank, our fiscal sponsor."
-        >
-          <Reveal>
-            <DonateEmbed url={s.donateUrl} teamName={settings.teamName} />
-          </Reveal>
-        </Section>
-      )}
 
       <Section eyebrow="Get in touch" title="Talk to us">
         <Reveal>
