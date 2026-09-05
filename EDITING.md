@@ -18,17 +18,17 @@ webhook once — see below.
 
 ### Making publishes instant (one-time, 2 minutes)
 
-At [sanity.io/manage](https://sanity.io/manage) -> the project -> **API** -> **Webhooks** -> Create:
+At [sanity.io/manage](https://sanity.io/manage) → the project → **API** → **Webhooks** → Create:
 
 | Field | Value |
 |---|---|
-| Name |  |
-| URL |  |
-| Dataset |  |
+| Name | `Revalidate website` |
+| URL | `https://nova-pyra-web.vercel.app/api/revalidate` |
+| Dataset | `production` |
 | Trigger on | Create, Update, Delete |
 | HTTP method | POST |
-| API version |  |
-| Secret | the value of  in Vercel -> Settings -> Environment Variables |
+| API version | `v2021-03-25` |
+| Secret | the value of `SANITY_REVALIDATE_SECRET` in Vercel → Settings → Environment Variables |
 
 The endpoint rejects anything without a valid signature, so the secret has to match exactly. Until
 this exists the site still updates, just on the 15-minute window.
