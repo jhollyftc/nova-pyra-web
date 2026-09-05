@@ -1,5 +1,5 @@
 {
-  "_instructions": "Sponsor tiers, benefits and donation details. Transcribed 2026-09-05 from the team's existing page at https://novapyra.org/sponsor-us.html — these are the team's real published commitments, not drafts. Note: Sustainer and Firestarter currently list identical benefits on that page; if that is an oversight, fix it here and on the old site together so the two never disagree.",
+  "_instructions": "Sponsor tiers, benefits and donation details. Tiers and amounts match the team's published page at https://novapyra.org/sponsor-us.html; the Sustainer/Firestarter split was corrected by the team on 2026-09-05 (that page still shows them as identical, so update it to match: only Sustainer gets robot reveal video recognition). Benefits here are public commitments once the site is live.",
   "contactEmail": "novapyra25619@gmail.com",
   "contactEmailVerified": true,
   "fiscalSponsor": "Hack Club",
@@ -39,8 +39,7 @@
         "Name/logo on website",
         "Name/logo on banners",
         "Name/logo on T-shirts",
-        "Name/logo on Robot",
-        "Robot reveal video recognition"
+        "Name/logo on Robot"
       ]
     },
     {
