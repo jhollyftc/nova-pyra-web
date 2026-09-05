@@ -75,25 +75,44 @@ export default function RobotHotspots({
                 onMouseEnter={() => setActiveId(s.id)}
                 onFocus={() => setActiveId(s.id)}
                 onClick={() => setActiveId(isActive ? null : s.id)}
-                className="absolute flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full"
+                className="absolute flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full"
                 style={{ left: `${s.hotspot.x}%`, top: `${s.hotspot.y}%` }}
               >
-                {/* Pulse ring */}
+                {/*
+                  Two rings plus a core. The marker previously read as almost
+                  nothing: an 11px black dot with a thin border, sitting on a
+                  dark, mechanically busy photo. Now the core is filled with the
+                  accent rather than black, so it is bright rather than a hole.
+
+                  The white ring and the dark outer halo do the real work — the
+                  robot has both polished aluminium and deep shadow behind these
+                  points, and a single-colour marker will disappear into one or
+                  the other. Ringing it light-on-dark keeps it visible over both.
+                */}
                 {!reduced && (
                   <span
-                    className="absolute h-5 w-5 animate-ping rounded-full opacity-60"
-                    style={{ background: "rgba(17,115,241,0.5)" }}
+                    className="absolute h-8 w-8 animate-ping rounded-full"
+                    style={{ background: "rgba(17,115,241,0.35)" }}
                     aria-hidden="true"
                   />
                 )}
                 <span
+                  className="absolute rounded-full transition-all"
+                  style={{
+                    width: isActive ? 34 : 26,
+                    height: isActive ? 34 : 26,
+                    border: "1px solid rgba(17,115,241,0.55)",
+                  }}
+                  aria-hidden="true"
+                />
+                <span
                   className="relative block rounded-full transition-all"
                   style={{
-                    width: isActive ? 16 : 11,
-                    height: isActive ? 16 : 11,
-                    background: isActive ? "var(--color-accent)" : "#000",
-                    border: "2px solid var(--color-accent)",
-                    boxShadow: "var(--glow-accent)",
+                    width: isActive ? 22 : 16,
+                    height: isActive ? 22 : 16,
+                    background: "var(--color-accent)",
+                    border: `2px solid rgba(255,255,255,${isActive ? 0.95 : 0.8})`,
+                    boxShadow: "0 0 0 4px rgba(0,0,0,0.45), var(--glow-accent)",
                   }}
                 />
               </button>
