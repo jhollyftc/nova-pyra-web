@@ -1,0 +1,18 @@
+{
+  "_instructions": "Aggregate impact stats. 'allTime' covers both seasons, 'thisSeason' is 2025-26 DECODE only. Values are plain numbers. 'recapImage' is an optional path to a season recap gif shown below the description.",
+  "recapImage": "/images/recap.gif",
+  "thisSeason": {
+    "peopleReached":   835,
+    "volunteerHours":  120,
+    "eventsHosted":    7,
+    "schoolsVisited":  4,
+    "teamsmentored":   3
+  },
+  "allTime": {
+    "peopleReached":   1200,
+    "volunteerHours":  200,
+    "eventsHosted":    10,
+    "schoolsVisited":  6,
+    "teamsmentored":   5
+  }
+}

@@ -1,0 +1,220 @@
+@import "tailwindcss";
+
+/* ─── Design system tokens ──────────────────────────────────────────
+   Ported from ftc-pit-app/app/globals.css. The token set already IS the
+   Nova Pyra design system; the additions below are web-only concerns the
+   1920x1080 kiosk never had to solve.
+   ------------------------------------------------------------------- */
+:root {
+  /* Brand Colors */
+  --color-black:        #000000;
+  --color-white:        #FFFFFF;
+  --color-silver:       #E6E6E6;
+  --color-blue-bright:  #1173F1;
+  --color-blue-mid:     #0A4FB3;
+  --color-blue-dark:    #07326A;
+
+  /* The single non-blue accent. Reserved for the sponsor CTA so that it
+     cannot be missed against the wall of blue. Do not use it elsewhere. */
+  --color-gold:         #F2B705;
+
+  /* Semantic Aliases */
+  --color-bg:               var(--color-black);
+  --color-surface:          var(--color-blue-dark);
+  --color-surface-raised:   #0D3D80;
+  --color-accent:           var(--color-blue-bright);
+  --color-accent-secondary: var(--color-blue-mid);
+  --color-text-primary:     var(--color-white);
+  --color-text-secondary:   var(--color-silver);
+  --color-text-muted:       #8899AA;
+  --color-border:           rgba(17, 115, 241, 0.3);
+  --color-border-active:    var(--color-blue-bright);
+
+  /* Status colors — inline-only in the pit app, tokenized here */
+  --color-live:    #22C55E;
+  --color-warn:    #F59E0B;
+  --color-danger:  #EF4444;
+  --color-cyan:    #00E1FF;
+
+  /* Glow Effects */
+  --glow-accent:     0 0 20px rgba(17, 115, 241, 0.4);
+  --glow-accent-lg:  0 0 40px rgba(17, 115, 241, 0.3), 0 0 80px rgba(17, 115, 241, 0.1);
+  --glow-text:       0 0 10px rgba(17, 115, 241, 0.6);
+  --glow-gold:       0 0 24px rgba(242, 183, 5, 0.35);
+
+  /* Typography — populated by next/font/local CSS vars */
+  --font-display: var(--font-orbitron), sans-serif;
+  --font-heading: var(--font-rajdhani), sans-serif;
+  --font-body:    var(--font-rajdhani), 'Inter', sans-serif;
+  --font-mono:    ui-monospace, 'JetBrains Mono', 'Cascadia Mono', Menlo, monospace;
+
+  /* Shape & Motion */
+  --radius-card:         8px;
+  --radius-card-lg:      12px;
+  --transition-fast:     150ms ease;
+  --transition-default:  300ms ease;
+  --transition-slow:     500ms ease;
+
+  /* Layout — web-only. The kiosk was a fixed 1920x1080 with no scroll. */
+  --page-max:      1280px;
+  --page-gutter:   clamp(20px, 5vw, 64px);
+  --section-gap:   clamp(72px, 12vh, 160px);
+  --header-height: 68px;
+}
+
+/* ─── Tailwind v4 theme extension ───────────────────────────────────
+   CSS-first config. There is deliberately no tailwind.config.js.
+   ------------------------------------------------------------------- */
+@theme inline {
+  --font-display: var(--font-display);
+  --font-heading: var(--font-heading);
+  --font-body:    var(--font-body);
+  --font-mono:    var(--font-mono);
+
+  --color-accent:      var(--color-blue-bright);
+  --color-accent-mid:  var(--color-blue-mid);
+  --color-accent-deep: var(--color-blue-dark);
+  --color-gold:        var(--color-gold);
+  --color-silver:      var(--color-silver);
+  --color-muted:       var(--color-text-muted);
+  --color-hairline:    var(--color-border);
+}
+
+/* ─── Base reset ────────────────────────────────────────────────────
+   NOTE vs. the pit app: no overflow:hidden, no user-select:none, no
+   touch-action clamp. Those were kiosk rules and would break a website.
+   ------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  /* The sticky header must not cover anchor targets. */
+  scroll-padding-top: calc(var(--header-height) + 24px);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  /* Belt and braces: no section may cause page-level horizontal scroll. */
+  overflow-x: hidden;
+}
+
+img, video, svg { max-width: 100%; height: auto; display: block; }
+
+/* ─── Focus ─────────────────────────────────────────────────────────
+   The kiosk was touch-only and shipped no focus styles at all. A public
+   site is keyboard-navigable, so every interactive element needs one.
+   ------------------------------------------------------------------- */
+:focus-visible {
+  outline: 2px solid var(--color-blue-bright);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ─── Texture ───────────────────────────────────────────────────────── */
+.dot-grid {
+  background-image: radial-gradient(circle, rgba(17, 115, 241, 0.12) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+.scanlines { position: relative; }
+.scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 3px,
+    rgba(0, 0, 0, 0.16) 3px, rgba(0, 0, 0, 0.16) 4px
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ─── Glow utilities ────────────────────────────────────────────────── */
+.glow-text   { text-shadow: var(--glow-text); }
+.glow-box    { box-shadow: var(--glow-accent); }
+.glow-box-lg { box-shadow: var(--glow-accent-lg); }
+
+/* ─── HUD corner brackets ───────────────────────────────────────────
+   The recurring framing device. Applied to a positioned element, it draws
+   four ⌐ ¬ corners just outside a hairline border.
+   ------------------------------------------------------------------- */
+.hud-frame {
+  position: relative;
+  border: 1px solid var(--color-border);
+}
+.hud-frame::before,
+.hud-frame::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--color-blue-bright);
+  pointer-events: none;
+  transition: border-color var(--transition-default);
+}
+.hud-frame::before {
+  top: -1px; left: -1px;
+  border-right: 0; border-bottom: 0;
+}
+.hud-frame::after {
+  bottom: -1px; right: -1px;
+  border-left: 0; border-top: 0;
+}
+
+/* ─── Micro-label ───────────────────────────────────────────────────
+   Mono, uppercase, wide tracking. The HUD's annotation voice.
+   ------------------------------------------------------------------- */
+.micro {
+  font-family: var(--font-mono);
+  font-size: clamp(10px, 1.1vw, 12px);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* ─── Layout helper ─────────────────────────────────────────────────── */
+.shell {
+  width: 100%;
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding-inline: var(--page-gutter);
+}
+
+/* ─── Sponsor marquee ───────────────────────────────────────────────
+   The track holds the logo list twice, so translating by -50% lands exactly
+   on the start of the second copy and loops seamlessly.
+   ------------------------------------------------------------------- */
+@keyframes marquee-scroll {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+.marquee {
+  animation: marquee-scroll 46s linear infinite;
+}
+.marquee:hover,
+.marquee:focus-within {
+  animation-play-state: paused;
+}
+
+/* ─── Motion ────────────────────────────────────────────────────────
+   Every animation in the app must have a path through here. Components
+   additionally check framer-motion's useReducedMotion for JS-driven work
+   (the ember canvas and the hero boot sequence).
+   ------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

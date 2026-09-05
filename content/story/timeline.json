@@ -1,0 +1,24 @@
+{
+  "_instructions": "Team milestone timeline. Entries are shown chronologically. 'type' can be 'award', 'event', 'milestone', or 'outreach'.",
+  "milestones": [
+    { "year": "2024", "title": "Team Founded",                        "description": "Nova Pyra 25619 is founded at Mandeville Junior High — a revival of robotics inspired by the myth of Prometheus and the sister team of FRC S.S. Prometheus.", "type": "milestone" },
+    { "year": "2024", "title": "Into the Deep Season Kickoff",        "description": "Rookie season begins at the FTC Louisiana INTO THE DEEP kickoff event in Denham Springs, LA.", "type": "event" },
+    { "year": "2024", "title": "FTC Louisiana Qualifier 1",           "description": "Rookie debut at Hammond High Magnet School. Finished rank #6 with a 3-3-0 record and earned the Innovate Award.", "type": "event" },
+    { "year": "2025", "title": "FTC Louisiana Qualifier 2",           "description": "Competed at Walker High School. Finished rank #6 with a 4-2-0 record and earned the Innovate Award.", "type": "event" },
+    { "year": "2025", "title": "Louisiana State Champions",           "description": "Won the Think Award and the Louisiana Regional Championship in our rookie season, qualifying for the FIRST Championship.", "type": "award" },
+    { "year": "2025", "title": "NOLA STEM Fest",                      "description": "Represented Nova Pyra at the New Orleans STEM Festival alongside FIRST and other FTC teams, developing new connections across the engineering and robotics community.", "type": "outreach" },
+    { "year": "2025", "title": "Northshore Knockout",                 "description": "Competed at Mandeville High School and reached out to the FRC community, spreading awareness of FTC and recruiting for the upcoming season alongside sister team FRC S.S. Prometheus.", "type": "event" },
+    { "year": "2025", "title": "DECODE Season Kickoff",               "description": "Second season begins at the FTC Louisiana DECODE kickoff event in Denham Springs, LA.", "type": "event" },
+    { "year": "2025", "title": "DDG & Intralox Facility Tours",       "description": "Toured DDG headquarters and the Intralox engineering facility in Hammond, LA to explore real-world engineering processes and STEM career paths. DDG became a key sponsor through mentor Brad Villemeur.", "type": "outreach" },
+    { "year": "2025", "title": "LATM/LSTA Teacher Conference",        "description": "Attended the Louisiana teacher convention at Raising Cane's Baton Rouge River Center to discuss STEM mentoring opportunities and grow the FIRST Pipeline across Louisiana.", "type": "outreach" },
+    { "year": "2025", "title": "STEM Nights at MES & PES",            "description": "Hosted STEM Nights at Mandeville Elementary and Pontchartrain Elementary schools to introduce students and teachers to the FIRST community and recruit new teams.", "type": "outreach" },
+    { "year": "2025", "title": "FTC Louisiana Qualifier 1",           "description": "DECODE season debut at Northshore High School. Finished rank #2 with a 5-1-0 record.", "type": "event" },
+    { "year": "2026", "title": "FTC Louisiana Qualifier 3",           "description": "Competed at The Dunham School in Baton Rouge. Finished rank #1 with a perfect 6-0-0 record.", "type": "award" },
+    { "year": "2026", "title": "PES Out of this World STEAM Night",   "description": "Outreach event at Pontchartrain Elementary School ahead of the Regional Championship.", "type": "outreach" },
+    { "year": "2026", "title": "Scrimmage — St. Thomas Aquinas High School",                 "description": "Drive team competed in mock-game matches at St. Thomas Aquinas High School with FTC teams 23264, 30727, and 18380, sharpening competition readiness before State.", "type": "event" },
+    { "year": "2026", "title": "Back-to-Back Regional Champions",     "description": "Won the Innovate Award and served as Winning Alliance Captain at the FTC Louisiana Regional Championship for the second consecutive year. Finished rank #2 with a 5-1-0 record.", "type": "award" },
+    { "year": "2026", "title": "FIRST Championship — DECODE",         "description": "Competed at FIRST Championship in our 2nd season, finishing rank #17 in Jackson Division.", "type": "event" },
+    { "year": "2026", "title": "FIRST Championship — Design Award",     "description": "Received the Design Award (3rd Place) at FIRST Championship.", "type": "award" }
+  ]
+  
+}

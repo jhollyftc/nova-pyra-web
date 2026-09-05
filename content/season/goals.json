@@ -1,0 +1,16 @@
+{
+  "_instructions": "Season goals with progress. 'progress' is 0–100 (percentage). 'status' can be 'achieved', 'in-progress', or 'upcoming'.",
+  "robotGoals": [
+    { "goal": "Win Louisiana Regional Championship",            "progress": 100, "status": "achieved",     "note": "Won Louisiana Regional — Winning Alliance Captain." },
+    { "goal": "Qualify for FIRST World Championship",           "progress": 100, "status": "achieved",     "note": "Qualified as Louisiana Regional Champions." },
+    { "goal": "Consistent 3-ball cycle in teleop",              "progress": 100, "status": "achieved",     "note": "Rapid 3-ball cycle enabled by PID flywheel and feed servo." },
+    { "goal": "7+ autonomous routines across both alliances",   "progress": 100, "status": "achieved",     "note": "14 total routines (7 per alliance color) covering near and far variants." },
+    { "goal": "Top 20 finish at FIRST World Championship",      "progress": 85,  "status": "achieved",     "note": "Finished 17th in quals at FIRST Championship — Jackson Division." }
+  ],
+  "awardGoals": [
+    { "goal": "Innovate Award at qualifying events",            "progress": 100, "status": "achieved",     "note": "Won Innovate Award at LAFTC Slidell Qualifier." },
+    { "goal": "Sustain Award",                                  "progress": 100, "status": "achieved",     "note": "Won Sustain Award at FTCLA Baton Rouge Qualifier." },
+    { "goal": "Regional-level award at Louisiana Championship", "progress": 100, "status": "achieved",     "note": "Won Innovate Award at Louisiana Regional Championship." },
+    { "goal": "Design Award at FIRST World Championship",       "progress": 100, "status": "achieved",     "note": "Design Award — 3rd Place at FIRST Championship, Jackson Division." }
+  ]
+}

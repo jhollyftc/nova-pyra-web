@@ -1,0 +1,59 @@
+{
+  "_instructions": "Robot version history timeline. Each entry appears as a card on the Design Evolution timeline. 'dateRange' is a display string. Group by subsystem using 'subsystem' field. 'photos' is an array of up to 2 image paths (under /public) — shown side by side. Use empty string or omit a slot for a placeholder.",
+  "versions": [
+    {
+      "version": "Intake Gen 1",
+      "name": "Flap Intake",
+      "dateRange": "Early Season",
+      "subsystem": "Intake",
+      "photos": ["/images/evolution/intake-gen1.jpg", "/images/evolution/intake-gen1b.jpg"],
+      "changes": "Flap behind intake to prevent over-consumption of artifacts. Intaking multiple artifacts jammed nearly 100% of the time.",
+      "result": "Jams were unacceptable — 100% jam rate with multiple artifacts forced a redesign."
+    },
+    {
+      "version": "Intake Gen 2",
+      "name": "Centered Roller & Funnel",
+      "dateRange": "Mid Season",
+      "subsystem": "Intake",
+      "photos": ["/images/evolution/intake-gen2.jpg", "/images/evolution/intake-gen2b.jpg"],
+      "changes": "Centered roller and funnel system reduced jams compared to Gen 1.",
+      "result": "Jams reduced but inconsistency remained — still not competition-reliable."
+    },
+    {
+      "version": "Intake Gen 3 & 4",
+      "name": "Vector Wheel Intake",
+      "dateRange": "Competition Build",
+      "subsystem": "Intake",
+      "photos": ["", ""],
+      "changes": "Vector wheels + custom molded wheels + angled compression path. Consistent triple-intake with guided centering. Vector wheels directed artifact path reducing jams to near zero. Mechanical feed stop added to prevent 4th artifact from being retrieved.",
+      "result": "Jams reduced to near zero. Mechanical feed stop eliminated penalty risk. Final competition intake."
+    },
+    {
+      "version": "Shooter Gen 1",
+      "name": "Single Motor Flywheel",
+      "dateRange": "Early Season",
+      "subsystem": "Shooter",
+      "photos": ["/images/evolution/shooter-gen1.jpg", "/images/evolution/shooter-gen1b.jpg"],
+      "changes": "1 motor. Basic flywheel at a fixed angle. Required ~600 ms to recover between shots.",
+      "result": "600 ms recovery too slow for competitive cycle times — needed more torque and flexibility."
+    },
+    {
+      "version": "Shooter Gen 2",
+      "name": "Dual Motor + Adjustable Hood",
+      "dateRange": "Mid Season",
+      "subsystem": "Shooter",
+      "photos": ["/images/evolution/shooter-gen2.jpg", "/images/evolution/shooter-gen2b.jpg"],
+      "changes": "2 motors for added torque. Dual-motor shooter reduced recovery to ~400 ms. Servo-adjustable hood allowed angle switching. Enabled shooting from anywhere on the field.",
+      "result": "Recovery down to ~400 ms. Adjustable hood opened full-field shooting capability."
+    },
+    {
+      "version": "Shooter Gen 3",
+      "name": "Steel Inertia Inserts + Limelight",
+      "dateRange": "Competition Build",
+      "subsystem": "Shooter",
+      "photos": ["", ""],
+      "changes": "Steel inserts added to flywheel to increase moment of inertia. Inserts lowered recovery to ~300 ms. Limelight camera added for RPM and angle control.",
+      "result": "300 ms recovery. Limelight targeting enabled accurate, automated shot control. Final competition shooter."
+    }
+  ]
+}

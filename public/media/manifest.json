@@ -1,0 +1,70 @@
+{
+  "videos": {
+    "auto": {
+      "mp4": "/media/auto.mp4",
+      "webm": "/media/auto.webm",
+      "poster": "/media/auto.jpg"
+    },
+    "connect": {
+      "mp4": "/media/connect.mp4",
+      "webm": "/media/connect.webm",
+      "poster": "/media/connect.jpg"
+    },
+    "drakos": {
+      "mp4": "/media/drakos.mp4",
+      "webm": "/media/drakos.webm",
+      "poster": "/media/drakos.jpg"
+    },
+    "drakos2": {
+      "mp4": "/media/drakos2.mp4",
+      "webm": "/media/drakos2.webm",
+      "poster": "/media/drakos2.jpg"
+    },
+    "endgame": {
+      "mp4": "/media/endgame.mp4",
+      "webm": "/media/endgame.webm",
+      "poster": "/media/endgame.jpg"
+    },
+    "outreach": {
+      "mp4": "/media/outreach.mp4",
+      "webm": "/media/outreach.webm",
+      "poster": "/media/outreach.jpg"
+    },
+    "process": {
+      "mp4": "/media/process.mp4",
+      "webm": "/media/process.webm",
+      "poster": "/media/process.jpg"
+    },
+    "recap": {
+      "mp4": "/media/recap.mp4",
+      "webm": "/media/recap.webm",
+      "poster": "/media/recap.jpg"
+    },
+    "robot": {
+      "mp4": "/media/robot.mp4",
+      "webm": "/media/robot.webm",
+      "poster": "/media/robot.jpg"
+    },
+    "season": {
+      "mp4": "/media/season.mp4",
+      "webm": "/media/season.webm",
+      "poster": "/media/season.jpg"
+    },
+    "story": {
+      "mp4": "/media/story.mp4",
+      "webm": "/media/story.webm",
+      "poster": "/media/story.jpg"
+    },
+    "teleop": {
+      "mp4": "/media/teleop.mp4",
+      "webm": "/media/teleop.webm",
+      "poster": "/media/teleop.jpg"
+    },
+    "logo-animated": {
+      "mp4": "/media/logo-animated.mp4",
+      "webm": "/media/logo-animated.webm",
+      "poster": "/media/logo-animated.jpg"
+    }
+  },
+  "generated": "2026-09-05T05:45:14.157Z"
+}

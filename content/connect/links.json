@@ -1,0 +1,11 @@
+{
+  "_instructions": "All connect links. 'qr' is a URL string — the app generates the QR code automatically. Set 'enabled: false' to hide any entry.",
+  "website":  { "label": "Team Website",       "url": "https://novapyra.org",                   "enabled": true },
+  "instagram":{ "label": "Instagram",          "url": "https://instagram.com/novapyra25619",    "enabled": true },
+  "youtube":  { "label": "YouTube",            "url": "https://youtube.com/@novapyra25619",     "enabled": true },
+  "github":   { "label": "GitHub / Code",      "url": "https://github.com/novapyra25619",       "enabled": true },
+  "cad":      { "label": "CAD (Onshape)",      "url": "https://cad.onshape.com/documents/your-doc-id", "enabled": true },
+  "sponsor":  { "label": "Sponsor Us",         "url": "https://novapyra.org/sponsor",           "enabled": true },
+  "ftcStart": { "label": "Start an FTC Team",  "url": "https://firstinspires.org/ftc",          "enabled": true },
+  "contact":  { "label": "Contact / Email",    "url": "mailto:hello@novapyra.org",              "enabled": true }
+}

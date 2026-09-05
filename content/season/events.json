@@ -1,0 +1,46 @@
+{
+  "_instructions": "Event results. 'record' is { wins, losses, ties }. 'awards' is an array of award names won. Move events from upcoming to completed as the season progresses.",
+  "completed": [
+    {
+      "id": "slidell-q",
+      "name": "LAFTC Slidell Qualifier",
+      "date": "December 13, 2025",
+      "location": "Northshore High School, Slidell, LA",
+      "rank": 2,
+      "record": { "wins": 5, "losses": 1, "ties": 0 },
+      "awards": ["Winning Alliance 1st Pick", "Innovate Award Winner"],
+      "keyTakeaway": "Strong qualifier performance — ranked 2nd, won Innovate Award, and selected as 1st pick by the Winning Alliance."
+    },
+    {
+      "id": "baton-rouge-q",
+      "name": "FTCLA Baton Rouge Qualifier",
+      "date": "January 31, 2026",
+      "location": "The Dunham School, Baton Rouge, LA",
+      "rank": 1,
+      "record": { "wins": 6, "losses": 0, "ties": 0 },
+      "awards": ["Winning Alliance Captain", "Sustain Award Winner"],
+      "keyTakeaway": "Undefeated qualifier — 6-0-0 record, ranked 1st, won Sustain Award, and captained the Winning Alliance."
+    },
+    {
+      "id": "louisiana-regional",
+      "name": "Louisiana Championship",
+      "date": "February 27–28, 2026",
+      "location": "Denham Springs, LA",
+      "rank": 2,
+      "record": { "wins": 5, "losses": 1, "ties": 0 },
+      "awards": ["Innovate Award Winner", "Winning Alliance Captain"],
+      "keyTakeaway": "Qualified for FIRST World Championship as Louisiana Regional Champions and Winning Alliance Captain."
+    },
+    {
+      "id": "worlds-jackson",
+      "name": "FIRST World Championship — Jackson Division",
+      "date": "April 29 – May 2, 2026",
+      "location": "George R. Brown Convention Center, Houston, TX",
+      "rank": 17,
+      "record": { "wins": 7, "losses": 3, "ties": 0 },
+      "awards": ["Design Award — 3rd Place"],
+      "keyTakeaway": "17th place in quals with a 7-3-0 record. Earned Design Award 3rd Place — 3.50 RP · 141.02 npOPR · 265.80 npAVG."
+    }
+  ],
+  "upcoming": []
+}

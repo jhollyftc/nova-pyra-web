@@ -1,0 +1,64 @@
+{
+  "_instructions": "Sponsor tiers, benefits and donation details. Transcribed 2026-09-05 from the team's existing page at https://novapyra.org/sponsor-us.html — these are the team's real published commitments, not drafts. Note: Sustainer and Firestarter currently list identical benefits on that page; if that is an oversight, fix it here and on the old site together so the two never disagree.",
+  "contactEmail": "hello@novapyra.org",
+  "contactEmailVerified": false,
+  "fiscalSponsor": "Hack Club",
+  "checkPayableTo": "Hack Club",
+  "taxNote": "Your contribution may also be tax-deductible.",
+  "intro": "Nova Pyra is a student-run FIRST Tech Challenge team in Mandeville, Louisiana. Sponsorship pays for the parts we machine, the tools we learn on, and the travel that took us to the FIRST World Championship in Houston.",
+  "whatItFunds": [
+    {
+      "label": "Robot & parts",
+      "description": "Robotics kit and supplemental parts, plus updates to our equipment."
+    },
+    {
+      "label": "Competition",
+      "description": "Registration fees and transportation to qualifiers, the Louisiana Championship and Worlds."
+    },
+    {
+      "label": "Pit & team",
+      "description": "Tools and pit supplies, team shirts and spirit gear."
+    }
+  ],
+  "tiers": [
+    {
+      "id": "sustainer",
+      "benefits": [
+        "Thank you letter",
+        "Name/logo on website",
+        "Name/logo on banners",
+        "Name/logo on T-shirts",
+        "Name/logo on Robot",
+        "Robot reveal video recognition"
+      ]
+    },
+    {
+      "id": "firestarter",
+      "benefits": [
+        "Thank you letter",
+        "Name/logo on website",
+        "Name/logo on banners",
+        "Name/logo on T-shirts",
+        "Name/logo on Robot",
+        "Robot reveal video recognition"
+      ]
+    },
+    {
+      "id": "campfire",
+      "benefits": [
+        "Thank you letter",
+        "Name/logo on website",
+        "Name/logo on banners",
+        "Name/logo on T-shirts"
+      ]
+    },
+    {
+      "id": "igniter",
+      "benefits": ["Thank you letter", "Name/logo on website"]
+    },
+    {
+      "id": "kindling",
+      "benefits": ["Thank you letter"]
+    }
+  ]
+}

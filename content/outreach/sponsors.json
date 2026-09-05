@@ -1,0 +1,187 @@
+{
+  "_instructions": "Sponsors list. 'tier' must be 'sustainer', 'firestarter', 'campfire', 'igniter', 'kindling', or 'former'. 'logo' is a /public path or null.",
+  "sponsors": [
+    {
+      "id": "ddg",
+      "name": "Duplantis Design Group",
+      "tier": "sustainer",
+      "logo": "/images/Sponsors/ddg.svg",
+      "description": "Covington, LA design firm and our most active engineering partner. Provides sponsorship, resources, and mentorship through mentor Brad Villemeur, who guides students in CAD and engineering design."
+    },
+    {
+      "id": "kelly-cook-foundation",
+      "name": "Kelly Gene Cook Sr. Charitable Foundation",
+      "tier": "sustainer",
+      "logo": "/images/Sponsors/cook_foundation.jpeg",
+      "description": "Houston, TX foundation supporting STEM education and Nova Pyra's program development."
+    },
+    {
+      "id": "northshore-oncology",
+      "name": "Northshore Oncology Associates",
+      "tier": "sustainer",
+      "logo": "/images/Sponsors/NorthshoreOconologyAssociates.jpeg",
+      "description": "Covington, LA medical organization committed to supporting STEM and robotics in the local community."
+    },
+    {
+      "id": "st-tammany-schools",
+      "name": "St. Tammany Parish Schools",
+      "tier": "sustainer",
+      "logo": "/images/Sponsors/stpsb.jpeg",
+      "description": "Our school district, providing institutional support and resources that make our program possible at Mandeville Junior High."
+    },
+    {
+      "id": "ryan-katherine-harvey",
+      "name": "Ryan & Katherine Harvey",
+      "tier": "sustainer",
+      "logo": "/images/Sponsors/RyanKatherineHarvey.jpg",
+      "description": "Mandeville, LA community supporters and dedicated Nova Pyra boosters."
+    },
+    {
+      "id": "thomas-janet-favrot",
+      "name": "Thomas and Janet Favrot",
+      "tier": "sustainer",
+      "logo": null,
+      "description": "Mandeville, LA individuals investing in the next generation of engineers and innovators."
+    },
+    {
+      "id": "struction-solutions",
+      "name": "Struction Solutions",
+      "tier": "sustainer",
+      "logo": "/images/Sponsors/structionsolutions.png",
+      "description": "Mandeville, LA construction firm supporting Nova Pyra's growth and competition program."
+    },
+    {
+      "id": "laura-meche",
+      "name": "Laura Meche",
+      "tier": "firestarter",
+      "logo": null,
+      "description": "Hammond, LA technical writing expert and Nova Pyra mentor who guides our Engineering Portfolio, presentations, and documentation."
+    },
+    {
+      "id": "mellow-morrow",
+      "name": "Mellow Morrow",
+      "tier": "firestarter",
+      "logo": null,
+      "description": "Mandeville, LA sponsor supporting Nova Pyra's second season."
+    },
+    {
+      "id": "netchex",
+      "name": "Netchex",
+      "tier": "firestarter",
+      "logo": "/images/Sponsors/netchex.svg",
+      "description": "Covington, LA payroll and HR software company supporting STEM education and the Nova Pyra program."
+    },
+    {
+      "id": "golden-family",
+      "name": "Golden Family",
+      "tier": "campfire",
+      "logo": null,
+      "description": "Mandeville, LA family sponsor supporting Nova Pyra students and competition goals."
+    },
+    {
+      "id": "pontchartrain-yacht-club",
+      "name": "Pontchartrain Yacht Club",
+      "tier": "campfire",
+      "logo": "/images/Sponsors/YachtClub.png",
+      "description": "Mandeville, LA recreational club and community partner invested in local youth programs."
+    },
+    {
+      "id": "chipotle",
+      "name": "Chipotle",
+      "tier": "campfire",
+      "logo": "/images/Sponsors/chipotle.png",
+      "description": "Mandeville, LA location supporting Nova Pyra through community fundraising partnerships."
+    },
+    {
+      "id": "ben-vera-vree",
+      "name": "Ben and Vera Vree",
+      "tier": "campfire",
+      "logo": null,
+      "description": "Mandeville, LA individuals and returning supporters of the Nova Pyra program."
+    },
+    {
+      "id": "margaret-colvin",
+      "name": "Margaret Colvin",
+      "tier": "campfire",
+      "logo": null,
+      "description": "Mandeville, LA community supporter."
+    },
+    {
+      "id": "kidz-klub-house",
+      "name": "Kidz Klub House",
+      "tier": "campfire",
+      "logo": "/images/Sponsors/KidzKlubHouse_Logo.jpeg",
+      "description": "Mandeville, LA youth facility and community partner."
+    },
+    {
+      "id": "skull-hunny",
+      "name": "Skull Hunny",
+      "tier": "campfire",
+      "logo": "/images/Sponsors/skullhunny.png",
+      "description": "Mandeville, LA business sponsor supporting Nova Pyra."
+    },
+    {
+      "id": "michaelis-orthodontics",
+      "name": "Michaelis Orthodontics",
+      "tier": "campfire",
+      "logo": "/images/Sponsors/MO.png",
+      "description": "Mandeville, LA dental practice and community sponsor."
+    },
+    {
+      "id": "james-margaret-colvin",
+      "name": "James and Margaret Colvin",
+      "tier": "igniter",
+      "logo": null,
+      "description": "Mandeville, LA individual supporters of Nova Pyra."
+    },
+    {
+      "id": "tom-jarvis",
+      "name": "Tom Jarvis",
+      "tier": "igniter",
+      "logo": null,
+      "description": "Mandeville, LA individual sponsor."
+    },
+    {
+      "id": "jonathan-holly",
+      "name": "Jonathan Holly",
+      "tier": "igniter",
+      "logo": null,
+      "description": "Mandeville, LA community supporter."
+    },
+    {
+      "id": "mandeville-creamery",
+      "name": "Mandeville Creamery",
+      "tier": "igniter",
+      "logo": null,
+      "description": "Mandeville, LA local business and community partner."
+    },
+    {
+      "id": "amy-bordelon",
+      "name": "Amy Bordelon",
+      "tier": "igniter",
+      "logo": null,
+      "description": "Mandeville, LA individual supporter."
+    },
+    {
+      "id": "chrissy-giacona",
+      "name": "Chrissy Giacona",
+      "tier": "kindling",
+      "logo": null,
+      "description": "Mandeville, LA community supporter."
+    },
+    {
+      "id": "john-colvin",
+      "name": "John Colvin",
+      "tier": "kindling",
+      "logo": null,
+      "description": "Mandeville, LA individual supporter."
+    },
+    {
+      "id": "lan-dang",
+      "name": "Lan Dang",
+      "tier": "kindling",
+      "logo": null,
+      "description": "Mandeville, LA community supporter."
+    }
+  ]
+}

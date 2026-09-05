@@ -1,0 +1,59 @@
+{
+  "_instructions": "Team identity content. 'values' drives the core values display — keep each label short (2-3 words). 'subteams' drives the team structure grid.",
+  "founding": "2024",
+  "foundingStory": "The name \"Nova Pyra,\" meaning \"New Fire,\" reflects the team's origin story — a revival of robotics at Mandeville Junior High, inspired by the myth of Prometheus, who granted fire to humanity. Now in our 2nd season, we are the sister team of FRC S.S. Prometheus.",
+  "missionStatement": "Nova Pyra is committed to advancing the boundaries of innovation in robotics, fostering creativity, teamwork, and technical excellence. Together, we strive to ignite a passion for engineering and technology.",
+  "values": [
+    { "icon": "⚙️", "label": "Engineer First",     "description": "We prototype before we commit. Every design decision is tested, not assumed." },
+    { "icon": "🤝", "label": "Team Over Self",      "description": "The best idea wins, regardless of who has it. Credit is shared; blame is not." },
+    { "icon": "📖", "label": "Document Everything", "description": "If it isn't written down, it didn't happen. Our notebook is our proof of process." },
+    { "icon": "🌱", "label": "Give Back",            "description": "From outreach events we grow new members every year, sharing all aspects of robotics and letting everyone focus on their interests." },
+    { "icon": "🔄", "label": "Always Iterate",       "description": "V1 is never the answer. We build, break, learn, and build better." }
+  ],
+  "partners": [
+    { "name": "FRC 2992 — S.S. Prometheus", "type": "Sister Team",    "description": "Our sister FRC team shares their shop with us, teaching complex machinery operation and helping navigate CAD & code." },
+    { "name": "FTC 6448 — Jesuit Blue Jays", "type": "FTC Partner",   "description": "Collaborated on driver practice before State, discussing engineering and judging strategies together." },
+    { "name": "DDG",                          "type": "Sponsor",       "description": "Key sponsor providing support, resources, and mentorship through mentor Brad Villemeur. Ongoing collaboration on CAD and engineering as a whole." },
+    { "name": "Intralox",                     "type": "Industry",      "description": "Hosted a facility visit where the team learned real-world engineering processes and explored STEM career opportunities." },
+    { "name": "Turner Industries",            "type": "Industry",      "description": "Employer of mentor Laura Meche, who brings technical writing expertise to guide our Engineering Portfolio and presentations." },
+    { "name": "USDA",                         "type": "Industry",      "description": "Employer of mentor Matthew Gilbert, who applies research science skills to teach hands-on building and engineering fundamentals." }
+  ],
+  "subteams": [
+    {
+      "name": "Build Team",
+      "icon": "🔧",
+      "goal": "Manage the design and physical construction of the robot.",
+      "challenge": "Age restrictions require mentor supervision for all power tool usage to ensure safety."
+    },
+    {
+      "name": "CAD Team",
+      "icon": "📐",
+      "goal": "Manage the 3D design of the robot using CAD software (Onshape).",
+      "challenge": "Pre-season CAD training closes the experience gap before the season begins."
+    },
+    {
+      "name": "Code Team",
+      "icon": "💻",
+      "goal": "Manage robot code development, learning Java and FTC SDK standards.",
+      "challenge": "Pre-season coding sessions let ideas take shape faster when the season starts."
+    },
+    {
+      "name": "Documentation Team",
+      "icon": "📋",
+      "goal": "Maintain the Engineering Portfolio and judging materials.",
+      "challenge": "Financial and performance data flows through booster members for easy communication."
+    },
+    {
+      "name": "Media Team",
+      "icon": "📣",
+      "goal": "Manage the team's outreach and marketing design.",
+      "challenge": "All outreach is closely supervised through mentors due to social media age restrictions."
+    },
+    {
+      "name": "Captain",
+      "icon": "🏆",
+      "goal": "Communicate and organize team plans from members to leaders.",
+      "challenge": "Captain works with coaches to ensure multiple clear channels of communication."
+    }
+  ]
+}
