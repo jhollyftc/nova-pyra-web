@@ -77,7 +77,7 @@ export default function Hero({
   const ctaStyle = {
     fontFamily: "var(--font-heading)",
     fontWeight: 700,
-    fontSize: "clamp(12px, 1.6vh, 14px)",
+    fontSize: "clamp(13px, 1.7vh, 15px)",
     letterSpacing: "0.14em",
     textTransform: "uppercase" as const,
     padding: "clamp(9px, 1.4vh, 12px) clamp(18px, 2.4vw, 24px)",
@@ -208,7 +208,7 @@ export default function Hero({
                 style={{
                   fontFamily: "var(--font-display)",
                   fontWeight: 700,
-                  fontSize: "clamp(13px, min(2.2vw, 2.4vh), 20px)",
+                  fontSize: "clamp(14px, min(2.2vw, 2.4vh), 20px)",
                   letterSpacing: "0.06em",
                 }}
               >

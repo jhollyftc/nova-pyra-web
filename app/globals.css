@@ -170,12 +170,19 @@ img, video, svg { max-width: 100%; height: auto; display: block; }
 }
 
 /* ─── Micro-label ───────────────────────────────────────────────────
-   Mono, uppercase, wide tracking. The HUD's annotation voice.
+   Mono, uppercase, wide tracking. The HUD's annotation voice, and the most
+   reused text style on the site — roughly 60 places.
+
+   Sized up from 10-12px: it looked right in isolation but reads as fine print
+   everywhere it actually appears, and it carries real content (event dates,
+   locations, roles, captions), not just decoration. Tracking eased from 0.18em
+   too — very wide letter-spacing on small mono costs more legibility than the
+   HUD styling is worth.
    ------------------------------------------------------------------- */
 .micro {
   font-family: var(--font-mono);
-  font-size: clamp(10px, 1.1vw, 12px);
-  letter-spacing: 0.18em;
+  font-size: clamp(12px, 1.1vw, 14px);
+  letter-spacing: 0.13em;
   text-transform: uppercase;
   color: var(--color-text-muted);
 }

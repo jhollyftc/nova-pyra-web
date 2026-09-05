@@ -125,7 +125,7 @@ export default function SiteFooter({ settings }: { settings: Settings }) {
             style={{
               fontFamily: "var(--font-heading)",
               fontWeight: 700,
-              fontSize: "13px",
+              fontSize: "14px",
               letterSpacing: "0.12em",
               textTransform: "uppercase",
               color: "var(--color-gold)",

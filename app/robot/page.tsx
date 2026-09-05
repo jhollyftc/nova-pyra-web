@@ -131,7 +131,7 @@ export default async function RobotPage() {
                     <p className="micro">{f.label}</p>
                     <p
                       className="mt-1 text-[var(--color-text-secondary)]"
-                      style={{ fontSize: "14px", lineHeight: 1.55 }}
+                      style={{ fontSize: "15px", lineHeight: 1.55 }}
                     >
                       {f.value}
                     </p>
@@ -190,7 +190,7 @@ export default async function RobotPage() {
                 </p>
                 <p
                   className="mt-2 text-[var(--color-text-secondary)]"
-                  style={{ fontSize: "14px", lineHeight: 1.55 }}
+                  style={{ fontSize: "15px", lineHeight: 1.55 }}
                 >
                   {phase.summary}
                 </p>

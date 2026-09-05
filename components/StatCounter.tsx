@@ -68,7 +68,7 @@ export default function StatCounter({
         className="text-center leading-tight text-[var(--color-text-secondary)]"
         style={{
           fontFamily: "var(--font-body)",
-          fontSize: compact ? "clamp(9px, 1.35vh, 13px)" : "clamp(12px, 1.2vw, 15px)",
+          fontSize: compact ? "clamp(11px, 1.4vh, 13px)" : "clamp(12px, 1.2vw, 15px)",
           letterSpacing: "0.12em",
           textTransform: "uppercase",
         }}

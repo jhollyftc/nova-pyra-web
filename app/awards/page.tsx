@@ -73,7 +73,7 @@ export default async function AwardsPage() {
                   </h3>
                   <p
                     className="mt-auto text-[var(--color-text-secondary)]"
-                    style={{ fontSize: "14px", lineHeight: 1.45 }}
+                    style={{ fontSize: "15px", lineHeight: 1.45 }}
                   >
                     {a.event}
                   </p>

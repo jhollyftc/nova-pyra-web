@@ -69,7 +69,7 @@ export default function CadViewer({
           style={{
             fontFamily: "var(--font-heading)",
             fontWeight: 700,
-            fontSize: "14px",
+            fontSize: "15px",
             letterSpacing: "0.14em",
             textTransform: "uppercase",
             color: "var(--color-accent)",
@@ -97,7 +97,7 @@ export default function CadViewer({
               style={{
                 fontFamily: "var(--font-heading)",
                 fontWeight: 600,
-                fontSize: "13px",
+                fontSize: "14px",
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
                 color: isActive ? "var(--color-accent)" : "var(--color-text-secondary)",

@@ -54,7 +54,7 @@ export default function TestingChart({
         </h3>
         <p
           className="mt-2 text-[var(--color-text-muted)]"
-          style={{ fontSize: "13px", lineHeight: 1.45 }}
+          style={{ fontSize: "14px", lineHeight: 1.45 }}
         >
           {subtitle}
         </p>
@@ -72,7 +72,7 @@ export default function TestingChart({
               <div className="mb-1.5 flex items-baseline justify-between gap-3">
                 <span
                   className="text-[var(--color-text-secondary)]"
-                  style={{ fontSize: "13px", lineHeight: 1.3 }}
+                  style={{ fontSize: "14px", lineHeight: 1.3 }}
                 >
                   {d.label}
                 </span>
@@ -81,7 +81,7 @@ export default function TestingChart({
                   style={{
                     fontFamily: "var(--font-display)",
                     fontWeight: 700,
-                    fontSize: "13px",
+                    fontSize: "14px",
                   }}
                 >
                   {d.value}
@@ -114,7 +114,7 @@ export default function TestingChart({
         className="mt-auto border-t border-[var(--color-border)] pt-4 text-[var(--color-text-secondary)]"
         style={{
           fontFamily: "var(--font-mono)",
-          fontSize: "12.5px",
+          fontSize: "14px",
           lineHeight: 1.55,
         }}
       >

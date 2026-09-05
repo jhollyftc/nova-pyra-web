@@ -63,7 +63,7 @@ export default async function SponsorsPage() {
                   {s.description && (
                     <p
                       className="mt-2 text-[var(--color-text-secondary)]"
-                      style={{ fontSize: "14px", lineHeight: 1.5 }}
+                      style={{ fontSize: "15px", lineHeight: 1.5 }}
                     >
                       {s.description}
                     </p>

@@ -54,7 +54,7 @@ function PersonCard({ person }: { person: Person }) {
         {person.roleDescription && (
           <p
             className="mt-1 text-[var(--color-text-secondary)]"
-            style={{ fontSize: "13.5px", lineHeight: 1.5 }}
+            style={{ fontSize: "15px", lineHeight: 1.5 }}
           >
             {person.roleDescription}
           </p>
@@ -74,52 +74,54 @@ export default async function TeamPage() {
 
   return (
     <>
+      {/*
+        Title, photo and founding story share the header so the page introduces
+        itself in one screen. Previously the story sat a full section below the
+        photo, so "who we are" needed a scroll to actually read.
+      */}
       <PageHeader
         eyebrow="Our Story"
         title="Who we are"
         intro={`FIRST Tech Challenge Team ${settings.teamNumber}, founded ${settings.founded} in ${settings.location}.`}
-      />
-
-      {settings.teamPhoto && (
-      <section className="shell pt-[calc(var(--section-gap)/2)]">
-        <Reveal>
-          <figure className="hud-frame scanlines m-0 overflow-hidden">
-            <Image
-              src={settings.teamPhoto!}
-              alt="The Nova Pyra team at the FIRST World Championship in Houston"
-              width={1600}
-              height={794}
-              priority
-              className="h-auto w-full"
-              sizes="(max-width: 1280px) 100vw, 1280px"
-            />
-          </figure>
-          <figcaption className="micro mt-3">
-            FIRST World Championship · Houston, Texas
-          </figcaption>
-        </Reveal>
-      </section>
-      )}
-
-      <Section eyebrow="Origins" title="New fire">
-        <div className="grid gap-8 lg:grid-cols-2 lg:gap-14">
-          <Reveal>
-            <p style={{ fontSize: "clamp(15px, 1.7vw, 18px)", lineHeight: 1.7 }}>
-              {story?.foundingStory}
-            </p>
-          </Reveal>
-          <Reveal delay={0.08}>
-            <div className="hud-frame p-6">
-              <p className="micro">Mission</p>
-              <p
-                className="mt-3 text-[var(--color-text-secondary)]"
-                style={{ fontSize: "clamp(15px, 1.7vw, 17px)", lineHeight: 1.65 }}
-              >
-                {story?.missionStatement}
+        lead={
+          <div className="grid gap-6 lg:grid-cols-2 lg:gap-10">
+            {settings.teamPhoto && (
+              <figure className="hud-frame scanlines m-0 self-start overflow-hidden">
+                <Image
+                  src={settings.teamPhoto}
+                  alt="The Nova Pyra team at the FIRST World Championship in Houston"
+                  width={1600}
+                  height={516}
+                  priority
+                  className="h-auto w-full"
+                  sizes="(max-width: 1024px) 100vw, 600px"
+                />
+              </figure>
+            )}
+            <div>
+              <p className="micro mb-3">Origins · New fire</p>
+              <p style={{ fontSize: "clamp(15px, 1.6vw, 17px)", lineHeight: 1.65 }}>
+                {story?.foundingStory}
+              </p>
+              <p className="micro mt-4">
+                FIRST World Championship · Houston, Texas
               </p>
             </div>
-          </Reveal>
-        </div>
+          </div>
+        }
+      />
+
+      <Section eyebrow="What drives us" title="Mission">
+        <Reveal>
+          <div className="hud-frame max-w-3xl p-6">
+            <p
+              className="text-[var(--color-text-secondary)]"
+              style={{ fontSize: "clamp(16px, 1.8vw, 19px)", lineHeight: 1.65 }}
+            >
+              {story?.missionStatement}
+            </p>
+          </div>
+        </Reveal>
       </Section>
 
       <Section eyebrow="What we stand for" title="Values">
@@ -143,7 +145,7 @@ export default async function TeamPage() {
               </h3>
               <p
                 className="mt-2 text-[var(--color-text-secondary)]"
-                style={{ fontSize: "13.5px", lineHeight: 1.5 }}
+                style={{ fontSize: "15px", lineHeight: 1.5 }}
               >
                 {v.description}
               </p>
@@ -173,13 +175,13 @@ export default async function TeamPage() {
                 </h3>
               </div>
               <p className="micro mt-4">Goal</p>
-              <p className="mt-1" style={{ fontSize: "14px", lineHeight: 1.5 }}>
+              <p className="mt-1" style={{ fontSize: "15px", lineHeight: 1.5 }}>
                 {s.goal}
               </p>
               <p className="micro mt-3">Challenge</p>
               <p
                 className="mt-1 text-[var(--color-text-secondary)]"
-                style={{ fontSize: "14px", lineHeight: 1.5 }}
+                style={{ fontSize: "15px", lineHeight: 1.5 }}
               >
                 {s.challenge}
               </p>
@@ -228,7 +230,7 @@ export default async function TeamPage() {
               </h3>
               <p
                 className="mt-2 text-[var(--color-text-secondary)]"
-                style={{ fontSize: "14px", lineHeight: 1.5 }}
+                style={{ fontSize: "15px", lineHeight: 1.5 }}
               >
                 {p.description}
               </p>

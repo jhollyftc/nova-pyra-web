@@ -58,7 +58,7 @@ export default function Section({
               style={{
                 fontFamily: "var(--font-heading)",
                 fontWeight: 700,
-                fontSize: "13px",
+                fontSize: "14px",
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
                 color: "var(--color-accent)",

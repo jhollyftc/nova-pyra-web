@@ -57,7 +57,7 @@ export default function ImpactGrid({ events }: { events: OutreachEvent[] }) {
             </p>
             <p
               className="mt-1 text-[var(--color-text-secondary)]"
-              style={{ fontSize: "14px", lineHeight: 1.5 }}
+              style={{ fontSize: "15px", lineHeight: 1.5 }}
             >
               {e.summary}
             </p>

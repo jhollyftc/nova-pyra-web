@@ -33,7 +33,7 @@ export default function SeasonPulse({
                   style={{
                     fontFamily: "var(--font-display)",
                     fontWeight: 700,
-                    fontSize: "13px",
+                    fontSize: "14px",
                     color: statusColor(g.status),
                   }}
                 >
@@ -84,7 +84,7 @@ export default function SeasonPulse({
                   style={{
                     fontFamily: "var(--font-display)",
                     fontWeight: 700,
-                    fontSize: "13px",
+                    fontSize: "14px",
                     color: "var(--color-accent)",
                   }}
                 >

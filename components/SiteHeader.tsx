@@ -63,7 +63,7 @@ export default function SiteHeader({ teamNumber }: { teamNumber: string }) {
                 style={{
                   fontFamily: "var(--font-heading)",
                   fontWeight: 600,
-                  fontSize: "14px",
+                  fontSize: "15px",
                   letterSpacing: "0.1em",
                   textTransform: "uppercase",
                   color: active ? "var(--color-accent)" : "var(--color-text-secondary)",
@@ -82,7 +82,7 @@ export default function SiteHeader({ teamNumber }: { teamNumber: string }) {
             style={{
               fontFamily: "var(--font-heading)",
               fontWeight: 700,
-              fontSize: "13px",
+              fontSize: "14px",
               letterSpacing: "0.12em",
               textTransform: "uppercase",
               color: "var(--color-gold)",

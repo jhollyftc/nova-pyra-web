@@ -83,7 +83,7 @@ export default function SponsorWall({
           style={{
             fontFamily: "var(--font-display)",
             fontWeight: 700,
-            fontSize: "clamp(13px, 1.6vw, 15px)",
+            fontSize: "clamp(15px, 1.6vw, 17px)",
             letterSpacing: "0.16em",
             textTransform: "uppercase",
             color: "var(--color-gold)",

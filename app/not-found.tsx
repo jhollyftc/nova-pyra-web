@@ -38,7 +38,7 @@ export default function NotFound() {
           style={{
             fontFamily: "var(--font-heading)",
             fontWeight: 700,
-            fontSize: "14px",
+            fontSize: "15px",
             letterSpacing: "0.14em",
             textTransform: "uppercase",
             color: "var(--color-accent)",

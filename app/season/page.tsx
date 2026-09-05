@@ -34,7 +34,7 @@ export default async function SeasonPage() {
         // The record is what this page is really reporting; without it the first
         // thing on screen is a paragraph about the game.
         lead={
-          <dl className="flex flex-wrap gap-px bg-[var(--color-border)]">
+          <dl className="flex w-fit max-w-full flex-wrap gap-px bg-[var(--color-border)]">
             {[
               { label: "Record", value: record },
               { label: "Events", value: String(season.completed.length) },
@@ -48,7 +48,7 @@ export default async function SeasonPage() {
                   style={{
                     fontFamily: "var(--font-display)",
                     fontWeight: 700,
-                    fontSize: "clamp(14px, 2vw, 19px)",
+                    fontSize: "clamp(15px, 2vw, 20px)",
                     letterSpacing: "0.06em",
                   }}
                 >
@@ -86,7 +86,7 @@ export default async function SeasonPage() {
                   style={{
                     fontFamily: "var(--font-display)",
                     fontWeight: 700,
-                    fontSize: "14px",
+                    fontSize: "15px",
                     color:
                       g.status === "achieved" ? "var(--color-live)" : "var(--color-accent)",
                   }}
@@ -96,7 +96,7 @@ export default async function SeasonPage() {
               </div>
               <p
                 className="mt-2 text-[var(--color-text-secondary)]"
-                style={{ fontSize: "14px", lineHeight: 1.5 }}
+                style={{ fontSize: "15px", lineHeight: 1.5 }}
               >
                 {g.note}
               </p>
@@ -126,7 +126,7 @@ export default async function SeasonPage() {
                     style={{
                       fontFamily: "var(--font-display)",
                       fontWeight: 700,
-                      fontSize: "14px",
+                      fontSize: "15px",
                       color: "var(--color-accent)",
                     }}
                   >
@@ -147,7 +147,7 @@ export default async function SeasonPage() {
                         className="border border-[var(--color-border)] px-3 py-1.5"
                         style={{
                           fontFamily: "var(--font-mono)",
-                          fontSize: "12px",
+                          fontSize: "13px",
                           letterSpacing: "0.08em",
                           textTransform: "uppercase",
                           color: "var(--color-gold)",

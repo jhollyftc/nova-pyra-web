@@ -120,7 +120,7 @@ export default function RobotHotspots({
                     style={{
                       fontFamily: "var(--font-heading)",
                       fontWeight: 700,
-                      fontSize: "14px",
+                      fontSize: "15px",
                       letterSpacing: "0.08em",
                       textTransform: "uppercase",
                       color: "var(--color-accent)",
@@ -130,7 +130,7 @@ export default function RobotHotspots({
                   </p>
                   <p
                     className="mt-1.5 text-[var(--color-text-secondary)]"
-                    style={{ fontSize: "13.5px", lineHeight: 1.45 }}
+                    style={{ fontSize: "15px", lineHeight: 1.45 }}
                   >
                     {active.tagline}
                   </p>
@@ -199,7 +199,7 @@ export default function RobotHotspots({
                   </span>
                   <span
                     className="mt-0.5 block text-[var(--color-text-muted)]"
-                    style={{ fontSize: "13.5px", lineHeight: 1.45 }}
+                    style={{ fontSize: "15px", lineHeight: 1.45 }}
                   >
                     {s.tagline}
                   </span>
@@ -227,7 +227,7 @@ export default function RobotHotspots({
           style={{
             fontFamily: "var(--font-heading)",
             fontWeight: 700,
-            fontSize: "13px",
+            fontSize: "14px",
             letterSpacing: "0.14em",
             textTransform: "uppercase",
             color: "var(--color-accent)",

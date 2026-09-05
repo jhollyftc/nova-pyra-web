@@ -27,7 +27,7 @@ export default async function SponsorUsPage() {
   const actionStyle = {
     fontFamily: "var(--font-heading)",
     fontWeight: 700,
-    fontSize: "13px",
+    fontSize: "14px",
     letterSpacing: "0.14em",
     textTransform: "uppercase" as const,
     padding: "12px 26px",
@@ -153,7 +153,7 @@ export default async function SponsorUsPage() {
                     style={{
                       fontFamily: "var(--font-display)",
                       fontWeight: 700,
-                      fontSize: "14px",
+                      fontSize: "15px",
                       color: "var(--color-accent)",
                     }}
                   >
@@ -171,7 +171,7 @@ export default async function SponsorUsPage() {
                       />
                       <span
                         className="text-[var(--color-text-secondary)]"
-                        style={{ fontSize: "14.5px", lineHeight: 1.5 }}
+                        style={{ fontSize: "15px", lineHeight: 1.5 }}
                       >
                         {b}
                       </span>

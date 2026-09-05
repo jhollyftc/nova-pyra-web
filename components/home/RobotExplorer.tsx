@@ -73,7 +73,7 @@ export default function RobotExplorer({
                   </span>
                   <span
                     className="mt-1 block text-[var(--color-text-muted)]"
-                    style={{ fontSize: "14px", lineHeight: 1.45 }}
+                    style={{ fontSize: "15px", lineHeight: 1.45 }}
                   >
                     {s.tagline}
                   </span>
@@ -101,7 +101,7 @@ export default function RobotExplorer({
           style={{
             fontFamily: "var(--font-heading)",
             fontWeight: 700,
-            fontSize: "13px",
+            fontSize: "14px",
             letterSpacing: "0.14em",
             textTransform: "uppercase",
             color: "var(--color-accent)",
