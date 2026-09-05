@@ -90,7 +90,29 @@ export const structure: StructureResolver = (S) =>
           S.list()
             .title("The team")
             .items([
-              S.documentTypeListItem("member").title("People"),
+              S.listItem()
+                .title("People")
+                .child(
+                  S.list()
+                    .title("People")
+                    .items([
+                      S.listItem()
+                        .title("Current team")
+                        .child(
+                          S.documentList()
+                            .title("Current team")
+                            .filter('_type == "member" && status != "alumni"'),
+                        ),
+                      S.listItem()
+                        .title("Alumni")
+                        .child(
+                          S.documentList()
+                            .title("Alumni")
+                            .filter('_type == "member" && status == "alumni"'),
+                        ),
+                      S.documentTypeListItem("member").title("Everyone"),
+                    ]),
+                ),
               singleton(S, "teamStory", "Story, values & partners"),
               S.documentTypeListItem("timelineEvent").title("Timeline"),
             ]),

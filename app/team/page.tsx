@@ -3,6 +3,7 @@ import Image from "next/image";
 import PageHeader from "@/components/PageHeader";
 import Section from "@/components/Section";
 import Reveal from "@/components/Reveal";
+import PersonCard from "@/components/team/PersonCard";
 import { getMembers, getTeamStory, getSettings } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -11,64 +12,8 @@ export const metadata: Metadata = {
     "Who Nova Pyra is — our founding story, values, subteams, students, mentors and industry partners.",
 };
 
-type Person = {
-  id: string;
-  name: string;
-  role: string;
-  photo: string | null;
-  roleDescription?: string;
-  interests?: string;
-  funFact?: string;
-  whyRobotics?: string;
-  dreamOccupation?: string;
-};
-
-function PersonCard({ person }: { person: Person }) {
-  return (
-    <article className="hud-frame flex flex-col overflow-hidden">
-      <div className="relative aspect-square w-full overflow-hidden bg-[var(--color-surface)]/20">
-        {person.photo && (
-        <Image
-          src={person.photo}
-          alt={person.name}
-          fill
-          className="object-cover"
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 220px"
-        />
-        )}
-      </div>
-      <div className="flex flex-1 flex-col gap-1.5 border-t border-[var(--color-border)] p-4">
-        <h3
-          style={{
-            fontFamily: "var(--font-heading)",
-            fontWeight: 700,
-            fontSize: "16px",
-            letterSpacing: "0.04em",
-          }}
-        >
-          {person.name}
-        </h3>
-        <p className="micro" style={{ color: "var(--color-accent)" }}>
-          {person.role}
-        </p>
-        {person.roleDescription && (
-          <p
-            className="mt-1 text-[var(--color-text-secondary)]"
-            style={{ fontSize: "15px", lineHeight: 1.5 }}
-          >
-            {person.roleDescription}
-          </p>
-        )}
-        {person.dreamOccupation && (
-          <p className="micro mt-auto pt-2">Wants to be: {person.dreamOccupation}</p>
-        )}
-      </div>
-    </article>
-  );
-}
-
 export default async function TeamPage() {
-  const [story, { students, mentors }, settings] = await Promise.all([
+  const [story, { students, mentors, alumni }, settings] = await Promise.all([
     getTeamStory(), getMembers(), getSettings(),
   ]);
 
@@ -191,24 +136,40 @@ export default async function TeamPage() {
       </Section>
 
       <Section eyebrow="Students" title={`The team · ${students.length} members`}>
-        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {students.map((m, i) => (
             <Reveal as="li" key={m.id} delay={Math.min(i, 8) * 0.03}>
-              <PersonCard person={m as Person} />
+              <PersonCard person={m} />
             </Reveal>
           ))}
         </ul>
       </Section>
 
       <Section eyebrow="Mentors & Boosters" title={`Behind the team · ${mentors.length}`}>
-        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {mentors.map((m, i) => (
             <Reveal as="li" key={m.id} delay={Math.min(i, 8) * 0.03}>
-              <PersonCard person={m as Person} />
+              <PersonCard person={m} />
             </Reveal>
           ))}
         </ul>
       </Section>
+
+      {alumni.length > 0 && (
+        <Section
+          eyebrow="Alumni"
+          title={`Where they went · ${alumni.length}`}
+          intro="Students and mentors who moved on. They built the robots that came before this one."
+        >
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            {alumni.map((m, i) => (
+              <Reveal as="li" key={m.id} delay={Math.min(i, 8) * 0.03}>
+                <PersonCard person={m} showAlumniDetail />
+              </Reveal>
+            ))}
+          </ul>
+        </Section>
+      )}
 
       <Section eyebrow="FIRST & Industry" title="Partners">
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

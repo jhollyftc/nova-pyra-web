@@ -34,6 +34,47 @@ export default defineType({
       validation: (r) => r.required(),
     }),
     defineField({
+      name: "status",
+      title: "Status",
+      type: "string",
+      options: {
+        list: [
+          { title: "Active", value: "active" },
+          { title: "Alumni", value: "alumni" },
+        ],
+        layout: "radio",
+      },
+      initialValue: "active",
+      description:
+        "Switch to Alumni when someone leaves the team. They move to the Alumni " +
+        "section at the bottom of the team page rather than being deleted — the " +
+        "people who built the earlier robots should stay on the site.",
+      validation: (r) => r.required(),
+    }),
+    defineField({
+      name: "classOf",
+      title: "Class of",
+      type: "string",
+      description: "Graduation year, e.g. 2026. Shown on the alumni card.",
+      hidden: ({ document }) => document?.status !== "alumni",
+    }),
+    defineField({
+      name: "nowDoing",
+      title: "What they are doing now",
+      type: "string",
+      description:
+        "Optional, and the most interesting thing on an alumni card — where they " +
+        "went, what they are studying.",
+      hidden: ({ document }) => document?.status !== "alumni",
+    }),
+    defineField({
+      name: "yearsOnTeam",
+      title: "Years on the team",
+      type: "string",
+      description: "e.g. 2024–2026",
+      hidden: ({ document }) => document?.status !== "alumni",
+    }),
+    defineField({
       name: "role",
       title: "Role",
       type: "string",
@@ -76,6 +117,11 @@ export default defineType({
     },
   ],
   preview: {
-    select: { title: "name", subtitle: "role", media: "photo" },
+    select: { title: "name", subtitle: "role", media: "photo", status: "status" },
+    prepare: ({ title, subtitle, media, status }) => ({
+      title: status === "alumni" ? `${title} (alumni)` : title,
+      subtitle,
+      media,
+    }),
   },
 });

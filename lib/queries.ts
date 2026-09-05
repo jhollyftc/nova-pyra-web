@@ -88,6 +88,7 @@ export const storyQuery = groq`*[_id == "teamStory"][0]{
 
 export const membersQuery = groq`*[_type == "member"] | order(order asc, name asc){
   "id": _id, name, kind, role, roleDescription, ${img("photo", 500)},
+  status, classOf, nowDoing, yearsOnTeam,
   interests, funFact, whyRobotics, personalGoal, dreamOccupation, favoriteBook
 }`;
 

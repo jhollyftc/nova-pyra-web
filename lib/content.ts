@@ -122,6 +122,10 @@ export type Member = {
   personalGoal?: string;
   dreamOccupation?: string;
   favoriteBook?: string;
+  status?: "active" | "alumni";
+  classOf?: string;
+  nowDoing?: string;
+  yearsOnTeam?: string;
 };
 
 export type Settings = {
@@ -177,9 +181,14 @@ export const getTeamStory = () => client.fetch<Story>(Q.storyQuery);
  */
 export async function getMembers() {
   const all = await client.fetch<Member[]>(Q.membersQuery);
+  // Alumni are split out regardless of whether they were a student or a mentor:
+  // they are listed by when they left, not by what they did.
+  const alumni = all.filter((m) => m.status === "alumni");
+  const active = all.filter((m) => m.status !== "alumni");
   return {
-    students: all.filter((m) => m.kind === "student"),
-    mentors: all.filter((m) => m.kind === "mentor"),
+    students: active.filter((m) => m.kind === "student"),
+    mentors: active.filter((m) => m.kind === "mentor"),
+    alumni,
   };
 }
 

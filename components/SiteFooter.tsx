@@ -7,7 +7,7 @@ import type { Settings } from "@/lib/content";
  * in the Studio under Site settings rather than hard-coded.
  */
 const EXPLORE = [
-  { href: "/robot", label: "The Robot" },
+  { href: "/robot", label: "Robots" },
   { href: "/engineering", label: "Engineering" },
   { href: "/team", label: "Team" },
   { href: "/impact", label: "Impact" },
