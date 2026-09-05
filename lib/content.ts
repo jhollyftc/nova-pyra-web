@@ -181,10 +181,11 @@ export const getTeamStory = () => client.fetch<Story>(Q.storyQuery);
  */
 export async function getMembers() {
   const all = await client.fetch<Member[]>(Q.membersQuery);
-  // Alumni are split out regardless of whether they were a student or a mentor:
-  // they are listed by when they left, not by what they did.
-  const alumni = all.filter((m) => m.status === "alumni");
   const active = all.filter((m) => m.status !== "alumni");
+  // Students only. Mentors marked alumni are intentionally rendered nowhere
+  // until the team decides how to present them — their documents still exist
+  // and are listed in the Studio, they are just held back from the site.
+  const alumni = all.filter((m) => m.status === "alumni" && m.kind === "student");
   return {
     students: active.filter((m) => m.kind === "student"),
     mentors: active.filter((m) => m.kind === "mentor"),

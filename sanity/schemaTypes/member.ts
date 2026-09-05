@@ -46,9 +46,10 @@ export default defineType({
       },
       initialValue: "active",
       description:
-        "Switch to Alumni when someone leaves the team. They move to the Alumni " +
-        "section at the bottom of the team page rather than being deleted — the " +
-        "people who built the earlier robots should stay on the site.",
+        "Switch to Alumni when someone leaves the team, rather than deleting them — " +
+        "the people who built the earlier robots should stay on the site. Note that " +
+        "only alumni STUDENTS appear on the team page at the moment; alumni mentors " +
+        "are kept here but not shown anywhere yet.",
       validation: (r) => r.required(),
     }),
     defineField({

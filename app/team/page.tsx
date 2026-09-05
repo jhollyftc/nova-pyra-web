@@ -157,9 +157,9 @@ export default async function TeamPage() {
 
       {alumni.length > 0 && (
         <Section
-          eyebrow="Alumni"
-          title={`Where they went · ${alumni.length}`}
-          intro="Students and mentors who moved on. They built the robots that came before this one."
+          eyebrow="Past members"
+          title="Alumni"
+          intro="Students who moved on. They built the robots that came before this one."
         >
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             {alumni.map((m, i) => (
