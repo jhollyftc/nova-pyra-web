@@ -24,13 +24,57 @@ export default async function SponsorUsPage() {
     getSponsorship(), getImpactStats(), getAwards(), getSponsors(), getSettings(),
   ]);
 
+  const actionStyle = {
+    fontFamily: "var(--font-heading)",
+    fontWeight: 700,
+    fontSize: "13px",
+    letterSpacing: "0.14em",
+    textTransform: "uppercase" as const,
+    padding: "12px 26px",
+  };
+
   const subject = encodeURIComponent(
     `Sponsorship enquiry — ${settings.teamName} FTC ${settings.teamNumber}`,
   );
 
   return (
     <>
-      <PageHeader eyebrow="Sponsor Us" title="Put your name on a robot" intro={s.intro} />
+      <PageHeader
+        eyebrow="Sponsor Us"
+        title="Put your name on a robot"
+        intro={s.intro}
+        // This page exists to be acted on. Both routes to giving are in the
+        // header so nobody has to scroll past three sections to find them.
+        lead={
+          <div className="flex flex-wrap gap-3">
+            {s.donateUrl && (
+              <a
+                href="#donate"
+                className="border"
+                style={{
+                  ...actionStyle,
+                  color: "var(--color-gold)",
+                  borderColor: "rgba(242,183,5,0.5)",
+                  boxShadow: "var(--glow-gold)",
+                }}
+              >
+                Give now
+              </a>
+            )}
+            <a
+              href={`mailto:${s.contactEmail}?subject=${subject}`}
+              className="border"
+              style={{
+                ...actionStyle,
+                color: "var(--color-accent)",
+                borderColor: "var(--color-border-active)",
+              }}
+            >
+              Email the team
+            </a>
+          </div>
+        }
+      />
 
       {/* The case: what a sponsor's money reaches */}
       <Section eyebrow="Reach" title="What your support buys">
@@ -137,6 +181,7 @@ export default async function SponsorUsPage() {
 
       {s.donateUrl && (
         <Section
+          id="donate"
           eyebrow="Donate online"
           title="Give now"
           intro="Any amount helps. Card payments are processed by Hack Club Bank, our fiscal sponsor."

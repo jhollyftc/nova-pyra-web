@@ -24,24 +24,22 @@ export default async function ImpactPage() {
         eyebrow="Outreach & Impact"
         title="What we do off the field"
         intro="Robots are the excuse. The point is getting more kids in front of engineering."
+        lead={
+          <div className="grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-5">
+            <StatCounter compact value={season.peopleReached} label="People reached" />
+            <StatCounter compact value={season.volunteerHours} label="Volunteer hours" />
+            <StatCounter compact value={season.eventsHosted} label="Events" />
+            <StatCounter compact value={season.schoolsVisited} label="Schools visited" />
+            <StatCounter compact value={season.teamsMentored} label="Teams mentored" />
+          </div>
+        }
       />
 
-      <Section eyebrow="This season" title="Impact at a glance">
-        <Reveal>
-          <div className="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-5">
-            <StatCounter value={season.peopleReached} label="People reached" />
-            <StatCounter value={season.volunteerHours} label="Volunteer hours" />
-            <StatCounter value={season.eventsHosted} label="Events" />
-            <StatCounter value={season.schoolsVisited} label="Schools visited" />
-            <StatCounter value={season.teamsMentored} label="Teams mentored" />
-          </div>
-        </Reveal>
-
+      <Section eyebrow="All time" title="Since we started">
         <Reveal delay={0.1}>
-          <div className="mt-14 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:items-center">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:items-center">
             <div>
-              <p className="micro">All time · both seasons</p>
-              <dl className="mt-4 flex flex-col gap-2">
+              <dl className="flex flex-col gap-2">
                 {[
                   ["People reached", allTime.peopleReached],
                   ["Volunteer hours", allTime.volunteerHours],

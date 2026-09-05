@@ -3,6 +3,7 @@ import PageHeader from "@/components/PageHeader";
 import Section from "@/components/Section";
 import Reveal from "@/components/Reveal";
 import ProcessRing from "@/components/home/ProcessRing";
+import NotebookLink from "@/components/NotebookLink";
 import TestingChart from "@/components/TestingChart";
 import { getEdp, getProblems, getTestingCharts } from "@/lib/content";
 
@@ -21,6 +22,7 @@ export default async function EngineeringPage() {
         eyebrow="Engineering Process"
         title="How we engineer"
         intro="Every decision, including the ones we reject, is documented with its reasoning — a traceable record, and how new members learn why the robot looks the way it does."
+        lead={edp?.notebook ? <NotebookLink href={edp.notebook} /> : null}
       />
 
       <Section eyebrow="The Cycle" title="Engineering design process">
@@ -28,6 +30,7 @@ export default async function EngineeringPage() {
           steps={edp?.steps ?? []}
           narrative={edp?.narrative ?? ""}
           notebookPath={edp?.notebook ?? null}
+          showNotebook={false}
         />
       </Section>
 

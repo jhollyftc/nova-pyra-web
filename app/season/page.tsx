@@ -14,12 +14,50 @@ export const metadata: Metadata = {
 export default async function SeasonPage() {
   const [season, settings] = await Promise.all([getSeason(), getSettings()]);
 
+  const tally = season.completed.reduce(
+    (acc, e) => ({
+      wins: acc.wins + (e.record?.wins ?? 0),
+      losses: acc.losses + (e.record?.losses ?? 0),
+      ties: acc.ties + (e.record?.ties ?? 0),
+    }),
+    { wins: 0, losses: 0, ties: 0 },
+  );
+  const record = `${tally.wins}-${tally.losses}-${tally.ties}`;
+  const worlds = season.completed.find((e) => e.isWorlds);
+
   return (
     <>
       <PageHeader
         eyebrow={`${settings.season} · ${season?.gameName ?? ""}`}
         title="This season"
         intro={season?.description}
+        // The record is what this page is really reporting; without it the first
+        // thing on screen is a paragraph about the game.
+        lead={
+          <dl className="flex flex-wrap gap-px bg-[var(--color-border)]">
+            {[
+              { label: "Record", value: record },
+              { label: "Events", value: String(season.completed.length) },
+              ...(worlds?.division
+                ? [{ label: "Worlds division", value: `${worlds.division} #${worlds.rank}` }]
+                : []),
+            ].map((cell) => (
+              <div key={cell.label} className="flex flex-col gap-1 bg-black px-5 py-3">
+                <dt className="micro">{cell.label}</dt>
+                <dd
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 700,
+                    fontSize: "clamp(14px, 2vw, 19px)",
+                    letterSpacing: "0.06em",
+                  }}
+                >
+                  {cell.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        }
       />
 
       <Section eyebrow="Approach" title="Our strategy">

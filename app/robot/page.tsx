@@ -48,6 +48,23 @@ export default async function RobotPage() {
         eyebrow="The Robot"
         title={robot?.name ?? "Our robot"}
         intro={robot?.philosophy}
+        // Weight, size and drivetrain answer "what is this machine" before any
+        // scrolling. The full spec table is still the first section below.
+        lead={
+          headlineSpecs.length > 0 ? (
+            <dl className="flex flex-wrap gap-x-3 gap-y-2">
+              {headlineSpecs.map((spec) => (
+                <dd
+                  key={spec}
+                  className="micro border border-[var(--color-border)] px-3 py-1.5"
+                  style={{ color: "var(--color-text-secondary)" }}
+                >
+                  {spec}
+                </dd>
+              ))}
+            </dl>
+          ) : null
+        }
       />
 
       <Section eyebrow="Specifications" title="At a glance">

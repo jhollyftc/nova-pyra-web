@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
+import NotebookLink from "@/components/NotebookLink";
 
 type Step = { _key?: string; label: string; description: string };
 
@@ -14,10 +15,17 @@ export default function ProcessRing({
   steps,
   narrative,
   notebookPath,
+  showNotebook = true,
 }: {
   steps: Step[];
   narrative: string;
   notebookPath: string | null;
+  /**
+   * /engineering pins this CTA to its page header, where judges will see it
+   * without scrolling — so it suppresses the copy here rather than showing the
+   * same link twice on one page.
+   */
+  showNotebook?: boolean;
 }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const reduced = useReducedMotion();
@@ -169,42 +177,11 @@ export default function ProcessRing({
           {narrative}
         </p>
 
-        {/* The pit app embedded this 16.4 MB PDF in an iframe. On the web it is a link. */}
-        {notebookPath && (
-        <a
-          href={notebookPath}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hud-frame mt-8 flex items-center gap-4 px-5 py-4 transition-colors hover:bg-[rgba(17,115,241,0.06)]"
-        >
-          <span className="relative flex h-2.5 w-2.5 shrink-0">
-            <span
-              className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-70"
-              style={{ background: "var(--color-live)" }}
-            />
-            <span
-              className="relative inline-flex h-2.5 w-2.5 rounded-full"
-              style={{ background: "var(--color-live)" }}
-            />
-          </span>
-          <span>
-            <span
-              className="block"
-              style={{
-                fontFamily: "var(--font-heading)",
-                fontWeight: 700,
-                fontSize: "15px",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-              }}
-            >
-              Engineering Portfolio
-            </span>
-            <span className="micro" style={{ letterSpacing: "0.12em" }}>
-              Live document · opens the PDF
-            </span>
-          </span>
-        </a>
+        {/* The pit app embedded this PDF in an iframe. On the web it is a link. */}
+        {notebookPath && showNotebook && (
+          <div className="mt-8">
+            <NotebookLink href={notebookPath} />
+          </div>
         )}
       </div>
     </div>
