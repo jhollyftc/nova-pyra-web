@@ -66,6 +66,10 @@ export type SeasonEvent = {
   awards: string[];
   keyTakeaway: string;
   isWorlds: boolean;
+  /** World Championship only: teams are split into divisions and compete within one. */
+  division: string | null;
+  /** World Championship only: placing across every division. */
+  overallRank: number | null;
 };
 
 export type Goal = { goal: string; progress: number; status: string; note: string };
@@ -265,7 +269,15 @@ export async function getSeasonTelemetry() {
     game: season?.gameName ?? "",
     robot: robot?.name ?? "",
     record: `${record.wins}-${record.losses}-${record.ties}`,
-    worldsRank: worlds ? `#${worlds.rank}` : null,
+    // At the World Championship teams are split into divisions and ranked within
+    // one, so a bare "#17" reads as an overall placing and overstates the result
+    // — the team's overall rank was 91st. Label and value are built together so
+    // they cannot drift apart.
+    worlds: worlds
+      ? worlds.division
+        ? { label: "Worlds division", value: `${worlds.division} #${worlds.rank}` }
+        : { label: "Worlds", value: `Rank #${worlds.rank}` }
+      : null,
   };
 }
 

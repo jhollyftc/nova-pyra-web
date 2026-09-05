@@ -72,7 +72,7 @@ export default async function Image() {
             { label: "Season", value: t.game },
             { label: "Robot", value: t.robot },
             { label: "Record", value: t.record },
-            ...(t.worldsRank ? [{ label: "Worlds", value: `Rank ${t.worldsRank}` }] : []),
+            ...(t.worlds ? [t.worlds] : []),
           ].map((cell) => (
             <div key={cell.label} style={{ display: "flex", flexDirection: "column" }}>
               <div

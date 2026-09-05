@@ -89,5 +89,5 @@ export const seasonQuery = groq`*[_id == "season"][0]{
 
 export const seasonEventsQuery = groq`*[_type == "seasonEvent"] | order(order asc){
   "id": _id, name, season, date, location, status, rank, record, awards,
-  keyTakeaway, isWorlds
+  keyTakeaway, isWorlds, division, overallRank
 }`;

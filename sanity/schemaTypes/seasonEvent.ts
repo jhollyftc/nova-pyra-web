@@ -44,7 +44,26 @@ export default defineType({
       name: "rank",
       title: "Qualification rank",
       type: "number",
+      description:
+        "Rank within the division at the World Championship, or overall at any other event. " +
+        "Set 'Division' below so the site labels it correctly.",
       hidden: ({ document }) => document?.status !== "completed",
+    }),
+    defineField({
+      name: "division",
+      title: "Division",
+      type: "string",
+      description:
+        "World Championship only — e.g. 'Jackson'. Teams are split into divisions there and " +
+        "compete within one, so a division rank must never be shown as an overall rank.",
+      hidden: ({ document }) => !document?.isWorlds,
+    }),
+    defineField({
+      name: "overallRank",
+      title: "Overall rank across all divisions",
+      type: "number",
+      description: "World Championship only. Optional, and shown alongside the division rank.",
+      hidden: ({ document }) => !document?.isWorlds,
     }),
     defineField({
       name: "record",

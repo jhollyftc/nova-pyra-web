@@ -10,7 +10,12 @@ type Telemetry = {
   game: string;
   robot: string;
   record: string;
-  worldsRank: string | null;
+  /**
+   * Label and value arrive together from the content layer. At the World
+   * Championship a rank is within a division, not overall, so the two must be
+   * written as one unit or the number ends up overstating the result.
+   */
+  worlds: { label: string; value: string } | null;
 };
 
 /**
@@ -41,9 +46,7 @@ export default function Hero({
     { label: "Season", value: telemetry.game },
     { label: "Robot", value: telemetry.robot },
     { label: "Record", value: telemetry.record },
-    ...(telemetry.worldsRank
-      ? [{ label: "Worlds", value: `Rank ${telemetry.worldsRank}` }]
-      : []),
+    ...(telemetry.worlds ? [telemetry.worlds] : []),
   ];
 
   const rise = (delay: number) =>

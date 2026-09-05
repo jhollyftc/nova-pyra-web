@@ -92,11 +92,14 @@ export default async function SeasonPage() {
                       color: "var(--color-accent)",
                     }}
                   >
-                    RANK {e.rank} · {e.record.wins}-{e.record.losses}-{e.record.ties}
+                    {e.division ? `${e.division.toUpperCase()} DIV · ` : ""}RANK {e.rank} ·{" "}
+                    {e.record.wins}-{e.record.losses}-{e.record.ties}
                   </span>
                 </div>
                 <p className="micro mt-2">
                   {e.date} · {e.location}
+                  {/* No "th" suffix: 91 would render "91th". */}
+                  {e.overallRank ? ` · Overall rank ${e.overallRank} across all divisions` : ""}
                 </p>
                 {e.awards.length > 0 && (
                   <ul className="mt-4 flex flex-wrap gap-2">
