@@ -28,8 +28,7 @@ export const structure: StructureResolver = (S, context) => {
   const orderable = (type: string, title: string, filter?: string) =>
     orderableDocumentListDeskItem({ type, title, S, context, ...(filter ? { filter } : {}) });
 
-  return
-  S.list()
+  return S.list()
     .title("Nova Pyra")
     .items([
       S.listItem()
