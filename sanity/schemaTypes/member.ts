@@ -1,4 +1,5 @@
 import { defineField, defineType } from "sanity";
+import { orderRankField, orderRankOrdering } from "@sanity/orderable-document-list";
 
 export default defineType({
   name: "member",
@@ -100,21 +101,16 @@ export default defineType({
     defineField({ name: "personalGoal", title: "Personal goal", type: "text", rows: 2 }),
     defineField({ name: "dreamOccupation", title: "Dream occupation", type: "string" }),
     defineField({ name: "favoriteBook", title: "Favourite book", type: "string" }),
-    defineField({
-      name: "order",
-      title: "Display order",
-      type: "number",
-      description: "Lower numbers first. Leads are usually ordered first.",
-    }),
+    // Drag-and-drop position. Hidden: it is set by reordering the list, not
+    // by typing a number.
+    orderRankField({ type: "member" }),
   ],
   orderings: [
+    orderRankOrdering,
     {
-      title: "Display order",
-      name: "displayOrder",
-      by: [
-        { field: "order", direction: "asc" },
-        { field: "name", direction: "asc" },
-      ],
+      title: "Name",
+      name: "byName",
+      by: [{ field: "name", direction: "asc" }],
     },
   ],
   preview: {

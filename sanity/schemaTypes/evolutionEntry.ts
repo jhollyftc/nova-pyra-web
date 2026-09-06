@@ -1,4 +1,5 @@
 import { defineField, defineType } from "sanity";
+import { orderRankField, orderRankOrdering } from "@sanity/orderable-document-list";
 
 export default defineType({
   name: "evolutionEntry",
@@ -32,9 +33,10 @@ export default defineType({
       description: "Which season's robot this evolution entry belongs to.",
       validation: (r) => r.required(),
     }),
-    defineField({ name: "order", title: "Order", type: "number" }),
+    orderRankField({ type: "evolutionEntry" }),
   ],
-  orderings: [{ title: "Order", name: "order", by: [{ field: "order", direction: "asc" }] }],
+  orderings: [
+    orderRankOrdering],
   preview: {
     select: { title: "name", subtitle: "subsystem", version: "version", media: "photos.0" },
     prepare: ({ title, subtitle, version, media }) => ({ title, subtitle: `${subtitle} · ${version ?? ""}`, media }),

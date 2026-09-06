@@ -1,4 +1,5 @@
 import { defineField, defineType } from "sanity";
+import { orderRankField, orderRankOrdering } from "@sanity/orderable-document-list";
 
 export default defineType({
   name: "testingChart",
@@ -54,8 +55,9 @@ export default defineType({
       rows: 2,
       description: "The one sentence a judge should take away.",
     }),
-    defineField({ name: "order", title: "Order", type: "number" }),
+    orderRankField({ type: "testingChart" }),
   ],
-  orderings: [{ title: "Order", name: "order", by: [{ field: "order", direction: "asc" }] }],
+  orderings: [
+    orderRankOrdering],
   preview: { select: { title: "title", subtitle: "insight" } },
 });

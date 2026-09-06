@@ -1,4 +1,5 @@
 import { defineField, defineType } from "sanity";
+import { orderRankField, orderRankOrdering } from "@sanity/orderable-document-list";
 
 /**
  * One document per season's robot.
@@ -60,12 +61,9 @@ export default defineType({
         "An in-development robot can be published with only a name and a game — " +
         "specs and subsystems can be filled in as the season goes.",
     }),
-    defineField({
-      name: "order",
-      title: "Order",
-      type: "number",
-      description: "Newest first. Lower numbers appear earlier in the season switcher.",
-    }),
+    // Drag-and-drop position. Hidden: it is set by reordering the list, not
+    // by typing a number.
+    orderRankField({ type: "robot" }),
     defineField({
       name: "philosophy",
       title: "Design philosophy",
@@ -117,7 +115,8 @@ export default defineType({
       ],
     }),
   ],
-  orderings: [{ title: "Newest first", name: "order", by: [{ field: "order", direction: "asc" }] }],
+  orderings: [
+    orderRankOrdering],
   preview: {
     select: { title: "name", season: "season", game: "gameName", current: "isCurrent" },
     prepare: ({ title, season, game, current }) => ({

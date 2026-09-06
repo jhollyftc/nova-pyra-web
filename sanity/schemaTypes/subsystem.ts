@@ -1,4 +1,5 @@
 import { defineField, defineType } from "sanity";
+import { orderRankField, orderRankOrdering } from "@sanity/orderable-document-list";
 
 export default defineType({
   name: "subsystem",
@@ -58,8 +59,9 @@ export default defineType({
       description: "Which season's robot this subsystem belongs to.",
       validation: (r) => r.required(),
     }),
-    defineField({ name: "order", title: "Order", type: "number" }),
+    orderRankField({ type: "subsystem" }),
   ],
-  orderings: [{ title: "Order", name: "order", by: [{ field: "order", direction: "asc" }] }],
+  orderings: [
+    orderRankOrdering],
   preview: { select: { title: "name", subtitle: "tagline", media: "photo" } },
 });

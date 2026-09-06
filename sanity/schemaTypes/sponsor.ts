@@ -1,4 +1,5 @@
 import { defineField, defineType } from "sanity";
+import { orderRankField, orderRankOrdering } from "@sanity/orderable-document-list";
 
 /** Tier ids match content/outreach/sponsors.json so the import is a straight map. */
 export const SPONSOR_TIERS = [
@@ -48,20 +49,17 @@ export default defineType({
       title: "Website",
       type: "url",
     }),
-    defineField({
-      name: "order",
-      title: "Order within tier",
-      type: "number",
-      description: "Lower numbers first. Leave blank to sort by name.",
-    }),
+    // Drag-and-drop position. Hidden: it is set by reordering the list, not
+    // by typing a number.
+    orderRankField({ type: "sponsor" }),
   ],
   orderings: [
+    orderRankOrdering,
     {
-      title: "Tier, then order",
-      name: "tierOrder",
+      title: "Tier, then name",
+      name: "tierName",
       by: [
         { field: "tier", direction: "asc" },
-        { field: "order", direction: "asc" },
         { field: "name", direction: "asc" },
       ],
     },

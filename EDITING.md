@@ -85,6 +85,14 @@ itself.
 **Student names are first name + last initial** — "Hailey V." The editor will refuse a full
 surname. This is deliberate: it is a public site and most of the team are minors.
 
+**To reorder anything, drag it.** Sponsors, people, awards, subsystems, results, timeline
+entries, robots and the engineering cards are drag-and-drop lists — grab a row and move it. There
+are no position numbers to keep track of, and inserting something in the middle does not renumber
+everything else.
+
+Outreach events, season updates and section headings are deliberately not draggable: they sort by
+date or by which section they belong to, which the CMS already knows.
+
 **Photos are resized automatically.** Upload straight from a phone; the site serves a correctly
 sized, modern-format version. You do not need to shrink anything first.
 

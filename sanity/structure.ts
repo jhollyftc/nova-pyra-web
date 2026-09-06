@@ -1,4 +1,5 @@
 import type { StructureResolver } from "sanity/structure";
+import { orderableDocumentListDeskItem } from "@sanity/orderable-document-list";
 import { SINGLETONS } from "./schemaTypes";
 
 /**
@@ -18,7 +19,16 @@ const singleton = (S: Parameters<StructureResolver>[0], type: string, title: str
     .id(type)
     .child(S.document().schemaType(type).documentId(type).title(title));
 
-export const structure: StructureResolver = (S) =>
+/**
+ * Types whose order a person decides are drag-and-drop lists. Outreach events,
+ * season updates and section headings are not — they sort by date or key, which
+ * is data the CMS already has and should not be maintained by hand.
+ */
+export const structure: StructureResolver = (S, context) => {
+  const orderable = (type: string, title: string, filter?: string) =>
+    orderableDocumentListDeskItem({ type, title, S, context, ...(filter ? { filter } : {}) });
+
+  return
   S.list()
     .title("Nova Pyra")
     .items([
@@ -40,7 +50,7 @@ export const structure: StructureResolver = (S) =>
           S.list()
             .title("Sponsors")
             .items([
-              S.documentTypeListItem("sponsor").title("Sponsor list"),
+              orderable("sponsor", "Sponsor list"),
               singleton(S, "sponsorship", "Pitch & tier benefits"),
             ]),
         ),
@@ -51,9 +61,9 @@ export const structure: StructureResolver = (S) =>
           S.list()
             .title("Competition")
             .items([
-              S.documentTypeListItem("seasonEvent").title("Results"),
+              orderable("seasonEvent", "Results"),
               singleton(S, "season", "This season"),
-              S.documentTypeListItem("award").title("Awards"),
+              orderable("award", "Awards"),
             ]),
         ),
 
@@ -66,9 +76,9 @@ export const structure: StructureResolver = (S) =>
             .title("The robot")
             .items([
               // No longer a singleton: one document per season's robot.
-              S.documentTypeListItem("robot").title("Robots by season"),
-              S.documentTypeListItem("subsystem").title("Subsystems"),
-              S.documentTypeListItem("evolutionEntry").title("Design evolution"),
+              orderable("robot", "Robots by season"),
+              orderable("subsystem", "Subsystems"),
+              orderable("evolutionEntry", "Design evolution"),
             ]),
         ),
 
@@ -79,8 +89,8 @@ export const structure: StructureResolver = (S) =>
             .title("Engineering")
             .items([
               singleton(S, "engineeringProcess", "Process & portfolio"),
-              S.documentTypeListItem("problemCard").title("Problem → solution"),
-              S.documentTypeListItem("testingChart").title("Test data"),
+              orderable("problemCard", "Problem → solution"),
+              orderable("testingChart", "Test data"),
             ]),
         ),
 
@@ -96,13 +106,7 @@ export const structure: StructureResolver = (S) =>
                   S.list()
                     .title("People")
                     .items([
-                      S.listItem()
-                        .title("Current team")
-                        .child(
-                          S.documentList()
-                            .title("Current team")
-                            .filter('_type == "member" && status != "alumni"'),
-                        ),
+                      orderable("member", "Current team", '_type == "member" && status != "alumni"'),
                       S.listItem()
                         .title("Alumni")
                         .child(
@@ -114,7 +118,7 @@ export const structure: StructureResolver = (S) =>
                     ]),
                 ),
               singleton(S, "teamStory", "Story, values & partners"),
-              S.documentTypeListItem("timelineEvent").title("Timeline"),
+              orderable("timelineEvent", "Timeline"),
             ]),
         ),
 
@@ -122,6 +126,7 @@ export const structure: StructureResolver = (S) =>
       S.documentTypeListItem("sectionCopy").title("Section headings"),
       singleton(S, "siteSettings", "Site settings"),
     ]);
+};
 
 /** Singletons are created by the importer; the Studio must not offer more. */
 export const singletonActions = new Set(["publish", "discardChanges", "restore"]);

@@ -1,4 +1,5 @@
 import { defineField, defineType } from "sanity";
+import { orderRankField, orderRankOrdering } from "@sanity/orderable-document-list";
 
 /**
  * A competition result.
@@ -96,11 +97,20 @@ export default defineType({
       description: "Drives the 'Worlds rank' figure in the site header telemetry.",
       initialValue: false,
     }),
-    defineField({ name: "order", title: "Order", type: "number", description: "Lower numbers first." }),
+    // Drag-and-drop position. Hidden: it is set by reordering the list, not
+    // by typing a number.
+    orderRankField({ type: "seasonEvent" }),
   ],
-  orderings: [{ title: "Order", name: "order", by: [{ field: "order", direction: "asc" }] }],
+  orderings: [orderRankOrdering],
   preview: {
-    select: { title: "name", status: "status", rank: "rank", w: "record.wins", l: "record.losses", t: "record.ties" },
+    select: {
+      title: "name",
+      status: "status",
+      rank: "rank",
+      w: "record.wins",
+      l: "record.losses",
+      t: "record.ties",
+    },
     prepare: ({ title, status, rank, w, l, t }) => ({
       title,
       subtitle:

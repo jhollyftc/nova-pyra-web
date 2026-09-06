@@ -22,7 +22,7 @@ export const settingsQuery = groq`*[_id == "siteSettings"][0]{
 }`;
 
 /** The robot shown by default: whichever is flagged current, newest as a fallback. */
-export const currentRobotQuery = groq`*[_type == "robot"] | order(isCurrent desc, order asc)[0]{
+export const currentRobotQuery = groq`*[_type == "robot"] | order(isCurrent desc, orderRank)[0]{
   _id, name, season, gameName, status, isCurrent, "slug": slug.current,
   philosophy, specs,
   cobDescription, cobCritical, cobOptional, cobBypass,
@@ -37,16 +37,16 @@ export const robotBySlugQuery = groq`*[_type == "robot" && slug.current == $slug
 }`;
 
 /** Just enough to build the season switcher. */
-export const robotListQuery = groq`*[_type == "robot"] | order(order asc){
+export const robotListQuery = groq`*[_type == "robot"] | order(orderRank){
   "slug": slug.current, name, season, gameName, status, isCurrent
 }`;
 
-export const subsystemsQuery = groq`*[_type == "subsystem" && robot._ref == $robotId] | order(order asc){
+export const subsystemsQuery = groq`*[_type == "subsystem" && robot._ref == $robotId] | order(orderRank){
   "id": slug.current, name, tagline, ${img("photo", 640)},
   hotspot, materials, motors, rationale, tradeoffs
 }`;
 
-export const evolutionQuery = groq`*[_type == "evolutionEntry" && robot._ref == $robotId] | order(order asc){
+export const evolutionQuery = groq`*[_type == "evolutionEntry" && robot._ref == $robotId] | order(orderRank){
   name, subsystem, version, dateRange, changes, result,
   "photos": photos[].asset->url
 }`;
@@ -55,11 +55,11 @@ export const processQuery = groq`*[_id == "engineeringProcess"][0]{
   steps, narrative, ${fileUrl("notebook")}
 }`;
 
-export const problemsQuery = groq`*[_type == "problemCard"] | order(order asc){
+export const problemsQuery = groq`*[_type == "problemCard"] | order(orderRank){
   "id": _id, problem, solution, result
 }`;
 
-export const chartsQuery = groq`*[_type == "testingChart"] | order(order asc){
+export const chartsQuery = groq`*[_type == "testingChart"] | order(orderRank){
   "id": _id, title, subtitle, unit, betterDirection, data, insight
 }`;
 
@@ -72,7 +72,7 @@ export const outreachQuery = groq`*[_type == "outreachEvent"] | order(date desc)
   "photos": photos[].asset->url
 }`;
 
-export const sponsorsQuery = groq`*[_type == "sponsor"] | order(order asc, name asc){
+export const sponsorsQuery = groq`*[_type == "sponsor"] | order(orderRank){
   "id": _id, name, tier, description, url, ${img("logo", 400)}
 }`;
 
@@ -86,17 +86,17 @@ export const storyQuery = groq`*[_id == "teamStory"][0]{
   foundingStory, missionStatement, values, subteams, partners
 }`;
 
-export const membersQuery = groq`*[_type == "member"] | order(order asc, name asc){
+export const membersQuery = groq`*[_type == "member"] | order(orderRank){
   "id": _id, name, kind, role, roleDescription, ${img("photo", 500)},
   status, classOf, nowDoing, yearsOnTeam,
   interests, funFact, whyRobotics, personalGoal, dreamOccupation, favoriteBook
 }`;
 
-export const awardsQuery = groq`*[_type == "award"] | order(order asc){
+export const awardsQuery = groq`*[_type == "award"] | order(orderRank){
   award, season, event, level
 }`;
 
-export const timelineQuery = groq`*[_type == "timelineEvent"] | order(order asc){
+export const timelineQuery = groq`*[_type == "timelineEvent"] | order(orderRank){
   title, year, type, description
 }`;
 
@@ -104,7 +104,7 @@ export const seasonQuery = groq`*[_id == "season"][0]{
   gameName, gameYear, description, strategy, robotGoals, awardGoals
 }`;
 
-export const seasonEventsQuery = groq`*[_type == "seasonEvent"] | order(order asc){
+export const seasonEventsQuery = groq`*[_type == "seasonEvent"] | order(orderRank){
   "id": _id, name, season, date, location, status, rank, record, awards,
   keyTakeaway, isWorlds, division, overallRank
 }`;
