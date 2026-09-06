@@ -119,6 +119,7 @@ export const structure: StructureResolver = (S) =>
         ),
 
       S.divider(),
+      S.documentTypeListItem("sectionCopy").title("Section headings"),
       singleton(S, "siteSettings", "Site settings"),
     ]);
 

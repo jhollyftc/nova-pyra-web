@@ -4,7 +4,7 @@ import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import Section from "@/components/Section";
 import Reveal from "@/components/Reveal";
-import { getSponsorsByTier, getSponsors } from "@/lib/content";
+import { getSectionCopy, getSponsorsByTier, getSponsors } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Our Sponsors",
@@ -13,15 +13,17 @@ export const metadata: Metadata = {
 };
 
 export default async function SponsorsPage() {
-  const [allTiers, sponsors] = await Promise.all([getSponsorsByTier(), getSponsors()]);
+  const [allTiers, sponsors, copy] = await Promise.all([
+    getSponsorsByTier(),
+    getSponsors(),
+    getSectionCopy(),
+  ]);
   const tiers = allTiers.filter((t) => t.sponsors.length > 0);
 
   return (
     <>
       <PageHeader
-        eyebrow="Thank You"
-        title="Built by our community"
-        intro={`${sponsors.length} sponsors fund our parts, our travel, and the outreach we run across St. Tammany Parish.`}
+        {...copy("sponsors.header", { n: sponsors.length })}
       />
 
       {tiers.map((tier) => (
@@ -75,7 +77,7 @@ export default async function SponsorsPage() {
         </Section>
       ))}
 
-      <Section eyebrow="Join them" title="Support Nova Pyra">
+      <Section {...copy("sponsors.join")}>
         <Reveal>
           <Link
             href="/sponsors/join"

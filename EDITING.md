@@ -62,10 +62,21 @@ The Studio's left-hand menu is grouped by what you are trying to do, not by how 
 | Founding story, values, subteams, partners | **The team → Story, values & partners** |
 | Team timeline | **The team → Timeline** |
 | Team name, tagline, logo, social links | **Site settings** |
+| **Any section heading or intro line** | **Section headings** |
 
 Every field has a description under it explaining what it is for. Read those first.
 
 ## Things worth knowing
+
+**Section headings are editable.** Every "eyebrow / heading / intro" block above a
+section — "Problem → Solution · What went wrong, and what we did · The failures are the
+interesting part…" and the ~38 others — lives under **Section headings**. Clearing a field
+restores the original wording rather than leaving a blank, so it is safe to experiment.
+
+Some headings contain a placeholder in braces, like `{n}` or `{robot}`. Those are numbers
+the site works out as it renders — the student count, the current robot's name. Keep them
+where you want the value; delete them if you do not. An unfilled placeholder is removed,
+never printed as literal text.
 
 **The hero's record and Worlds rank are not typed anywhere.** They are added up from
 **Competition → Results**. Add an event with its win-loss-tie record and the front page updates

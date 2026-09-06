@@ -18,6 +18,7 @@ import {
   getSettings,
   getSponsorLogos,
   getSponsors,
+  getSectionCopy,
   getSubsystemHotspots,
 } from "@/lib/content";
 
@@ -25,11 +26,11 @@ export default async function HomePage() {
   // One await, in parallel — these are independent queries.
   const [
     settings, robot, season, stats, edp, awards,
-    telemetry, hotspots, specs, outreach, sponsorLogos, sponsors,
+    telemetry, hotspots, specs, outreach, sponsorLogos, sponsors, copy,
   ] = await Promise.all([
     getSettings(), getRobot(), getSeason(), getImpactStats(), getEdp(), getAwards(),
     getSeasonTelemetry(), getSubsystemHotspots(), getHeadlineSpecs(),
-    getOutreachEvents(), getSponsorLogos(), getSponsors(),
+    getOutreachEvents(), getSponsorLogos(), getSponsors(), getSectionCopy(),
   ]);
 
   return (
@@ -54,8 +55,7 @@ export default async function HomePage() {
       />
 
       <Section
-        eyebrow="The Robot"
-        title={`Meet ${robot?.name ?? "our robot"}`}
+        {...copy("home.robot", { robot: robot?.name ?? "our robot" })}
         href="/robot"
         hrefLabel="Full breakdown"
         id="robot"
@@ -70,9 +70,7 @@ export default async function HomePage() {
       </Section>
 
       <Section
-        eyebrow="Engineering Process"
-        title="How we engineer"
-        intro="Every decision — including the ones we reject — is documented, so the reasoning behind the robot is traceable."
+        {...copy("home.engineering")}
         href="/engineering"
         hrefLabel="Our process"
       >
@@ -84,8 +82,7 @@ export default async function HomePage() {
       </Section>
 
       <Section
-        eyebrow={`${settings.season} · ${season?.gameName ?? ""}`}
-        title="This season"
+        {...copy("home.season", { season: settings.season, game: season?.gameName ?? "" })}
         href="/season"
         hrefLabel="Season detail"
       >
@@ -93,20 +90,21 @@ export default async function HomePage() {
       </Section>
 
       <Section
-        eyebrow="Outreach & Impact"
-        title="What we do off the field"
-        intro={`${stats?.peopleReached ?? 0} people reached across ${stats?.eventsHosted ?? 0} events this season.`}
+        {...copy("home.impact", {
+          reached: stats?.peopleReached ?? 0,
+          events: stats?.eventsHosted ?? 0,
+        })}
         href="/impact"
         hrefLabel="All outreach"
       >
         <ImpactGrid events={outreach} />
       </Section>
 
-      <Section eyebrow="Trophy Case" title="Awards" href="/awards" hrefLabel="Full history">
+      <Section {...copy("home.awards")} href="/awards" hrefLabel="Full history">
         <AwardsRibbon awards={awards} />
       </Section>
 
-      <Section eyebrow="Our Sponsors" title="Built by our community">
+      <Section {...copy("home.sponsors")}>
         <SponsorWall sponsors={sponsorLogos} total={sponsors.length} />
       </Section>
     </>

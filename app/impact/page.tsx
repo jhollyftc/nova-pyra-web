@@ -5,7 +5,14 @@ import Reveal from "@/components/Reveal";
 import StatCounter from "@/components/StatCounter";
 import Video from "@/components/Video";
 import ImpactGrid from "@/components/home/ImpactGrid";
-import { getAllTimeStats, getImpactStats, getOutreachEvents, getRecapClip, getRecapPoster } from "@/lib/content";
+import {
+  getAllTimeStats,
+  getImpactStats,
+  getOutreachEvents,
+  getRecapClip,
+  getRecapPoster,
+  getSectionCopy,
+} from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Outreach & Impact",
@@ -14,16 +21,15 @@ export const metadata: Metadata = {
 };
 
 export default async function ImpactPage() {
-  const [season, allTime, events, recap, recapPoster] = await Promise.all([
+  const [season, allTime, events, recap, recapPoster, copy] = await Promise.all([
     getImpactStats(), getAllTimeStats(), getOutreachEvents(), getRecapClip(), getRecapPoster(),
+    getSectionCopy(),
   ]);
 
   return (
     <>
       <PageHeader
-        eyebrow="Outreach & Impact"
-        title="What we do off the field"
-        intro="Robots are the excuse. The point is getting more kids in front of engineering."
+        {...copy("impact.header")}
         lead={
           <div className="grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-5">
             <StatCounter compact value={season.peopleReached} label="People reached" />
@@ -35,7 +41,7 @@ export default async function ImpactPage() {
         }
       />
 
-      <Section eyebrow="All time" title="Since we started">
+      <Section {...copy("impact.allTime")}>
         <Reveal delay={0.1}>
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:items-center">
             <div>
@@ -76,7 +82,7 @@ export default async function ImpactPage() {
         </Reveal>
       </Section>
 
-      <Section eyebrow="Events" title="Where we showed up">
+      <Section {...copy("impact.events")}>
         <ImpactGrid events={events} />
       </Section>
     </>

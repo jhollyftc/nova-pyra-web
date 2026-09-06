@@ -19,6 +19,7 @@ import outreachEvent from "./outreachEvent";
 import seasonEvent from "./seasonEvent";
 import sponsor from "./sponsor";
 import post from "./post";
+import sectionCopy from "./sectionCopy";
 
 /**
  * Documents that exist exactly once. The Studio's structure pins these to a
@@ -52,4 +53,5 @@ export const schemaTypes: SchemaTypeDefinition[] = [
   seasonEvent,
   sponsor,
   post,
+  sectionCopy,
 ];

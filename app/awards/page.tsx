@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PageHeader from "@/components/PageHeader";
 import Section from "@/components/Section";
 import Reveal from "@/components/Reveal";
-import { getAwards, getTimeline } from "@/lib/content";
+import { getAwards, getSectionCopy, getTimeline } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Awards & Timeline",
@@ -18,7 +18,11 @@ const TYPE_COLOR: Record<string, string> = {
 };
 
 export default async function AwardsPage() {
-  const [awards, timeline] = await Promise.all([getAwards(), getTimeline()]);
+  const [awards, timeline, copy] = await Promise.all([
+    getAwards(),
+    getTimeline(),
+    getSectionCopy(),
+  ]);
 
   // Group awards by season, newest season first.
   const seasons = [...new Set(awards.map((a) => a.season))].reverse();
@@ -26,9 +30,7 @@ export default async function AwardsPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Trophy Case"
-        title="Awards & timeline"
-        intro={`${awards.length} awards across two seasons — including Louisiana State Champions and a Design Award 3rd Place at the FIRST World Championship.`}
+        {...copy("awards.header", { n: awards.length })}
       />
 
       {seasons.map((season) => (
@@ -84,9 +86,7 @@ export default async function AwardsPage() {
       ))}
 
       <Section
-        eyebrow="History"
-        title="Team timeline"
-        intro={`${timeline.length} milestones since the team was founded.`}
+        {...copy("awards.timeline", { n: timeline.length })}
       >
         <ol className="relative flex flex-col gap-6 border-l border-[var(--color-border)] pl-6 sm:pl-8">
           {timeline.map((m, i) => (

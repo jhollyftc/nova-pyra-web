@@ -8,6 +8,7 @@ import DonateEmbed from "@/components/DonateEmbed";
 import {
   getAwards,
   getImpactStats,
+  getSectionCopy,
   getSettings,
   getSponsors,
   getSponsorship,
@@ -20,8 +21,9 @@ export const metadata: Metadata = {
 };
 
 export default async function SponsorUsPage() {
-  const [s, stats, awards, sponsors, settings] = await Promise.all([
+  const [s, stats, awards, sponsors, settings, copy] = await Promise.all([
     getSponsorship(), getImpactStats(), getAwards(), getSponsors(), getSettings(),
+    getSectionCopy(),
   ]);
 
   const actionStyle = {
@@ -40,8 +42,7 @@ export default async function SponsorUsPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Sponsor Us"
-        title="Put your name on a robot"
+        {...copy("sponsorsJoin.header")}
         intro={s.intro}
         // This page exists to be acted on. Both routes to giving are in the
         // header so nobody has to scroll past three sections to find them.
@@ -77,7 +78,7 @@ export default async function SponsorUsPage() {
       />
 
       {/* The case: what a sponsor's money reaches */}
-      <Section eyebrow="Reach" title="What your support buys">
+      <Section {...copy("sponsorsJoin.reach")}>
         <Reveal>
           <div className="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-4">
             <StatCounter value={stats.peopleReached} label="People reached this season" />
@@ -122,9 +123,7 @@ export default async function SponsorUsPage() {
       */}
       <Section
         id="donate"
-        eyebrow="Tiers & giving"
-        title="Choose a level"
-        intro={`${sponsors.length} sponsors already back the team — from $1 to $1,000+.`}
+        {...copy("sponsorsJoin.tiers", { n: sponsors.length })}
       >
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:gap-10">
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
@@ -200,7 +199,7 @@ export default async function SponsorUsPage() {
         </div>
       </Section>
 
-      <Section eyebrow="Get in touch" title="Talk to us">
+      <Section {...copy("sponsorsJoin.contact")}>
         <Reveal>
           <div className="hud-frame flex flex-col items-start gap-6 p-8">
             <p

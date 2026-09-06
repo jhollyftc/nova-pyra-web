@@ -4,7 +4,7 @@ import PageHeader from "@/components/PageHeader";
 import Section from "@/components/Section";
 import Reveal from "@/components/Reveal";
 import PersonCard from "@/components/team/PersonCard";
-import { getMembers, getTeamStory, getSettings } from "@/lib/content";
+import { getMembers, getSectionCopy, getTeamStory, getSettings } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Our Team",
@@ -13,8 +13,8 @@ export const metadata: Metadata = {
 };
 
 export default async function TeamPage() {
-  const [story, { students, mentors, alumni }, settings] = await Promise.all([
-    getTeamStory(), getMembers(), getSettings(),
+  const [story, { students, mentors, alumni }, settings, copy] = await Promise.all([
+    getTeamStory(), getMembers(), getSettings(), getSectionCopy(),
   ]);
 
   return (
@@ -25,9 +25,11 @@ export default async function TeamPage() {
         photo, so "who we are" needed a scroll to actually read.
       */}
       <PageHeader
-        eyebrow="Our Story"
-        title="Who we are"
-        intro={`FIRST Tech Challenge Team ${settings.teamNumber}, founded ${settings.founded} in ${settings.location}.`}
+        {...copy("team.header", {
+          teamNumber: settings.teamNumber,
+          founded: settings.founded,
+          location: settings.location,
+        })}
         lead={
           <div className="grid gap-6 lg:grid-cols-2 lg:gap-10">
             {settings.teamPhoto && (
@@ -56,7 +58,7 @@ export default async function TeamPage() {
         }
       />
 
-      <Section eyebrow="What drives us" title="Mission">
+      <Section {...copy("team.mission")}>
         <Reveal>
           <div className="hud-frame max-w-3xl p-6">
             <p
@@ -69,7 +71,7 @@ export default async function TeamPage() {
         </Reveal>
       </Section>
 
-      <Section eyebrow="What we stand for" title="Values">
+      <Section {...copy("team.values")}>
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {(story?.values ?? []).map((v, i) => (
             <Reveal as="li" key={v.label} delay={i * 0.05} className="hud-frame p-5">
@@ -99,7 +101,7 @@ export default async function TeamPage() {
         </ul>
       </Section>
 
-      <Section eyebrow="How we organise" title="Subteams">
+      <Section {...copy("team.subteams")}>
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {(story?.subteams ?? []).map((s, i) => (
             <Reveal as="li" key={s.name} delay={i * 0.04} className="hud-frame p-5">
@@ -135,7 +137,7 @@ export default async function TeamPage() {
         </ul>
       </Section>
 
-      <Section eyebrow="Students" title={`The team · ${students.length} members`}>
+      <Section {...copy("team.students", { n: students.length })}>
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {students.map((m, i) => (
             <Reveal as="li" key={m.id} delay={Math.min(i, 8) * 0.03}>
@@ -145,7 +147,7 @@ export default async function TeamPage() {
         </ul>
       </Section>
 
-      <Section eyebrow="Mentors & Boosters" title={`Behind the team · ${mentors.length}`}>
+      <Section {...copy("team.mentors", { n: mentors.length })}>
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {mentors.map((m, i) => (
             <Reveal as="li" key={m.id} delay={Math.min(i, 8) * 0.03}>
@@ -157,9 +159,7 @@ export default async function TeamPage() {
 
       {alumni.length > 0 && (
         <Section
-          eyebrow="Past members"
-          title="Alumni"
-          intro="Students who moved on. They built the robots that came before this one."
+          {...copy("team.alumni", { n: alumni.length })}
         >
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             {alumni.map((m, i) => (
@@ -171,7 +171,7 @@ export default async function TeamPage() {
         </Section>
       )}
 
-      <Section eyebrow="FIRST & Industry" title="Partners">
+      <Section {...copy("team.partners")}>
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {(story?.partners ?? []).map((p, i) => (
             <Reveal as="li" key={p.name} delay={i * 0.04} className="hud-frame p-5">

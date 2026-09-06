@@ -6,7 +6,13 @@ import Video from "@/components/Video";
 import CadViewer from "@/components/CadViewer";
 import RobotExplorer from "@/components/home/RobotExplorer";
 import RobotSwitcher from "@/components/robot/RobotSwitcher";
-import type { EvolutionEntry, RobotDoc, RobotSummary, Subsystem } from "@/lib/content";
+import type {
+  EvolutionEntry,
+  RobotDoc,
+  RobotSummary,
+  SectionCopyResolver,
+  Subsystem,
+} from "@/lib/content";
 
 /**
  * CAD models stay in public/, not Sanity.
@@ -40,12 +46,14 @@ export default function RobotView({
   subsystems,
   evolution,
   headlineSpecs,
+  copy,
 }: {
   robot: RobotDoc;
   robots: RobotSummary[];
   subsystems: Subsystem[];
   evolution: EvolutionEntry[];
   headlineSpecs: string[];
+  copy: SectionCopyResolver;
 }) {
   const cob = [
     { label: "Critical", value: robot.cobCritical, color: "var(--color-cyan)" },
@@ -88,7 +96,7 @@ export default function RobotView({
       />
 
 {robot.specs?.length > 0 && (
-      <Section eyebrow="Specifications" title="At a glance">
+      <Section {...copy("robot.specs")}>
         <Reveal>
           <dl className="grid gap-px border border-[var(--color-border)] bg-[var(--color-border)] sm:grid-cols-2 lg:grid-cols-3">
             {(robot.specs ?? []).map((spec) => (
@@ -113,7 +121,7 @@ export default function RobotView({
       )}
 
 {subsystems.length > 0 && (
-      <Section eyebrow="Subsystems" title="How it works">
+      <Section {...copy("robot.subsystems")}>
         <RobotExplorer
           subsystems={subsystems}
           specs={headlineSpecs}
@@ -124,7 +132,7 @@ export default function RobotView({
       )}
 
 {subsystems.length > 0 && (
-      <Section eyebrow="Detail" title="Design rationale">
+      <Section {...copy("robot.detail")}>
         <div className="grid gap-4 md:grid-cols-2">
           {subsystems.map((s, i) => (
             <Reveal key={s.id} delay={i * 0.04} className="hud-frame flex flex-col gap-4 p-6">
@@ -170,8 +178,7 @@ export default function RobotView({
 
 {(cob.length > 0 || robot.phases?.length > 0) && (
       <Section
-        eyebrow="Game Strategy"
-        title="Critical, optional, bypass"
+        {...copy("robot.strategy")}
         intro={robot.cobDescription}
       >
         {cob.length > 0 && (
@@ -230,9 +237,7 @@ export default function RobotView({
 
 {models.length > 0 && (
       <Section
-        eyebrow="CAD"
-        title="Explore in 3D"
-        intro="The same models we design and iterate in — rendered in your browser."
+        {...copy("robot.cad")}
       >
         <Reveal>
           <CadViewer models={models} />
@@ -242,9 +247,7 @@ export default function RobotView({
 
 {evolution.length > 0 && (
       <Section
-        eyebrow="Design Evolution"
-        title="What we changed, and why"
-        intro="Each entry records what changed and what it bought us."
+        {...copy("robot.evolution")}
       >
         <ol className="flex flex-col gap-4">
           {evolution.map((v, i) => (

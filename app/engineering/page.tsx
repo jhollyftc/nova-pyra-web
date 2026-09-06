@@ -5,7 +5,7 @@ import Reveal from "@/components/Reveal";
 import ProcessRing from "@/components/home/ProcessRing";
 import NotebookLink from "@/components/NotebookLink";
 import TestingChart from "@/components/TestingChart";
-import { getEdp, getProblems, getTestingCharts } from "@/lib/content";
+import { getEdp, getProblems, getSectionCopy, getTestingCharts } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Engineering Process",
@@ -14,18 +14,21 @@ export const metadata: Metadata = {
 };
 
 export default async function EngineeringPage() {
-  const [edp, problems, charts] = await Promise.all([getEdp(), getProblems(), getTestingCharts()]);
+  const [edp, problems, charts, copy] = await Promise.all([
+    getEdp(),
+    getProblems(),
+    getTestingCharts(),
+    getSectionCopy(),
+  ]);
 
   return (
     <>
       <PageHeader
-        eyebrow="Engineering Process"
-        title="How we engineer"
-        intro="Every decision, including the ones we reject, is documented with its reasoning — a traceable record, and how new members learn why the robot looks the way it does."
+        {...copy("engineering.header")}
         lead={edp?.notebook ? <NotebookLink href={edp.notebook} /> : null}
       />
 
-      <Section eyebrow="The Cycle" title="Engineering design process">
+      <Section {...copy("engineering.cycle")}>
         <ProcessRing
           steps={edp?.steps ?? []}
           narrative={edp?.narrative ?? ""}
@@ -35,9 +38,7 @@ export default async function EngineeringPage() {
       </Section>
 
       <Section
-        eyebrow="Problem → Solution"
-        title="What went wrong, and what we did"
-        intro="The failures are the interesting part. Each of these cost us matches before it cost us a redesign."
+        {...copy("engineering.problems")}
       >
         <div className="grid gap-4 md:grid-cols-2">
           {problems.map((c, i) => (
@@ -75,9 +76,7 @@ export default async function EngineeringPage() {
       </Section>
 
       <Section
-        eyebrow="Testing & Data"
-        title="We measured it"
-        intro="Every claim about the robot traces back to a number we recorded."
+        {...copy("engineering.testing")}
       >
         <div className="grid gap-6 lg:grid-cols-3">
           {charts.map((chart, i) => (

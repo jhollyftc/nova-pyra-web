@@ -3,7 +3,7 @@ import PageHeader from "@/components/PageHeader";
 import Section from "@/components/Section";
 import Reveal from "@/components/Reveal";
 import SeasonPulse from "@/components/home/SeasonPulse";
-import { getSeason, getSettings } from "@/lib/content";
+import { getSeason, getSectionCopy, getSettings } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "This Season",
@@ -12,7 +12,11 @@ export const metadata: Metadata = {
 };
 
 export default async function SeasonPage() {
-  const [season, settings] = await Promise.all([getSeason(), getSettings()]);
+  const [season, settings, copy] = await Promise.all([
+    getSeason(),
+    getSettings(),
+    getSectionCopy(),
+  ]);
 
   const tally = season.completed.reduce(
     (acc, e) => ({
@@ -60,7 +64,7 @@ export default async function SeasonPage() {
         }
       />
 
-      <Section eyebrow="Approach" title="Our strategy">
+      <Section {...copy("season.strategy")}>
         <Reveal>
           <p
             className="max-w-3xl"
@@ -71,11 +75,11 @@ export default async function SeasonPage() {
         </Reveal>
       </Section>
 
-      <Section eyebrow="Progress" title="Goals & results">
+      <Section {...copy("season.progress")}>
         <SeasonPulse goals={season.robotGoals} events={season.completed} />
       </Section>
 
-      <Section eyebrow="Awards" title="What we're chasing">
+      <Section {...copy("season.awardGoals")}>
         <ul className="grid gap-4 sm:grid-cols-2">
           {season.awardGoals.map((g, i) => (
             <Reveal as="li" key={g.goal} delay={i * 0.05} className="hud-frame p-5">
@@ -106,7 +110,7 @@ export default async function SeasonPage() {
       </Section>
 
       {season.completed.length > 0 && (
-        <Section eyebrow="Detail" title="Event by event">
+        <Section {...copy("season.detail")}>
           <ol className="flex flex-col gap-4">
             {season.completed.map((e, i) => (
               <Reveal as="li" key={e.id} delay={i * 0.04} className="hud-frame p-6">

@@ -6,6 +6,7 @@ import {
   getHeadlineSpecs,
   getRobot,
   getRobotList,
+  getSectionCopy,
   getSubsystems,
 } from "@/lib/content";
 
@@ -22,11 +23,12 @@ export default async function RobotPage() {
   const robot = await getRobot();
   if (!robot) notFound();
 
-  const [robots, subsystems, evolution, headlineSpecs] = await Promise.all([
+  const [robots, subsystems, evolution, headlineSpecs, copy] = await Promise.all([
     getRobotList(),
     getSubsystems(robot._id),
     getEvolution(robot._id),
     getHeadlineSpecs(),
+    getSectionCopy(),
   ]);
 
   return (
@@ -35,6 +37,7 @@ export default async function RobotPage() {
       robots={robots}
       subsystems={subsystems}
       evolution={evolution}
+      copy={copy}
       headlineSpecs={headlineSpecs}
     />
   );

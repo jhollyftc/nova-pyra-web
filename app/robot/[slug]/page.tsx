@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import RobotView from "@/components/robot/RobotView";
-import { getEvolution, getRobotBySlug, getRobotList, getSubsystems } from "@/lib/content";
+import { getEvolution, getRobotBySlug, getRobotList,
+  getSectionCopy, getSubsystems } from "@/lib/content";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -30,10 +31,11 @@ export default async function RobotSeasonPage({ params }: Params) {
   // it redirects rather than serving the same page twice.
   if (robot.isCurrent) redirect("/robot");
 
-  const [robots, subsystems, evolution] = await Promise.all([
+  const [robots, subsystems, evolution, copy] = await Promise.all([
     getRobotList(),
     getSubsystems(robot._id),
     getEvolution(robot._id),
+    getSectionCopy(),
   ]);
 
   return (
@@ -42,6 +44,7 @@ export default async function RobotSeasonPage({ params }: Params) {
       robots={robots}
       subsystems={subsystems}
       evolution={evolution}
+      copy={copy}
       headlineSpecs={(robot.specs ?? []).slice(0, 3).map((s) => s.value.replace(/\s*\(.*\)$/, ""))}
     />
   );

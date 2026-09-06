@@ -11,6 +11,12 @@
  */
 import { client } from "@/sanity/lib/client";
 import * as Q from "./queries";
+import {
+  SECTION_DEFAULTS,
+  fillTokens,
+  type SectionCopy,
+  type SectionKey,
+} from "./sectionCopy";
 
 /* ── Types ──────────────────────────────────────────────────────────── */
 
@@ -398,5 +404,41 @@ export async function getSponsorship() {
       benefits: benefits.get(tier.id) ?? [],
       currentCount: sponsors.filter((s) => s.tier === tier.id).length,
     })),
+  };
+}
+
+/* ── Section headings ───────────────────────────────────────────────── */
+
+/**
+ * Returns a lookup for the framing copy above each block of content.
+ *
+ * CMS values win field by field, so clearing one field in the Studio falls back
+ * to the built-in wording for that field alone rather than blanking the
+ * heading. `vars` fills the {token} placeholders the page works out at render
+ * time — counts, the current robot's name.
+ *
+ * One query serves a whole page; React's cache dedupes it across components.
+ */
+export type SectionCopyResolver = (
+  key: SectionKey,
+  vars?: Record<string, string | number>,
+) => { eyebrow: string; title: string; intro?: string };
+
+export async function getSectionCopy(): Promise<SectionCopyResolver> {
+  const rows = await client.fetch<(SectionCopy & { key: SectionKey })[]>(Q.sectionCopyQuery);
+  const overrides = new Map(rows.map((r) => [r.key, r]));
+
+  return (key: SectionKey, vars: Record<string, string | number> = {}) => {
+    const base = SECTION_DEFAULTS[key];
+    const over = overrides.get(key);
+    const pick = (field: "eyebrow" | "title" | "intro") => {
+      const raw = over?.[field]?.trim() || (base as SectionCopy)[field];
+      return raw ? fillTokens(raw, vars) : undefined;
+    };
+    return {
+      eyebrow: pick("eyebrow") ?? "",
+      title: pick("title") ?? "",
+      intro: pick("intro"),
+    };
   };
 }
