@@ -5,6 +5,7 @@ import ProcessRing from "@/components/home/ProcessRing";
 import SeasonPulse from "@/components/home/SeasonPulse";
 import ImpactGrid from "@/components/home/ImpactGrid";
 import AwardsRibbon from "@/components/home/AwardsRibbon";
+import SponsorStrip from "@/components/home/SponsorStrip";
 import SponsorWall from "@/components/home/SponsorWall";
 import {
   getAwards,
@@ -53,6 +54,10 @@ export default async function HomePage() {
           { value: stats?.teamsMentored ?? 0, label: "Teams mentored" },
         ]}
       />
+
+      {/* Directly under the hero, which reserves --sponsor-strip for it, so the
+          logos land on the first screen rather than at the foot of the page. */}
+      <SponsorStrip sponsors={sponsorLogos} />
 
       <Section
         {...copy("home.robot", { robot: robot?.name ?? "our robot" })}
@@ -105,7 +110,7 @@ export default async function HomePage() {
       </Section>
 
       <Section {...copy("home.sponsors")}>
-        <SponsorWall sponsors={sponsorLogos} total={sponsors.length} />
+        <SponsorWall total={sponsors.length} />
       </Section>
     </>
   );

@@ -60,6 +60,9 @@
   --page-gutter:   clamp(20px, 5vw, 64px);
   --section-gap:   clamp(72px, 12vh, 160px);
   --header-height: 68px;
+  /* The sponsor strip under the hero. The hero subtracts this from its claimed
+     viewport height so both land on the first screen. */
+  --sponsor-strip: 80px;
 }
 
 /* ─── Tailwind v4 theme extension ───────────────────────────────────

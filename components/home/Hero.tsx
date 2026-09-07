@@ -36,6 +36,10 @@ type Telemetry = {
  * min-height, never a fixed height, so nothing is ever clipped — on a very short
  * window the page simply scrolls as normal.
  *
+ * It also subtracts `--sponsor-strip`, because the sponsor logos sit directly
+ * below and have to land on the same screen — logos on the website are a paid
+ * sponsorship benefit, not decoration.
+ *
  * `svh` not `vh`: on mobile `vh` measures the viewport as if browser chrome were
  * hidden, which pushes content off-screen until the user scrolls.
  */
@@ -86,7 +90,9 @@ export default function Hero({
   return (
     <section
       className="relative flex flex-col overflow-hidden border-b border-[var(--color-border)]"
-      style={{ minHeight: "calc(100svh - var(--header-height))" }}
+      style={{
+        minHeight: "calc(100svh - var(--header-height) - var(--sponsor-strip))",
+      }}
     >
       {/* Ground: dot grid, a single radial bloom, drifting embers */}
       <div className="dot-grid absolute inset-0" aria-hidden="true" />
@@ -137,7 +143,7 @@ export default function Hero({
                 width: "auto",
                 height: "auto",
                 maxWidth: "min(560px, 84vw)",
-                maxHeight: "min(28vh, 300px)",
+                maxHeight: "min(22vh, 260px)",
               }}
             />
           </div>
