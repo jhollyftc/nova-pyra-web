@@ -67,6 +67,24 @@ The Studio's left-hand menu is grouped by what you are trying to do, not by how 
 
 Every field has a description under it explaining what it is for. Read those first.
 
+## Writing a season update
+
+**Outreach → Season updates.** Build notes, competition recaps, outreach reports —
+anything the team wants to say in its own words. This is the only part of the site that
+is writing rather than filling in fields, and it is what makes the site look current: a
+visitor can tell at a glance whether something was posted this week or last spring.
+
+The title, the date and a slug are all that is required. An excerpt is worth writing —
+it is what shows on the listing and in the preview when someone shares the link. A cover
+image makes the card much stronger. Photos dropped into the body should get alt text
+describing what they show, because some visitors are reading the page rather than seeing
+it.
+
+**Updates does not appear in the site menu until the first one is published.** That is
+deliberate — a menu item leading to an empty page looks worse than no menu item. Publish
+one and the link appears, the newest post shows on the front page, and posts start
+appearing in the sitemap for Google.
+
 ## Rolling over to a new season
 
 Seasons are documents, one per game, so starting a new one archives the old one rather
