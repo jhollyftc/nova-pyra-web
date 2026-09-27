@@ -147,6 +147,37 @@ export const seasonEventsQuery = groq`*[_type == "seasonEvent" && season._ref ==
   keyTakeaway, isWorlds, division, overallRank
 }`;
 
+/* ── Season updates ─────────────────────────────────────────────────
+   The one document type the team writes freely, rather than filling in
+   fields. Drafts are excluded everywhere: `_id` beginning `drafts.` is how
+   Sanity stores unpublished work, and the site must never show it.
+   ------------------------------------------------------------------- */
+const postFields = `
+  "id": _id, title, "slug": slug.current, publishedAt, excerpt,
+  ${img("coverImage", 1400)}`;
+
+export const postsQuery = groq`*[_type == "post" && !(_id in path("drafts.**"))]
+  | order(publishedAt desc){${postFields}
+}`;
+
+export const postBySlugQuery = groq`*[_type == "post" && slug.current == $slug
+  && !(_id in path("drafts.**"))][0]{${postFields},
+  body[]{
+    ...,
+    // Inline images are resolved to a URL here for the same reason every other
+    // image is: components receive strings, never Sanity refs.
+    _type == "image" => { "url": asset->url + "?w=1400&auto=format", alt }
+  }
+}`;
+
+/** Neighbours for the "next update" link at the foot of a post. */
+export const adjacentPostsQuery = groq`{
+  "newer": *[_type == "post" && !(_id in path("drafts.**")) && publishedAt > $publishedAt]
+    | order(publishedAt asc)[0]{ title, "slug": slug.current },
+  "older": *[_type == "post" && !(_id in path("drafts.**")) && publishedAt < $publishedAt]
+    | order(publishedAt desc)[0]{ title, "slug": slug.current }
+}`;
+
 export const sectionCopyQuery = groq`*[_type == "sectionCopy"]{ key, eyebrow, title, intro }`;
 
 /**

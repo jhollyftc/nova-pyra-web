@@ -7,12 +7,14 @@ import SeasonArchive from "@/components/season/SeasonArchive";
 import ImpactGrid from "@/components/home/ImpactGrid";
 import AwardsRibbon from "@/components/home/AwardsRibbon";
 import SponsorStrip from "@/components/home/SponsorStrip";
+import PostCard from "@/components/updates/PostCard";
 import SponsorWall from "@/components/home/SponsorWall";
 import {
   getAwards,
   getEdp,
   getHeadlineSpecs,
   getImpactStats,
+  getLatestPost,
   getOutreach,
   getRobot,
   getSeason,
@@ -30,11 +32,13 @@ export default async function HomePage() {
   const [
     settings, robot, season, stats, edp, awards,
     telemetry, hotspots, specs, archive, outreach, sponsorLogos, sponsors, copy,
+    latestPost,
   ] = await Promise.all([
     getSettings(), getRobot(), getSeason(), getImpactStats(), getEdp(), getAwards(),
     getSeasonTelemetry(), getSubsystemHotspots(), getHeadlineSpecs(),
     getSeasonArchive(),
     getOutreach(), getSponsorLogos(), getSponsors(), getSectionCopy(),
+    getLatestPost(),
   ]);
 
   // What is next, then what just happened. The grid used to be the seven
@@ -67,6 +71,23 @@ export default async function HomePage() {
       {/* Directly under the hero, which reserves --sponsor-strip for it, so the
           logos land on the first screen rather than at the foot of the page. */}
       <SponsorStrip sponsors={sponsorLogos} />
+
+      {/*
+        The newest update, first thing after the fold.
+
+        Everything below it describes what the team IS — the robot, the
+        process, the record. This is the only band that says what the team did
+        this week, so it goes where someone scrolling will hit it first. It
+        disappears entirely when nothing has been published, rather than
+        sitting there advertising how long it has been.
+      */}
+      {latestPost && (
+        <Section {...copy("home.updates")} href="/updates" hrefLabel="All updates">
+          <ul className="grid gap-4">
+            <PostCard post={latestPost} featured />
+          </ul>
+        </Section>
+      )}
 
       <Section
         {...copy("home.robot", { robot: robot?.name ?? "our robot" })}

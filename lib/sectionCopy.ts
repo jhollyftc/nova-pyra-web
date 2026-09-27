@@ -110,6 +110,14 @@ export const SECTION_DEFAULTS = {
   "impact.allTime": { eyebrow: "All time", title: "Since we started" },
   "impact.events": { eyebrow: "Events", title: "Where we showed up" },
 
+  /* ── Season updates ───────────────────────────────────────────────── */
+  "updates.header": {
+    eyebrow: "Season updates",
+    title: "What we're working on",
+    intro: "Build notes, competition recaps and outreach reports, written by the team.",
+  },
+  "home.updates": { eyebrow: "Latest", title: "From the team" },
+
   /* ── Season ───────────────────────────────────────────────────────── */
   "season.upcoming": { eyebrow: "Next", title: "On the calendar" },
   "season.strategy": { eyebrow: "Approach", title: "Our strategy" },

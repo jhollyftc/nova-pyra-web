@@ -571,6 +571,64 @@ export async function getOutreach() {
   };
 }
 
+/* ── Season updates ─────────────────────────────────────────────────── */
+
+export type PostSummary = {
+  id: string;
+  title: string;
+  slug: string;
+  publishedAt: string;
+  excerpt: string | null;
+  coverImage: string | null;
+  /** The published date written out, derived rather than stored. */
+  dateLabel: string;
+};
+
+/** A Portable Text block, plus the inline images we resolve to URLs. */
+export type PostBlock = Record<string, unknown> & { _type: string; _key: string };
+
+export type Post = PostSummary & { body: PostBlock[] | null };
+
+export type PostLink = { title: string; slug: string } | null;
+
+const withDate = <T extends { publishedAt: string }>(p: T) => ({
+  ...p,
+  dateLabel: formatDate(p.publishedAt),
+});
+
+/**
+ * Season updates, newest first.
+ *
+ * This is the only content the team writes rather than fills in, and the only
+ * thing on the site whose whole point is that it is recent. Everything else
+ * describes a state; these describe a moment.
+ */
+export async function getPosts(): Promise<PostSummary[]> {
+  const posts = await client.fetch<Omit<PostSummary, "dateLabel">[]>(Q.postsQuery);
+  return posts.map(withDate);
+}
+
+export async function getPost(slug: string): Promise<Post | null> {
+  const post = await client.fetch<Omit<Post, "dateLabel"> | null>(Q.postBySlugQuery, { slug });
+  return post ? withDate(post) : null;
+}
+
+/** The one shown on the front page, if there is one. */
+export async function getLatestPost(): Promise<PostSummary | null> {
+  const posts = await getPosts();
+  return posts[0] ?? null;
+}
+
+/**
+ * The posts either side of this one by date.
+ *
+ * Read on its own a post is a dead end; a team's updates are only really a
+ * story when you can walk them. Newer first, because that is the direction
+ * someone arriving from a shared link wants to travel.
+ */
+export const getAdjacentPosts = (publishedAt: string) =>
+  client.fetch<{ newer: PostLink; older: PostLink }>(Q.adjacentPostsQuery, { publishedAt });
+
 /* ── Sponsors ───────────────────────────────────────────────────────── */
 
 export const SPONSOR_TIERS: { id: SponsorTier; label: string; amount: string }[] = [

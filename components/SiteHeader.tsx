@@ -13,9 +13,21 @@ const NAV = [
   { href: "/awards", label: "Awards" },
 ];
 
-export default function SiteHeader({ teamNumber }: { teamNumber: string }) {
+export default function SiteHeader({
+  teamNumber,
+  hasUpdates = false,
+}: {
+  teamNumber: string;
+  /** False until the team has published a first season update — see layout. */
+  hasUpdates?: boolean;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+
+  // Sits next to Season, where someone looking for recent news would look.
+  const nav = hasUpdates
+    ? [...NAV.slice(0, 5), { href: "/updates", label: "Updates" }, ...NAV.slice(5)]
+    : NAV;
 
   // The drawer closes from the link's own onClick rather than an effect on
   // pathname — it covers the viewport, so its links are the only way to
@@ -52,7 +64,7 @@ export default function SiteHeader({ teamNumber }: { teamNumber: string }) {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-1 lg:flex">
-          {NAV.map((item) => {
+          {nav.map((item) => {
             const active = pathname.startsWith(item.href);
             return (
               <Link
@@ -126,7 +138,7 @@ export default function SiteHeader({ teamNumber }: { teamNumber: string }) {
           style={{ top: "var(--header-height)" }}
         >
           <nav className="shell flex flex-col py-6">
-            {[...NAV, { href: "/sponsors/join", label: "Sponsor Us" }].map((item) => {
+            {[...nav, { href: "/sponsors/join", label: "Sponsor Us" }].map((item) => {
               const isCta = item.href === "/sponsors/join";
               return (
                 <Link

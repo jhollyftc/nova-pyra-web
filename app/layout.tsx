@@ -3,7 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
-import { getSettings } from "@/lib/content";
+import { getPosts, getSettings } from "@/lib/content";
 
 const orbitron = localFont({
   src: [
@@ -61,7 +61,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // The header and footer are client components (drawer state, pathname), so
   // settings are fetched here and passed down rather than fetched by them.
-  const settings = await getSettings();
+  // The nav's Updates link is hidden until the team has published something.
+  // A nav item leading to an empty page is worse than no nav item: it reads as
+  // a site that was set up and then abandoned, which is the opposite of what
+  // the page is for.
+  const [settings, posts] = await Promise.all([getSettings(), getPosts()]);
 
   return (
     <html lang="en" className={`${orbitron.variable} ${rajdhani.variable}`}>
@@ -72,7 +76,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         >
           Skip to content
         </a>
-        <SiteHeader teamNumber={settings.teamNumber} />
+        <SiteHeader teamNumber={settings.teamNumber} hasUpdates={posts.length > 0} />
         <main id="main">{children}</main>
         <SiteFooter settings={settings} />
       </body>

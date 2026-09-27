@@ -31,12 +31,34 @@ export default defineType({
       rows: 2,
       description: "One or two sentences, shown in listings and link previews.",
     }),
-    defineField({ name: "coverImage", title: "Cover image", type: "image", options: { hotspot: true } }),
+    defineField({
+      name: "coverImage",
+      title: "Cover image",
+      type: "image",
+      options: { hotspot: true },
+      description: "Shown on the updates list and in link previews when this is shared.",
+    }),
     defineField({
       name: "body",
       title: "Body",
       type: "array",
-      of: [{ type: "block" }, { type: "image", options: { hotspot: true } }],
+      of: [
+        { type: "block" },
+        {
+          type: "image",
+          options: { hotspot: true },
+          fields: [
+            {
+              name: "alt",
+              title: "Alt text",
+              type: "string",
+              description:
+                "What the photo shows, for people using a screen reader — " +
+                "'Ava adjusting the shooter hood', not 'photo'.",
+            },
+          ],
+        },
+      ],
     }),
   ],
   orderings: [
