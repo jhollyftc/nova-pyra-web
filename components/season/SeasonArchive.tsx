@@ -13,7 +13,10 @@ export default function SeasonArchive({ seasons }: { seasons: ArchivedSeason[] }
   if (past.length === 0) return null;
 
   return (
-    <ul className="grid gap-4 sm:grid-cols-2">
+    // One past season should not sit in a half-width column with dead space
+    // beside it — with a single card the grid is one column and the card fills
+    // the measure. The team will have two soon enough.
+    <ul className={`grid gap-4 ${past.length > 1 ? "sm:grid-cols-2" : "max-w-2xl"}`}>
       {past.map((s, i) => (
         <Reveal as="li" key={s.id} delay={i * 0.06} className="hud-frame p-6">
           <p className="micro">{s.gameYear}</p>

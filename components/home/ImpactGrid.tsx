@@ -40,7 +40,7 @@ export default function ImpactGrid({ events }: { events: OutreachEvent[] }) {
           ) : (
             <div className="flex aspect-[16/10] w-full flex-col items-center justify-center">
               {upcoming ? (
-                <Countdown date={e.date} className="scale-110" />
+                <Countdown date={e.date} variant="display" />
               ) : (
                 <>
                   <span

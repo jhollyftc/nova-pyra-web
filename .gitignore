@@ -43,3 +43,6 @@ yarn-error.log*
 /public/images
 /public/media
 /public/notebook.pdf
+
+# Local design QA output from scripts/shoot.mjs — never committed.
+screenshots/

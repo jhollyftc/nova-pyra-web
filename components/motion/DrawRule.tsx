@@ -27,7 +27,7 @@ export default function DrawRule({ delay = 0 }: { delay?: number }) {
         className="absolute inset-0 origin-left"
         style={{
           background:
-            "linear-gradient(90deg, var(--color-border-active), rgba(17,115,241,0.25) 60%, transparent)",
+            "linear-gradient(90deg, var(--color-border-active), rgba(17,115,241,0.55) 45%, rgba(17,115,241,0.12) 85%, transparent)",
         }}
         initial={{ scaleX: 0 }}
         whileInView={{ scaleX: 1 }}
