@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Reveal from "@/components/Reveal";
+import Countdown from "@/components/Countdown";
+import { isUpcoming } from "@/lib/dates";
 import type { OutreachEvent } from "@/lib/content";
 
 /**
@@ -7,13 +9,25 @@ import type { OutreachEvent } from "@/lib/content";
  * rather than the photo mosaic the plan assumed — cards with an image get one,
  * the rest lead with the reach number. Adding a photo in the CMS later upgrades
  * a card automatically.
+ *
+ * `upcoming` cards are deliberately different. An event that has not happened
+ * cannot claim a reach figure — the number in the CMS is the team's estimate,
+ * and printing it as though it were counted would be a small lie that inflates
+ * the most load-bearing statistic on the site. Those cards lead with the
+ * countdown instead, which is the honest and more interesting fact anyway.
  */
 export default function ImpactGrid({ events }: { events: OutreachEvent[] }) {
+  if (events.length === 0) return null;
+
   return (
     <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {events.map((e, i) => (
+      {events.map((e, i) => {
+        // Derived per card, not passed in, so a grid can mix the two — the
+        // home page shows what is next alongside what just happened.
+        const upcoming = isUpcoming(e.date);
+        return (
         <Reveal as="li" key={e.id} delay={i * 0.04} className="hud-frame flex flex-col">
-          {e.photos?.[0] ? (
+          {e.photos?.[0] && !upcoming ? (
             <div className="scanlines relative aspect-[16/10] w-full overflow-hidden">
               <Image
                 src={e.photos![0]}
@@ -25,19 +39,25 @@ export default function ImpactGrid({ events }: { events: OutreachEvent[] }) {
             </div>
           ) : (
             <div className="flex aspect-[16/10] w-full flex-col items-center justify-center">
-              <span
-                className="glow-text tabular-nums"
-                style={{
-                  fontFamily: "var(--font-display)",
-                  fontWeight: 900,
-                  fontSize: "clamp(34px, 6vw, 52px)",
-                  color: "var(--color-accent)",
-                  lineHeight: 1,
-                }}
-              >
-                {e.reached}
-              </span>
-              <span className="micro mt-2">People reached</span>
+              {upcoming ? (
+                <Countdown date={e.date} className="scale-110" />
+              ) : (
+                <>
+                  <span
+                    className="glow-text tabular-nums"
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      fontWeight: 900,
+                      fontSize: "clamp(34px, 6vw, 52px)",
+                      color: "var(--color-accent)",
+                      lineHeight: 1,
+                    }}
+                  >
+                    {e.reached}
+                  </span>
+                  <span className="micro mt-2">People reached</span>
+                </>
+              )}
             </div>
           )}
 
@@ -53,7 +73,7 @@ export default function ImpactGrid({ events }: { events: OutreachEvent[] }) {
               {e.name}
             </h3>
             <p className="micro">
-              {e.date} · {e.location}
+              {[e.dateLabel, e.location].filter(Boolean).join(" · ")}
             </p>
             <p
               className="mt-1 text-[var(--color-text-secondary)]"
@@ -61,14 +81,18 @@ export default function ImpactGrid({ events }: { events: OutreachEvent[] }) {
             >
               {e.summary}
             </p>
-            {e.photos?.[0] && (
+            {!upcoming && e.photos?.[0] && (
               <p className="micro mt-auto pt-2" style={{ color: "var(--color-accent)" }}>
                 {e.reached} people reached
               </p>
             )}
+            {upcoming && e.reached ? (
+              <p className="micro mt-auto pt-2">Expecting around {e.reached} people</p>
+            ) : null}
           </div>
         </Reveal>
-      ))}
+        );
+      })}
     </ul>
   );
 }

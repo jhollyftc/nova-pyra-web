@@ -8,7 +8,7 @@ import ImpactGrid from "@/components/home/ImpactGrid";
 import {
   getAllTimeStats,
   getImpactStats,
-  getOutreachEvents,
+  getOutreach,
   getRecapClip,
   getRecapPoster,
   getSectionCopy,
@@ -21,8 +21,8 @@ export const metadata: Metadata = {
 };
 
 export default async function ImpactPage() {
-  const [season, allTime, events, recap, recapPoster, copy] = await Promise.all([
-    getImpactStats(), getAllTimeStats(), getOutreachEvents(), getRecapClip(), getRecapPoster(),
+  const [season, allTime, outreach, recap, recapPoster, copy] = await Promise.all([
+    getImpactStats(), getAllTimeStats(), getOutreach(), getRecapClip(), getRecapPoster(),
     getSectionCopy(),
   ]);
 
@@ -82,8 +82,17 @@ export default async function ImpactPage() {
         </Reveal>
       </Section>
 
+      {/* Scheduled dates come first and are visibly not history. Two school
+          STEM nights were sitting at the top of "Where we showed up" months
+          before they happen, because the list was only ever sorted by date. */}
+      {outreach.upcoming.length > 0 && (
+        <Section {...copy("impact.upcoming")}>
+          <ImpactGrid events={outreach.upcoming} />
+        </Section>
+      )}
+
       <Section {...copy("impact.events")}>
-        <ImpactGrid events={events} />
+        <ImpactGrid events={outreach.past} />
       </Section>
     </>
   );

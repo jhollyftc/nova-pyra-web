@@ -214,6 +214,18 @@ img, video, svg { max-width: 100%; height: auto; display: block; }
   animation-play-state: paused;
 }
 
+/* ─── Live indicator ────────────────────────────────────────────────
+   A slow breath, not a blink. Used on countdowns for events inside a week
+   and on the "live" markers the pit app used for in-progress work — it has
+   to read as a heartbeat at the edge of vision, never as something demanding
+   attention while someone is trying to read the text next to it.
+   ------------------------------------------------------------------- */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1;   transform: scale(1); }
+  50%      { opacity: 0.35; transform: scale(0.8); }
+}
+.pulse-dot { animation: pulse-dot 2.4s ease-in-out infinite; }
+
 /* ─── Motion ────────────────────────────────────────────────────────
    Every animation in the app must have a path through here. Components
    additionally check framer-motion's useReducedMotion for JS-driven work

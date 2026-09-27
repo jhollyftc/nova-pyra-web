@@ -3,6 +3,7 @@ import Hero from "@/components/home/Hero";
 import RobotHotspots from "@/components/home/RobotHotspots";
 import ProcessRing from "@/components/home/ProcessRing";
 import SeasonPulse from "@/components/home/SeasonPulse";
+import SeasonArchive from "@/components/season/SeasonArchive";
 import ImpactGrid from "@/components/home/ImpactGrid";
 import AwardsRibbon from "@/components/home/AwardsRibbon";
 import SponsorStrip from "@/components/home/SponsorStrip";
@@ -12,9 +13,10 @@ import {
   getEdp,
   getHeadlineSpecs,
   getImpactStats,
-  getOutreachEvents,
+  getOutreach,
   getRobot,
   getSeason,
+  getSeasonArchive,
   getSeasonTelemetry,
   getSettings,
   getSponsorLogos,
@@ -27,12 +29,19 @@ export default async function HomePage() {
   // One await, in parallel — these are independent queries.
   const [
     settings, robot, season, stats, edp, awards,
-    telemetry, hotspots, specs, outreach, sponsorLogos, sponsors, copy,
+    telemetry, hotspots, specs, archive, outreach, sponsorLogos, sponsors, copy,
   ] = await Promise.all([
     getSettings(), getRobot(), getSeason(), getImpactStats(), getEdp(), getAwards(),
     getSeasonTelemetry(), getSubsystemHotspots(), getHeadlineSpecs(),
-    getOutreachEvents(), getSponsorLogos(), getSponsors(), getSectionCopy(),
+    getSeasonArchive(),
+    getOutreach(), getSponsorLogos(), getSponsors(), getSectionCopy(),
   ]);
+
+  // What is next, then what just happened. The grid used to be the seven
+  // events newest-first, which put two dates months away at the top with
+  // nothing marking them as future — the page read as a list of things the
+  // team had already done, no matter how recently anything was added.
+  const homeOutreach = [...outreach.upcoming, ...outreach.past].slice(0, 6);
 
   return (
     <>
@@ -86,12 +95,24 @@ export default async function HomePage() {
         />
       </Section>
 
+      {/*
+        Two different things share this slot depending on where the team is.
+        Mid-season it is goals and results. In build season — no results, no
+        goals written yet — SeasonPulse renders two empty columns under a
+        heading, which is how the front page came to look abandoned. The
+        archive goes there instead, so last season's record stays on the page
+        but is labelled as last season's.
+      */}
       <Section
         {...copy("home.season", { season: settings.season, game: season?.gameName ?? "" })}
         href="/season"
         hrefLabel="Season detail"
       >
-        <SeasonPulse goals={season.robotGoals} events={season.completed} />
+        {season.robotGoals.length > 0 || season.completed.length > 0 ? (
+          <SeasonPulse goals={season.robotGoals} events={season.completed} />
+        ) : (
+          <SeasonArchive seasons={archive} />
+        )}
       </Section>
 
       <Section
@@ -102,7 +123,7 @@ export default async function HomePage() {
         href="/impact"
         hrefLabel="All outreach"
       >
-        <ImpactGrid events={outreach} />
+        <ImpactGrid events={homeOutreach} />
       </Section>
 
       <Section {...copy("home.awards")} href="/awards" hrefLabel="Full history">

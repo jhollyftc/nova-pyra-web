@@ -30,7 +30,6 @@ export const SINGLETONS = [
   "teamStory",
   "engineeringProcess",
   "impact",
-  "season",
   "sponsorship",
 ] as const;
 

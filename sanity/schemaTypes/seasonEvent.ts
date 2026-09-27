@@ -21,11 +21,34 @@ export default defineType({
     defineField({
       name: "season",
       title: "Season",
-      type: "string",
-      description: "e.g. 2025–2026 Decode",
+      type: "reference",
+      to: [{ type: "season" }],
+      description: "Which season this result belongs to.",
       validation: (r) => r.required(),
     }),
-    defineField({ name: "date", title: "Date", type: "string", description: "e.g. December 13, 2025" }),
+    /**
+     * Real dates, not a typed string.
+     *
+     * This used to be free text ("April 29 – May 2, 2026"), which reads fine and
+     * is useless to the site: nothing could sort by it, count down to it, or
+     * tell an upcoming event from a past one. The displayed range is formatted
+     * from these two fields instead, so there is no second copy to go stale.
+     */
+    defineField({
+      name: "startDate",
+      title: "Date",
+      type: "date",
+      options: { dateFormat: "MMMM D, YYYY" },
+      description: "First day of the event. The site counts down to this.",
+      validation: (r) => r.required(),
+    }),
+    defineField({
+      name: "endDate",
+      title: "Last day",
+      type: "date",
+      options: { dateFormat: "MMMM D, YYYY" },
+      description: "Only for multi-day events. Leave empty for a one-day qualifier.",
+    }),
     defineField({ name: "location", title: "Location", type: "string" }),
     defineField({
       name: "status",
@@ -101,22 +124,30 @@ export default defineType({
     // by typing a number.
     orderRankField({ type: "seasonEvent" }),
   ],
-  orderings: [orderRankOrdering],
+  orderings: [
+    orderRankOrdering,
+    { title: "Date", name: "byDate", by: [{ field: "startDate", direction: "desc" }] },
+  ],
   preview: {
     select: {
       title: "name",
       status: "status",
       rank: "rank",
+      startDate: "startDate",
       w: "record.wins",
       l: "record.losses",
       t: "record.ties",
     },
-    prepare: ({ title, status, rank, w, l, t }) => ({
+    prepare: ({ title, status, rank, startDate, w, l, t }) => ({
       title,
-      subtitle:
+      subtitle: [
+        startDate,
         status === "completed"
           ? `Rank ${rank ?? "?"} · ${w ?? 0}-${l ?? 0}-${t ?? 0}`
           : "Upcoming",
+      ]
+        .filter(Boolean)
+        .join(" · "),
     }),
   },
 });

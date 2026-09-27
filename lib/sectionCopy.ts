@@ -106,14 +106,17 @@ export const SECTION_DEFAULTS = {
     title: "What we do off the field",
     intro: "Robots are the excuse. The point is getting more kids in front of engineering.",
   },
+  "impact.upcoming": { eyebrow: "Coming up", title: "Where we'll be next" },
   "impact.allTime": { eyebrow: "All time", title: "Since we started" },
   "impact.events": { eyebrow: "Events", title: "Where we showed up" },
 
   /* ── Season ───────────────────────────────────────────────────────── */
+  "season.upcoming": { eyebrow: "Next", title: "On the calendar" },
   "season.strategy": { eyebrow: "Approach", title: "Our strategy" },
   "season.progress": { eyebrow: "Progress", title: "Goals & results" },
   "season.awardGoals": { eyebrow: "Awards", title: "What we're chasing" },
   "season.detail": { eyebrow: "Detail", title: "Event by event" },
+  "season.archive": { eyebrow: "Archive", title: "Previous seasons" },
 
   /* ── Awards ───────────────────────────────────────────────────────── */
   "awards.header": {

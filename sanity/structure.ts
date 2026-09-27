@@ -61,7 +61,17 @@ export const structure: StructureResolver = (S, context) => {
             .title("Competition")
             .items([
               orderable("seasonEvent", "Results"),
-              singleton(S, "season", "This season"),
+              // No longer a singleton: one document per season, newest first, so
+              // rolling over to a new game archives the old one instead of
+              // overwriting last season's results with this season's name.
+              S.listItem()
+                .title("Seasons")
+                .child(
+                  S.documentList()
+                    .title("Seasons")
+                    .filter('_type == "season"')
+                    .defaultOrdering([{ field: 'gameYear', direction: 'desc' }]),
+                ),
               orderable("award", "Awards"),
             ]),
         ),

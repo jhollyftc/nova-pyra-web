@@ -5,12 +5,19 @@ import { motion, useReducedMotion } from "framer-motion";
 import Video from "@/components/Video";
 import EmberField from "@/components/EmberField";
 import StatCounter from "@/components/StatCounter";
+import { buildDay } from "@/lib/dates";
 import type { VideoSources } from "@/components/Video";
 
 type Telemetry = {
   game: string;
   robot: string;
   record: string;
+  /** True before the season has any completed results. */
+  fresh: boolean;
+  /** The soonest scheduled event — a competition or an outreach date. */
+  next: { label: string; value: string; detail?: string } | null;
+  kickoff: string | null;
+  past: { label: string; value: string } | null;
   /**
    * Label and value arrive together from the content layer. At the World
    * Championship a rank is within a division, not overall, so the two must be
@@ -62,12 +69,31 @@ export default function Hero({
 }) {
   const reduced = useReducedMotion();
 
-  const cells = [
-    { label: "Season", value: telemetry.game },
-    { label: "Robot", value: telemetry.robot },
-    { label: "Record", value: telemetry.record },
-    ...(telemetry.worlds ? [telemetry.worlds] : []),
-  ];
+  /**
+   * A season that has not competed yet has no record worth printing — "0-0-0"
+   * reads as a losing team rather than an early one. Before the first result
+   * the strip looks forward (what is next, or how long since kickoff) and keeps
+   * the best previous finish as a credential, labelled with its season so it is
+   * never mistaken for current form.
+   */
+  const day = buildDay(telemetry.kickoff);
+
+  const cells: { label: string; value: string; detail?: string }[] = telemetry.fresh
+    ? [
+        { label: "Season", value: telemetry.game },
+        { label: "Robot", value: telemetry.robot },
+        telemetry.next ??
+          (day !== null
+            ? { label: "Build season", value: `Day ${day}` }
+            : { label: "Status", value: "In build" }),
+        ...(telemetry.past ? [telemetry.past] : []),
+      ]
+    : [
+        { label: "Season", value: telemetry.game },
+        { label: "Robot", value: telemetry.robot },
+        { label: "Record", value: telemetry.record },
+        ...(telemetry.worlds ? [telemetry.worlds] : []),
+      ];
 
   const rise = (delay: number) =>
     reduced
@@ -219,6 +245,22 @@ export default function Hero({
                 }}
               >
                 {cell.value}
+                {/* What the countdown is counting down to. Secondary on purpose:
+                    the number is the signal, the name is the answer to "what?" */}
+                {cell.detail && (
+                  <span
+                    className="mt-0.5 block text-balance text-[var(--color-text-secondary)]"
+                    style={{
+                      fontFamily: "var(--font-body)",
+                      fontWeight: 600,
+                      fontSize: "clamp(11px, min(1.2vw, 1.4vh), 13px)",
+                      letterSpacing: "0.02em",
+                      lineHeight: 1.25,
+                    }}
+                  >
+                    {cell.detail}
+                  </span>
+                )}
               </dd>
             </motion.div>
           ))}

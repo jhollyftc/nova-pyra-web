@@ -21,24 +21,53 @@ export const settingsQuery = groq`*[_id == "siteSettings"][0]{
   socials, scouting
 }`;
 
-/** The robot shown by default: whichever is flagged current, newest as a fallback. */
+/**
+ * Whether a robot has anything to show yet.
+ *
+ * Between kickoff and the first build, a season's robot exists as a name and
+ * nothing else. Callers need to know that, because a page built around a robot
+ * with no specs, no subsystems and no photo is just a heading.
+ */
+const documented = `"documented": count(specs) > 0
+  || count(*[_type == "subsystem" && robot._ref == ^._id]) > 0`;
+
+const robotFields = `
+  _id, name, season, gameName, status, isCurrent, "slug": slug.current,
+  ${documented},
+  philosophy, specs,
+  cobDescription, cobCritical, cobOptional, cobBypass,
+  phases[]{ label, color, summary, ${fileUrl("clip")}, ${img("clipPoster", 900)} }`;
+
+/** The robot belonging to the season in progress, built or not. */
 export const currentRobotQuery = groq`*[_type == "robot"] | order(isCurrent desc, orderRank)[0]{
   _id, name, season, gameName, status, isCurrent, "slug": slug.current,
+  ${documented},
   philosophy, specs,
   cobDescription, cobCritical, cobOptional, cobBypass,
   phases[]{ label, color, summary, ${fileUrl("clip")}, ${img("clipPoster", 900)} }
 }`;
 
-export const robotBySlugQuery = groq`*[_type == "robot" && slug.current == $slug][0]{
-  _id, name, season, gameName, status, isCurrent, "slug": slug.current,
-  philosophy, specs,
-  cobDescription, cobCritical, cobOptional, cobBypass,
-  phases[]{ label, color, summary, ${fileUrl("clip")}, ${img("clipPoster", 900)} }
+export const robotBySlugQuery = groq`*[_type == "robot" && slug.current == $slug][0]{${robotFields}
+}`;
+
+/**
+ * The most recent robot there is actually something to say about.
+ *
+ * `/robot` is the site's showpiece and it followed whichever robot was flagged
+ * current — so the moment BIOBUZZ became the current season the page turned
+ * into a robot called TBD with no photo, no specs and no subsystems. Until the
+ * team builds it, the page shows the newest robot that IS documented, labelled
+ * with its own season so nobody mistakes it for this year's machine.
+ */
+export const featuredRobotQuery = groq`*[_type == "robot" && (
+  count(specs) > 0 || count(*[_type == "subsystem" && robot._ref == ^._id]) > 0
+)] | order(season desc, orderRank)[0]{${robotFields}
 }`;
 
 /** Just enough to build the season switcher. */
 export const robotListQuery = groq`*[_type == "robot"] | order(orderRank){
-  "slug": slug.current, name, season, gameName, status, isCurrent
+  "slug": slug.current, name, season, gameName, status, isCurrent,
+  ${documented}
 }`;
 
 export const subsystemsQuery = groq`*[_type == "subsystem" && robot._ref == $robotId] | order(orderRank){
@@ -100,13 +129,41 @@ export const timelineQuery = groq`*[_type == "timelineEvent"] | order(orderRank)
   title, year, type, description
 }`;
 
-export const seasonQuery = groq`*[_id == "season"][0]{
-  gameName, gameYear, description, strategy, robotGoals, awardGoals
+const seasonFields = `
+  _id, gameName, gameYear, "slug": slug.current, isCurrent, kickoff,
+  description, strategy, robotGoals, awardGoals`;
+
+/** The season shown by default: whichever is flagged current. */
+export const currentSeasonQuery = groq`*[_type == "season"] | order(isCurrent desc, gameYear desc)[0]{${seasonFields}
 }`;
 
-export const seasonEventsQuery = groq`*[_type == "seasonEvent"] | order(orderRank){
-  "id": _id, name, season, date, location, status, rank, record, awards,
+/** Every season, for the archive and the switcher. */
+export const seasonListQuery = groq`*[_type == "season"] | order(gameYear desc){
+  "slug": slug.current, gameName, gameYear, isCurrent
+}`;
+
+export const seasonEventsQuery = groq`*[_type == "seasonEvent" && season._ref == $seasonId] | order(orderRank){
+  "id": _id, name, startDate, endDate, location, status, rank, record, awards,
   keyTakeaway, isWorlds, division, overallRank
 }`;
 
 export const sectionCopyQuery = groq`*[_type == "sectionCopy"]{ key, eyebrow, title, intro }`;
+
+/**
+ * Every season with its completed results, for the archive.
+ *
+ * The per-season record is summed from the results rather than stored, for the
+ * same reason the current record is: a total typed in one place and results
+ * entered in another will disagree within a season.
+ */
+export const seasonArchiveQuery = groq`*[_type == "season"] | order(gameYear desc){
+  "id": _id, gameName, gameYear, isCurrent, "slug": slug.current,
+  "events": *[_type == "seasonEvent" && season._ref == ^._id && status == "completed"]
+    | order(startDate asc){ name, startDate, rank, record, awards, isWorlds, division }
+}`;
+
+/** The strongest finish from any previous season, used as a credential. */
+export const bestPastResultQuery = groq`*[_type == "seasonEvent" && status == "completed"
+  && season->isCurrent != true && defined(rank)] | order(isWorlds desc, rank asc)[0]{
+  rank, division, isWorlds, "season": season->gameYear, "game": season->gameName
+}`;
