@@ -172,6 +172,38 @@ img, video, svg { max-width: 100%; height: auto; display: block; }
   border-left: 0; border-top: 0;
 }
 
+/* The brackets open when you point at the card, and the hairline lifts toward
+   the active blue. This is the one interaction worth having site-wide: the
+   frame is already the recurring device, so making it respond costs no new
+   vocabulary and makes ~every card on the site feel handled rather than
+   printed. `focus-within` so the keyboard gets it too — most of these frames
+   contain a link.
+
+   Transitions only; nothing moves on its own, and the reduced-motion block at
+   the foot of this file collapses the duration for anyone who asks. */
+.hud-frame {
+  transition: border-color var(--transition-default), box-shadow var(--transition-default);
+}
+.hud-frame::before,
+.hud-frame::after {
+  transition:
+    width var(--transition-default),
+    height var(--transition-default),
+    border-color var(--transition-default);
+}
+.hud-frame:hover,
+.hud-frame:focus-within {
+  border-color: rgba(17, 115, 241, 0.55);
+  box-shadow: 0 0 24px rgba(17, 115, 241, 0.12);
+}
+.hud-frame:hover::before,
+.hud-frame:hover::after,
+.hud-frame:focus-within::before,
+.hud-frame:focus-within::after {
+  width: 24px;
+  height: 24px;
+}
+
 /* ─── Micro-label ───────────────────────────────────────────────────
    Mono, uppercase, wide tracking. The HUD's annotation voice, and the most
    reused text style on the site — roughly 60 places.
@@ -189,6 +221,50 @@ img, video, svg { max-width: 100%; height: auto; display: block; }
   text-transform: uppercase;
   color: var(--color-text-muted);
 }
+
+/* ─── Call-to-action buttons ────────────────────────────────────────
+   Both CTAs were outlines that did nothing when you pointed at them, which
+   on a dark page reads as decoration rather than a control. They now fill
+   faintly and light their own glow. Gold is still reserved for the sponsor
+   ask — the one place it appears, so it cannot be missed.
+   ------------------------------------------------------------------- */
+.cta {
+  transition:
+    background-color var(--transition-default),
+    box-shadow var(--transition-default),
+    border-color var(--transition-default);
+}
+.cta-accent:hover {
+  background-color: rgba(17, 115, 241, 0.12);
+  box-shadow: var(--glow-accent);
+}
+.cta-gold:hover {
+  background-color: rgba(242, 183, 5, 0.12);
+  border-color: var(--color-gold);
+  box-shadow: var(--glow-gold);
+}
+
+/* ─── Nav link ──────────────────────────────────────────────────────
+   A rule that draws in from the left on hover and stays put on the current
+   page, so the active route is marked by more than a colour — which is the
+   accessible version of the same idea, since colour alone is not a signal
+   everyone can read. Sized to sit inside the link's own padding.
+   ------------------------------------------------------------------- */
+.nav-link { position: relative; }
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 2px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--transition-default);
+}
+.nav-link:hover::after,
+.nav-link[aria-current="page"]::after { transform: scaleX(1); }
 
 /* ─── Layout helper ─────────────────────────────────────────────────── */
 .shell {

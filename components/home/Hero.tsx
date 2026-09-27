@@ -192,7 +192,7 @@ export default function Hero({
         <motion.div className="flex flex-wrap items-center justify-center gap-3" {...rise(0.4)}>
           <Link
             href="/robot"
-            className="glow-box border transition-colors"
+            className="cta cta-accent glow-box border"
             style={{
               ...ctaStyle,
               color: "var(--color-accent)",
@@ -203,7 +203,7 @@ export default function Hero({
           </Link>
           <Link
             href="/sponsors/join"
-            className="border transition-colors"
+            className="cta cta-gold border"
             style={{
               ...ctaStyle,
               color: "var(--color-gold)",
