@@ -1,10 +1,16 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import Reveal from "./Reveal";
+import DrawRule from "./motion/DrawRule";
 
 /**
  * Standard section chrome: a mono eyebrow, an Orbitron heading, and an optional
  * "more" link. Keeps every band on the front page reading as one system.
+ *
+ * The heading block arrives as a wipe rather than a fade, and a hairline draws
+ * itself across under it. Together they are what turns the boundary between two
+ * sections from a gap in a document into an event — which was the difference
+ * between a page that has animations on it and a page that feels alive.
  */
 export default function Section({
   eyebrow,
@@ -25,8 +31,8 @@ export default function Section({
 }) {
   return (
     <section id={id} className="shell py-[calc(var(--section-gap)/2)]">
-      <Reveal>
-        <div className="mb-10 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+      <Reveal variant="wipe">
+        <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
           <div className="max-w-2xl">
             <p className="micro">{eyebrow}</p>
             <h2
@@ -71,7 +77,9 @@ export default function Section({
         </div>
       </Reveal>
 
-      {children}
+      <DrawRule delay={0.15} />
+
+      <div className="mt-10">{children}</div>
     </section>
   );
 }

@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import Video from "@/components/Video";
 import EmberField from "@/components/EmberField";
 import StatCounter from "@/components/StatCounter";
@@ -68,6 +69,27 @@ export default function Hero({
   stats: { value: number; label: string }[];
 }) {
   const reduced = useReducedMotion();
+  const heroRef = useRef<HTMLElement>(null);
+
+  /**
+   * Scroll progress across the hero itself, not the page: `start start` to
+   * `end start` means 0 while the hero fills the screen and 1 once its bottom
+   * edge reaches the top. Every rate below is tuned against that one span, so
+   * the whole ground moves as a coherent thing rather than three separate
+   * effects that happen to be animating.
+   */
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+
+  // Slowest: the grid is the most distant layer, so it barely moves.
+  const gridY = useTransform(scrollYProgress, [0, 1], ["0px", "60px"]);
+  // The bloom sinks and opens out, which keeps the light behind the wordmark.
+  const bloomY = useTransform(scrollYProgress, [0, 1], ["0px", "120px"]);
+  const bloomScale = useTransform(scrollYProgress, [0, 1], [1, 1.25]);
+  // Fastest: embers are the nearest layer and read as passing the camera.
+  const emberY = useTransform(scrollYProgress, [0, 1], ["0px", "180px"]);
 
   /**
    * A season that has not competed yet has no record worth printing — "0-0-0"
@@ -115,22 +137,51 @@ export default function Hero({
 
   return (
     <section
+      ref={heroRef}
       className="relative flex flex-col overflow-hidden border-b border-[var(--color-border)]"
       style={{
         minHeight: "calc(100svh - var(--header-height) - var(--sponsor-strip))",
+        // Opaque so the page-wide atmosphere layer behind it cannot show
+        // through and put a second dot grid under this one — two grids at the
+        // same 36px pitch but different offsets moire against each other and
+        // read as a rendering fault. Painting black beneath the grid does not
+        // affect the logo's blend: screen against black is identity, and the
+        // grid it actually blends with is still painted directly below it.
+        background: "var(--color-bg)",
       }}
     >
-      {/* Ground: dot grid, a single radial bloom, drifting embers */}
-      <div className="dot-grid absolute inset-0" aria-hidden="true" />
-      <div
-        className="absolute inset-0"
+      {/*
+        Ground: dot grid, a radial bloom, drifting embers — and all three move
+        as you scroll, at different rates, so leaving the hero has depth to it.
+
+        The transforms are on the BACKGROUND only, never on a wrapper around
+        the content. That is not a stylistic choice: a transform creates a
+        stacking context, and a stacking context between the grid and the logo
+        traps the logo's `mix-blend-mode: screen` and flashes its black
+        background as a rectangle (see the note on the logo below). Moving the
+        ground under fixed content is the parallax this layout can actually
+        have, and it is the right one anyway — the wordmark should feel planted
+        while the space behind it travels.
+      */}
+      <motion.div
+        className="dot-grid absolute"
+        aria-hidden="true"
+        style={{ inset: "-60px", y: gridY }}
+      />
+      <motion.div
+        className="absolute"
         aria-hidden="true"
         style={{
+          inset: "-20%",
+          y: bloomY,
+          scale: bloomScale,
           background:
             "radial-gradient(ellipse 70% 55% at 50% 38%, rgba(17,115,241,0.20), transparent 70%)",
         }}
       />
-      <EmberField className="absolute inset-0 h-full w-full" />
+      <motion.div className="absolute inset-0" style={{ y: emberY }}>
+        <EmberField className="absolute inset-0 h-full w-full" />
+      </motion.div>
 
       <div
         className="shell relative flex flex-1 flex-col items-center justify-center text-center"

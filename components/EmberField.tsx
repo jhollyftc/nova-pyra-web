@@ -32,6 +32,9 @@ export default function EmberField({ className }: { className?: string }) {
     let embers: Ember[] = [];
     let raf = 0;
     let running = true;
+    /** Scroll impulse, decayed every frame. See `frame`. */
+    let boost = 0;
+    let lastScrollY = window.scrollY;
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
@@ -61,13 +64,38 @@ export default function EmberField({ className }: { className?: string }) {
 
     const frame = () => {
       if (!running) return;
+
+      /**
+       * Scroll makes the embers streak.
+       *
+       * The field is otherwise the same drift whatever you do, which is
+       * pleasant and completely inert — it never acknowledges the person
+       * looking at it. Bleeding scroll velocity into the particles is the
+       * cheapest interaction on the site and the most convincing, because it
+       * responds to something the visitor is already doing rather than asking
+       * them to do something new.
+       *
+       * The impulse decays about 8% a frame, so a flick ripples and settles in
+       * well under a second instead of leaving the field permanently agitated.
+       */
+      boost *= 0.92;
+      if (Math.abs(boost) < 0.01) boost = 0;
+
       ctx.clearRect(0, 0, width, height);
       for (const e of embers) {
-        e.y += e.vy;
+        // Heavier particles are pushed less, which stops the whole field from
+        // moving as one sheet and gives the streak some depth.
+        const drag = e.r * 0.9;
+        const shove = boost * drag;
+        e.y += e.vy + shove;
         e.x += e.vx;
-        // Recycle off the top rather than allocating new particles.
+        // Recycle off whichever edge it left, so a fast scroll does not empty
+        // the top or the bottom of the field.
         if (e.y < -8) {
           e.y = height + 8;
+          e.x = Math.random() * width;
+        } else if (e.y > height + 8) {
+          e.y = -8;
           e.x = Math.random() * width;
         }
         if (e.x < -8) e.x = width + 8;
@@ -75,9 +103,23 @@ export default function EmberField({ className }: { className?: string }) {
 
         ctx.globalAlpha = e.a;
         ctx.fillStyle = e.c;
-        ctx.beginPath();
-        ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
-        ctx.fill();
+
+        // Above a threshold each ember is drawn as a capsule along its travel,
+        // which is what reads as a streak rather than a faster dot.
+        const trail = Math.min(Math.abs(shove) * 2.4, 26);
+        if (trail > 1.5) {
+          ctx.lineWidth = e.r * 2;
+          ctx.lineCap = "round";
+          ctx.strokeStyle = e.c;
+          ctx.beginPath();
+          ctx.moveTo(e.x, e.y);
+          ctx.lineTo(e.x, e.y - Math.sign(shove) * trail);
+          ctx.stroke();
+        } else {
+          ctx.beginPath();
+          ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
       ctx.globalAlpha = 1;
       raf = requestAnimationFrame(frame);
@@ -109,11 +151,28 @@ export default function EmberField({ className }: { className?: string }) {
     const onVisibility = () => (document.hidden ? stop() : start());
     document.addEventListener("visibilitychange", onVisibility);
 
+    /**
+     * Reads scroll delta only. The listener does no layout work and no
+     * drawing — it accumulates a number that the existing animation frame
+     * consumes — so it cannot make scrolling janky. `passive` says as much to
+     * the browser. Clamped because a trackpad fling or a jump to an anchor can
+     * report hundreds of pixels in one event, which would fire every ember off
+     * the screen at once.
+     */
+    const onScroll = () => {
+      const delta = window.scrollY - lastScrollY;
+      lastScrollY = window.scrollY;
+      boost += Math.max(-24, Math.min(24, delta)) * 0.06;
+      boost = Math.max(-3, Math.min(3, boost));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+
     return () => {
       stop();
       ro.disconnect();
       io.disconnect();
       document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("scroll", onScroll);
     };
   }, [reduced]);
 

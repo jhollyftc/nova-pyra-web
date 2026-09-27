@@ -45,7 +45,7 @@ export default async function UpdatePage({ params }: Params) {
 
   return (
     <article>
-      <header className="relative overflow-hidden border-b border-[var(--color-border)]">
+      <header className="relative overflow-hidden border-b border-[var(--color-border)] bg-[var(--color-bg)]">
         <div className="dot-grid absolute inset-0" aria-hidden="true" />
         <div
           className="absolute inset-0"

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import SiteHeader from "@/components/SiteHeader";
+import PageAtmosphere from "@/components/motion/PageAtmosphere";
 import SiteFooter from "@/components/SiteFooter";
 import { getPosts, getSettings } from "@/lib/content";
 
@@ -76,6 +77,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         >
           Skip to content
         </a>
+        {/* The depth layer the whole site sits in. Behind everything, ahead of
+            the page background. */}
+        <PageAtmosphere />
         <SiteHeader teamNumber={settings.teamNumber} hasUpdates={posts.length > 0} />
         <main id="main">{children}</main>
         <SiteFooter settings={settings} />
