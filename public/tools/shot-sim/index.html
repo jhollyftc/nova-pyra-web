@@ -704,50 +704,31 @@
   })();
 
   // ── HIVE ────────────────────────────────────────────────────────────
+  // Figure 9-9 reconciles exactly once you read its 42.91 in as
+  // OPENING-to-OPENING: 12.04 (cell depth) + 18.84 (gap) + 12.04 = 42.92. So
+  // each CELL's mouth sits 21.455 in from the pivot along an arm, and the 30°
+  // in Figure 9-10 is that arm's elevation — which puts the opening plane 30°
+  // off vertical, exactly as the lip heights already told us.
+  //
+  // Everything below follows from the aperture, which is the validated part:
+  // the pivot is placed BACK from the opening along the arm, rather than the
+  // opening being hung off an assumed pivot height.
+  var ARM = 42.91 / 2;                       // 21.455 in, pivot -> mouth
+  var CELL_D = 12.04;
+  var PIVOT = C.clone().addScaledVector(N_OUT, -in2m(ARM));
+  var N_OTHER = new THREE.Vector3(0, Math.sin(TILT), Math.cos(TILT));  // mirrored in z
+
   var hive = new THREE.Group();
   scene.add(hive);
 
-  // Frame: two A-frames, one outboard of each HIVE, joined by a crossbar that
-  // carries both pivots. It is centred on the FIELD, not on the target HIVE —
-  // the structure straddles the two HIVEs, so with the 12.75 in lateral offset
-  // it no longer sits under one of them.
-  (function () {
-    var mat = new THREE.MeshLambertMaterial({ color: 0xB4BEC9 });
-    var pivotY = in2m(43.95), halfW = in2m(49.46) / 2, halfD = in2m(38.95) / 2;
-    var mid = -in2m(HIVE_TO_CENTER);            // FIELD centre, in model coords
-
-    // Two pivot points: this HIVE at x = 0, the other at x = -25.5 in.
-    [0, -in2m(25.5)].forEach(function (apexX) {
-      // The A-frame at each end splays fore and aft along the 38.95 in axis.
-      var side = apexX === 0 ? 1 : -1;
-      [-1, 1].forEach(function (d) {
-        var foot = new THREE.Vector3(mid + side * halfW, 0, d * halfD);
-        var apex = new THREE.Vector3(apexX, pivotY, 0);
-        var len = foot.distanceTo(apex);
-        var leg = new THREE.Mesh(new THREE.CylinderGeometry(in2m(0.85), in2m(0.85), len, 8), mat);
-        leg.position.copy(foot).lerp(apex, 0.5);
-        leg.quaternion.setFromUnitVectors(
-          new THREE.Vector3(0, 1, 0), apex.clone().sub(foot).normalize());
-        hive.add(leg);
-      });
-    });
-
-    // Crossbar joining the two pivots.
-    var bar = new THREE.Mesh(
-      new THREE.CylinderGeometry(in2m(0.95), in2m(0.95), in2m(25.5) + in2m(6), 12), mat);
-    bar.rotation.z = Math.PI / 2;
-    bar.position.set(mid, pivotY, 0);
-    hive.add(bar);
-  })();
-
   // A CELL drawn as five solid faces around an open mouth, so it reads as a
-  // scoop rather than a wireframe box.
+  // scoop rather than a wireframe box. The open face is local +z.
   function cellMesh(colorHex, live) {
     var g = new THREE.Group();
-    var w = in2m(OPEN_W), h = in2m(OPEN_H), d = in2m(12.04);
+    var w = in2m(OPEN_W), h = in2m(OPEN_H), d = in2m(CELL_D);
     var solid = new THREE.MeshLambertMaterial({
       color: colorHex, side: THREE.DoubleSide,
-      transparent: !live, opacity: live ? 1 : 0.55
+      transparent: !live, opacity: live ? 1 : 0.45
     });
     function face(sx, sy, px, py, pz, rx, ry) {
       var m = new THREE.Mesh(new THREE.PlaneGeometry(sx, sy), solid);
@@ -761,65 +742,95 @@
     face(w, d, 0, h / 2, 0, Math.PI / 2);                        // roof
     face(d, h, -w / 2, 0, 0, 0, Math.PI / 2);                    // left
     face(d, h, w / 2, 0, 0, 0, Math.PI / 2);                     // right
-
-    var rim = new THREE.LineSegments(
+    g.add(new THREE.LineSegments(
       new THREE.EdgesGeometry(new THREE.BoxGeometry(w, h, d)),
-      new THREE.LineBasicMaterial({ color: live ? 0xFFFFFF : 0x7C8794 })
-    );
-    g.add(rim);
+      new THREE.LineBasicMaterial({ color: live ? 0xFFFFFF : 0x6E7A88 })
+    ));
     return g;
   }
 
-  // Upward CELL — the target. Rotated so its mouth lies in the aperture plane.
-  var cellUp = cellMesh(0x2F6FD0, true);
-  cellUp.rotation.x = -(Math.PI / 2 - TILT);
-  cellUp.position.copy(C).addScaledVector(N_OUT, -in2m(12.04) / 2);
-  hive.add(cellUp);
+  // Rotation about x that points a CELL's open face along a given normal.
+  // A box's open face starts at local +z, and R_x(t) sends (0,0,1) to
+  // (0, -sin t, cos t) — so the four orientations fall out directly.
+  var ROT_UP    = TILT - Math.PI;   // faces the shooter and up  (this HIVE, raised)
+  var ROT_DOWN  = TILT;             // faces away and down       (this HIVE, lowered)
+  var ROT_OUP   = -TILT;            // other HIVE, raised
+  var ROT_ODOWN = Math.PI - TILT;   // other HIVE, lowered
 
-  // Downward CELL of the same bi-stable HIVE, mirrored through the pivot.
-  var pivotPt = new THREE.Vector3(0, in2m(43.95), 0);
-  var cellDown = cellMesh(0x2F6FD0, false);
-  cellDown.rotation.x = -(Math.PI / 2 - TILT) + Math.PI;
-  cellDown.position.copy(pivotPt).multiplyScalar(2).sub(
-    C.clone().addScaledVector(N_OUT, -in2m(12.04) / 2));
-  hive.add(cellDown);
+  function placeCell(colorHex, live, openCentre, outward, rotX) {
+    var m = cellMesh(colorHex, live);
+    m.rotation.x = rotX;
+    // Box centre sits half a depth inboard of the mouth.
+    m.position.copy(openCentre).addScaledVector(outward, -in2m(CELL_D) / 2);
+    hive.add(m);
+    return m;
+  }
 
-  // The opposing ALLIANCE's HIVE, 25.5 in centre-to-centre alongside this one
-  // and tipped the other way. Not a target here.
-  var other = new THREE.Group();
-  var oUp = cellMesh(0xC0392B, false);
-  oUp.rotation.x = -(Math.PI / 2 - TILT) + Math.PI;
-  oUp.position.copy(cellDown.position);
-  var oDown = cellMesh(0xC0392B, false);
-  oDown.rotation.x = -(Math.PI / 2 - TILT);
-  oDown.position.copy(cellUp.position);
-  other.add(oUp); other.add(oDown);
-  other.position.x = -in2m(25.5);  // alongside, on the far side of FIELD centre
-  hive.add(other);
+  // This ALLIANCE's HIVE: raised CELL at the aperture, lowered CELL reflected
+  // through the pivot.
+  placeCell(0x2F6FD0, true, C, N_OUT, ROT_UP);
+  var downOpen = C.clone().addScaledVector(N_OUT, -in2m(2 * ARM));
+  placeCell(0x2F6FD0, false, downOpen, N_OUT.clone().negate(), ROT_DOWN);
 
-  // The aperture: a bright filled panel plus rim. This rectangle IS the test.
+  // The opposing ALLIANCE's HIVE, 25.5 in alongside and tipped the other way,
+  // so its raised CELL faces its own side of the FIELD.
+  var pivotOther = PIVOT.clone(); pivotOther.x -= in2m(25.5);
+  placeCell(0xC0392B, false,
+    pivotOther.clone().addScaledVector(N_OTHER, in2m(ARM)), N_OTHER, ROT_OUP);
+  placeCell(0xC0392B, false,
+    pivotOther.clone().addScaledVector(N_OTHER, -in2m(ARM)), N_OTHER.clone().negate(), ROT_ODOWN);
+
+  // ── Frame ───────────────────────────────────────────────────────────
+  // Two A-frames outboard of the HIVEs, joined by the pivot shaft they both
+  // hang from. Centred on the FIELD, not on the target HIVE.
   (function () {
-    var w = in2m(OPEN_W), h = in2m(OPEN_H);
-    var panel = new THREE.Mesh(
-      new THREE.PlaneGeometry(w, h),
-      new THREE.MeshBasicMaterial({
-        color: 0xF0B429, transparent: true, opacity: 0.22, side: THREE.DoubleSide
-      })
-    );
-    panel.rotation.x = -(Math.PI / 2 - TILT);
-    panel.position.copy(C);
-    hive.add(panel);
+    var mat = new THREE.MeshLambertMaterial({ color: 0xB4BEC9 });
+    var halfW = in2m(49.46) / 2, halfD = in2m(38.95) / 2;
+    var midX = -in2m(HIVE_TO_CENTER);
 
-    var rim = new THREE.LineLoop(
-      new THREE.BufferGeometry().setFromPoints([
-        C.clone().addScaledVector(U_W, -w / 2).addScaledVector(U_UP, -h / 2),
-        C.clone().addScaledVector(U_W,  w / 2).addScaledVector(U_UP, -h / 2),
-        C.clone().addScaledVector(U_W,  w / 2).addScaledVector(U_UP,  h / 2),
-        C.clone().addScaledVector(U_W, -w / 2).addScaledVector(U_UP,  h / 2)
-      ]),
+    [PIVOT, pivotOther].forEach(function (p, i) {
+      var side = i === 0 ? 1 : -1;
+      [-1, 1].forEach(function (d) {
+        var foot = new THREE.Vector3(midX + side * halfW, 0, p.z + d * halfD);
+        var len = foot.distanceTo(p);
+        var leg = new THREE.Mesh(new THREE.CylinderGeometry(in2m(0.85), in2m(0.85), len, 8), mat);
+        leg.position.copy(foot).lerp(p, 0.5);
+        leg.quaternion.setFromUnitVectors(
+          new THREE.Vector3(0, 1, 0), p.clone().sub(foot).normalize());
+        hive.add(leg);
+      });
+    });
+
+    var shaft = new THREE.Mesh(
+      new THREE.CylinderGeometry(in2m(1.1), in2m(1.1), in2m(25.5 + 8), 14), mat);
+    shaft.rotation.z = Math.PI / 2;
+    shaft.position.set(midX, PIVOT.y, PIVOT.z);
+    hive.add(shaft);
+  })();
+
+  // ── The aperture ────────────────────────────────────────────────────
+  // This rectangle IS the scoring test, so it is drawn from the same vectors
+  // the physics uses rather than from a rotation that could drift out of step.
+  (function () {
+    var hw = in2m(OPEN_W) / 2, hh = in2m(OPEN_H) / 2;
+    var corners = [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh]].map(function (c) {
+      return C.clone().addScaledVector(U_W, c[0]).addScaledVector(U_UP, c[1]);
+    });
+
+    var geo = new THREE.BufferGeometry();
+    var v = [];
+    [[0, 1, 2], [0, 2, 3]].forEach(function (tri) {
+      tri.forEach(function (i) { v.push(corners[i].x, corners[i].y, corners[i].z); });
+    });
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
+    hive.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+      color: 0xF0B429, transparent: true, opacity: 0.25, side: THREE.DoubleSide
+    })));
+
+    hive.add(new THREE.LineLoop(
+      new THREE.BufferGeometry().setFromPoints(corners),
       new THREE.LineBasicMaterial({ color: 0xFFD166 })
-    );
-    hive.add(rim);
+    ));
   })();
 
   // ── Trajectory ──────────────────────────────────────────────────────
@@ -881,7 +892,7 @@
 
   // Simple orbit — OrbitControls is not in the core UMD bundle and one drag
   // handler is cheaper than another dependency.
-  var cam = { az: -0.75, el: 0.30, r: in2m(190), target: new THREE.Vector3(0, in2m(40), 0) };
+  var cam = { az: -0.62, el: 0.26, r: in2m(200), target: new THREE.Vector3(-in2m(8), in2m(42), in2m(6)) };
   function placeCamera() {
     camera.position.set(
       cam.target.x + cam.r * Math.cos(cam.el) * Math.sin(cam.az),
