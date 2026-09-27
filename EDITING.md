@@ -50,9 +50,10 @@ The Studio's left-hand menu is grouped by what you are trying to do, not by how 
 | Add or edit a sponsor, upload a logo | **Sponsors → Sponsor list** |
 | Sponsorship pitch, tier benefits, contact email | **Sponsors → Pitch & tier benefits** |
 | Add a competition result | **Competition → Results** |
-| Season goals and progress bars | **Competition → This season** |
+| Season goals, the challenge, our strategy | **Competition → Seasons** |
+| Start a new season (see below) | **Competition → Seasons** |
 | Awards | **Competition → Awards** |
-| Robot specs, strategy, match clips | **The robot → Overview & strategy** |
+| Robot specs, strategy, match clips | **The robot → Robots by season** |
 | A subsystem's description or marker position | **The robot → Subsystems** |
 | Design evolution entries | **The robot → Design evolution** |
 | Design cycle, engineering portfolio PDF | **Engineering → Process & portfolio** |
@@ -65,6 +66,28 @@ The Studio's left-hand menu is grouped by what you are trying to do, not by how 
 | **Any section heading or intro line** | **Section headings** |
 
 Every field has a description under it explaining what it is for. Read those first.
+
+## Rolling over to a new season
+
+Seasons are documents, one per game, so starting a new one archives the old one rather
+than overwriting it. Last season's record, results and robot stay on the site — they just
+get labelled with the season they belong to.
+
+1. **Competition → Seasons → new document.** Fill in the game name, the season years and
+   the kickoff date. Tick **This is the current season**, and untick it on the old one.
+2. **The robot → Robots by season → new document.** Name it (TBD is fine until the team
+   picks one), set the season, tick **Current**, untick it on last year's robot.
+3. Write **The challenge** and **Our strategy** when the team has read the manual. Leave
+   them empty until then — those sections do not appear on the site until they have
+   something in them, so an empty season looks early rather than broken.
+4. Add competitions under **Competition → Results** as they get scheduled, set to
+   **Upcoming**. Fill in the rank and record after each one and switch it to **Completed**.
+
+What the site does in the meantime: the front page counts build-season days from the
+kickoff date, shows the next thing on the calendar with a countdown, and reports the robot
+as "In design" until it has specs or subsystems. `/robot` keeps showing the most recent
+robot there is actually something to say about, under its own season heading, so the
+showpiece page never goes blank.
 
 ## Things worth knowing
 
