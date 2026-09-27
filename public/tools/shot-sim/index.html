@@ -239,6 +239,20 @@
     </div>
 
     <div class="group">
+      <div class="eyebrow">Shooter</div>
+      <div class="seg" role="group" aria-label="Flywheel arrangement">
+        <button id="driveSingle" aria-pressed="true">ONE WHEEL + HOOD</button>
+        <button id="driveDual" aria-pressed="false">TWO WHEELS</button>
+      </div>
+      <div class="field">
+        <label for="wheel">Flywheel diameter</label>
+        <output id="wheelOut"></output>
+        <input type="range" id="wheel" min="40" max="120" step="1" value="72">
+        <span class="hint" id="wheelHint"></span>
+      </div>
+    </div>
+
+    <div class="group">
       <div class="eyebrow">Model</div>
       <label class="check"><input type="checkbox" id="showVac" checked> Show no-drag arc</label>
       <div class="field">
@@ -278,6 +292,7 @@
       <div class="stat"><span class="eyebrow">Flight</span><b id="tof">&mdash;</b></div>
       <div class="stat"><span class="eyebrow">Lip clearance</span><b id="rimOut">&mdash;</b></div>
       <div class="stat accent"><span class="eyebrow">Speed window</span><b id="window">&mdash;</b></div>
+      <div class="stat accent"><span class="eyebrow">Flywheel</span><b id="rpm">&mdash;</b></div>
     </div>
     <div id="view"><div class="viewhint">Drag to orbit &middot; scroll to zoom</div></div>
   </section>
@@ -364,6 +379,19 @@
       read as a score. Air density 1.225 kg/m&sup3;. Treat it as a design
       envelope, not a guarantee.
     </div>
+    <div>
+      <strong>The rpm figure is a floor</strong><br>
+      Ball speed is converted to wheel speed geometrically and nothing else:
+      <code>rpm = v / (&pi;d) &times; 60</code>, doubled for a single wheel
+      because a ball pinched between one wheel and a stationary hood leaves at
+      half the surface speed &mdash; the rest becomes backspin. Two
+      counter-rotating wheels give the full surface speed. <em>That
+      arrangement is worth a factor of two, so check the toggle matches your
+      design before trusting the number.</em> No slip, no compression loss and
+      no spin-down between shots are modelled, so a real launcher needs more
+      than this &mdash; commonly 15&ndash;40% more. Size a motor and a ratio
+      from it, then find the real setpoint by shooting.
+    </div>
   </div>
 </footer>
 
@@ -433,7 +461,8 @@
   var S = {
     ball: 'pollen', dist: 48, offset: 0, height: 22,
     angle: 48, speed: 21.5, cd: 0.47, maxv: 45, showVac: true,
-    autoSpeed: true, mapMode: 'fixed', entryCone: ENTRY_CONE
+    autoSpeed: true, mapMode: 'fixed', entryCone: ENTRY_CONE,
+    wheel: 72, drive: 'single'
   };
 
   // ── Physics ─────────────────────────────────────────────────────────
@@ -612,6 +641,33 @@
   // Cheap scoring probe used by the sweeps.
   function scores(state) {
     return simulate(state, { collect: false, dt: 0.005, tMax: 4 }).scored;
+  }
+
+  /**
+   * Flywheel speed for a given ball speed — the translation from "what the
+   * trajectory needs" into "what the shooter has to spin at".
+   *
+   * The arrangement is worth a factor of two and so cannot be a fudge factor.
+   * A ball pinched between one wheel at surface speed v and a stationary hood
+   * leaves at v/2: with no slip at either contact the ball's centre travels at
+   * the mean of the two surface speeds, and the difference goes into backspin.
+   * Two counter-rotating wheels both driving at v leave it at v with almost no
+   * spin. Same ball speed, half the rpm.
+   *
+   * This is a no-slip floor, not a setpoint. Every real shooter slips at the
+   * contact patch and loses energy compressing the ball, so a built launcher
+   * needs more rpm than this — commonly 15-40% more. Use it to size a motor
+   * and a gear ratio, then find the real number by shooting.
+   */
+  function rpmFor(vfts, state) {
+    var surface = fts2ms(vfts) * (state.drive === 'single' ? 2 : 1);
+    return surface / (Math.PI * state.wheel / 1000) * 60;
+  }
+
+  // Rounded to the nearest 10: the model is not precise to single rpm and
+  // printing it that way would imply it is.
+  function rpmText(vfts, state) {
+    return (Math.round(rpmFor(vfts, state) / 10) * 10).toLocaleString();
   }
 
   // Width of the contiguous band of speeds that score at a given angle.
@@ -1257,7 +1313,7 @@
 
   // ── Wiring ──────────────────────────────────────────────────────────
   var els = {};
-  ['dist', 'offset', 'height', 'angle', 'speed', 'cd', 'maxv', 'entryCone'].forEach(function (id) {
+  ['dist', 'offset', 'height', 'angle', 'speed', 'cd', 'maxv', 'entryCone', 'wheel'].forEach(function (id) {
     els[id] = document.getElementById(id);
   });
 
@@ -1284,6 +1340,10 @@
     document.getElementById('cdOut').textContent = S.cd.toFixed(2);
     document.getElementById('maxvOut').textContent = S.maxv.toFixed(0) + ' ft/s';
     document.getElementById('entryConeOut').textContent = S.entryCone.toFixed(0) + '°';
+    document.getElementById('wheelOut').textContent = S.wheel.toFixed(0) + ' mm';
+    document.getElementById('wheelHint').textContent = S.drive === 'single'
+      ? 'One wheel against a hood: the ball leaves at half the wheel surface speed, so this needs twice the rpm.'
+      : 'Two counter-rotating wheels: the ball leaves at the wheel surface speed.';
     var b = BALLS[S.ball];
     document.getElementById('ballSpec').textContent =
       b.d.toFixed(1) + ' in · ' + Math.round(b.m * 1000) + ' g · drag k = ' +
@@ -1300,7 +1360,14 @@
     if (w) {
       S.speed = Math.round(w.mid * 4) / 4;
       els.speed.value = S.speed;
-      hint.textContent = 'solved · window ' + w.lo.toFixed(1) + '–' + w.hi.toFixed(1) + ' ft/s';
+      // This runs from inside updateShot, which every caller invokes AFTER
+      // syncLabels — so the label syncLabels just painted is already stale by
+      // the time we get here. The function that moves the speed owns the
+      // readout for it. (Visible as soon as the flywheel rpm, derived from the
+      // new speed, stopped agreeing with the ft/s printed beside it.)
+      document.getElementById('speedOut').textContent = S.speed.toFixed(2) + ' ft/s';
+      hint.textContent = 'solved · window ' + w.lo.toFixed(1) + '–' + w.hi.toFixed(1) + ' ft/s · '
+        + rpmText(w.lo, S) + '–' + rpmText(w.hi, S) + ' rpm';
       hint.style.color = 'var(--scores)';
     } else {
       hint.textContent = 'no speed scores at ' + S.angle.toFixed(1) + '° from here';
@@ -1349,7 +1416,11 @@
     }
 
     var w = speedWindow(S, S.angle, V_LO, S.maxv, 80);
-    document.getElementById('window').textContent = w ? w.width.toFixed(1) + ' ft/s' : 'none';
+    document.getElementById('window').textContent = w
+      ? w.width.toFixed(1) + ' ft/s · ' +
+        (Math.round((rpmFor(w.hi, S) - rpmFor(w.lo, S)) / 10) * 10).toLocaleString() + ' rpm'
+      : 'none';
+    document.getElementById('rpm').textContent = rpmText(S.speed, S) + ' rpm';
 
     render();
   }
@@ -1373,7 +1444,8 @@
       syncLabels(); updateShot(); drawEnvelope(); drawCoverage();
       // In fixed-angle mode the map is a function of the angle, so it has to
       // follow that slider too.
-      if (id !== 'speed' && !(id === 'angle' && S.mapMode !== 'fixed')) scheduleMap();
+      if (id !== 'speed' && id !== 'wheel' && !(id === 'angle' && S.mapMode !== 'fixed')) scheduleMap();
+      if (id === 'wheel') applyAutoSpeed();
       if (id === 'cd' || id === 'maxv' || id === 'height' || id === 'entryCone') scheduleCoverage();
     });
   });
@@ -1404,6 +1476,19 @@
   }
   document.getElementById('modeFixed').addEventListener('click', function () { pickMapMode('fixed'); });
   document.getElementById('modeBest').addEventListener('click', function () { pickMapMode('best'); });
+
+  // Which arrangement the rpm figure assumes. Changes nothing about the
+  // trajectory — only the translation from ball speed to wheel speed.
+  function pickDrive(which) {
+    S.drive = which;
+    document.getElementById('driveSingle').setAttribute('aria-pressed', String(which === 'single'));
+    document.getElementById('driveDual').setAttribute('aria-pressed', String(which === 'dual'));
+    syncLabels();
+    updateShot();
+    applyAutoSpeed();
+  }
+  document.getElementById('driveSingle').addEventListener('click', function () { pickDrive('single'); });
+  document.getElementById('driveDual').addEventListener('click', function () { pickDrive('dual'); });
 
   function pickBall(which) {
     S.ball = which;
