@@ -120,6 +120,7 @@ export const SECTION_DEFAULTS = {
 
   /* ── Season ───────────────────────────────────────────────────────── */
   "season.upcoming": { eyebrow: "Next", title: "On the calendar" },
+  "season.tools": { eyebrow: "Design work", title: "Modelling the shot" },
   "season.strategy": { eyebrow: "Approach", title: "Our strategy" },
   "season.progress": { eyebrow: "Progress", title: "Goals & results" },
   "season.awardGoals": { eyebrow: "Awards", title: "What we're chasing" },

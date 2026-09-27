@@ -44,3 +44,25 @@ Drives the Chrome already installed on the machine, so `playwright-core` is the
 only dependency and no browser is downloaded. In Git Bash, prefix with
 `MSYS_NO_PATHCONV=1` or a leading `/` in `--routes` is rewritten to a Windows
 path.
+
+# The shot simulator
+
+`public/tools/shot-sim/` is the HIVE Shot Envelope simulator, served at
+`/season/shot-sim` via a rewrite in `next.config.js`. It is a copy of a
+self-contained HTML file authored outside this repo, not a port — it owns the
+full viewport by design and brings its own design system, so it gets its own
+URL rather than an iframe inside a page with the site's chrome.
+
+Re-sync it after the team edits the original:
+
+```
+node scripts/sync-shot-sim.mjs            # defaults to ~/Desktop/nova-pyra-shot-sim/index.html
+node scripts/sync-shot-sim.mjs <path>
+```
+
+Never hand-edit the copy in `public/` — the sync script rewrites it, and it
+repairs a document head the source does not have (doctype, charset, viewport).
+Those belong in the source too.
+
+This is the one exception to "never commit media to `public/`": it is a tool,
+not an asset, and it is code the team wrote.

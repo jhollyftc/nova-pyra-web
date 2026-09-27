@@ -1,0 +1,1455 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="An interactive model of every launch angle and exit speed that scores in the BIOBUZZ HIVE, built by FTC Team 25619 Nova Pyra.">
+<meta name="theme-color" content="#14161A">
+<title>HIVE Shot Envelope</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<style>
+  /* Committed single (dark) theme: this is a 3D viewport instrument, and a
+     viewport reads as one. Every colour is painted explicitly so the page
+     holds on either host ground. */
+  :root {
+    --ground:   #14161A;
+    --surface:  #1C2026;
+    --raised:   #242A32;
+    --hairline: #2F353E;
+    --ink:      #ECEFF3;
+    --ink-2:    #A3ACB9;
+    --ink-3:    #6D7784;
+    --pollen:   #F0B429;   /* the trajectory, and the numbers that matter */
+    --nectar:   #4C9AFF;   /* hive geometry */
+    --scores:   #3DD68C;
+    --misses:   #F2555A;
+    --rail: 340px;
+    --analysis: 430px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3 { font-family: 'IBM Plex Sans Condensed', system-ui, sans-serif; margin: 0; line-height: 1.15; }
+
+  .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  /* ── Frame ───────────────────────────────────────────────────────── */
+  header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--hairline);
+    background: var(--surface);
+  }
+  header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.01em; }
+  header .sub { color: var(--ink-2); font-size: 13px; }
+  header .spacer { margin-left: auto; }
+
+  main {
+    display: grid;
+    grid-template-columns: var(--rail) minmax(0, 1fr) var(--analysis);
+    gap: 1px;
+    background: var(--hairline);
+  }
+  main > section { background: var(--ground); min-width: 0; }
+
+  /* On a desktop the whole instrument fits the viewport and each column
+     scrolls on its own, so the 3D view is never below the fold. The footer
+     sits under that first screen. */
+  @media (min-width: 1181px) {
+    main { flex: 1 1 auto; min-height: 0; height: calc(100vh - var(--header-h, 64px)); }
+    main > section { min-height: 0; }
+    .rail, .analysis { overflow-y: auto; }
+    .stage { overflow: hidden; }
+  }
+
+  @media (max-width: 1180px) {
+    main { grid-template-columns: var(--rail) minmax(0, 1fr); }
+    .analysis { grid-column: 1 / -1; }
+  }
+  @media (max-width: 760px) {
+    main { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  /* ── Control rail ────────────────────────────────────────────────── */
+  .rail { padding: 20px 20px 40px; display: flex; flex-direction: column; gap: 24px; }
+  .group { display: flex; flex-direction: column; gap: 10px; }
+  .group > .eyebrow { padding-bottom: 6px; border-bottom: 1px solid var(--hairline); }
+
+  .field { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: baseline; }
+  .field label { font-size: 15px; color: var(--ink-2); }
+  .field output { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 600; color: var(--ink); }
+  .field input[type="range"] { grid-column: 1 / -1; width: 100%; accent-color: var(--pollen); margin: 0; }
+  .field .hint { grid-column: 1 / -1; font-size: 13px; color: var(--ink-3); line-height: 1.45; }
+
+  .seg { display: flex; gap: 0; border: 1px solid var(--hairline); border-radius: 6px; overflow: hidden; }
+  .seg button {
+    flex: 1; padding: 7px 4px; background: transparent; color: var(--ink-2);
+    border: 0; cursor: pointer; font-family: 'IBM Plex Sans Condensed', sans-serif;
+    font-size: 15px; font-weight: 600; letter-spacing: 0.03em;
+  }
+  .seg button[aria-pressed="true"] { background: var(--raised); color: var(--ink); box-shadow: inset 0 -2px 0 var(--pollen); }
+  .seg button:focus-visible { outline: 2px solid var(--pollen); outline-offset: -2px; }
+
+  .check { display: flex; align-items: center; gap: 9px; font-size: 15px; color: var(--ink-2); }
+  .check input { accent-color: var(--pollen); }
+
+  /* ── Viewport ────────────────────────────────────────────────────── */
+  .stage { display: flex; flex-direction: column; min-height: 460px; }
+
+  .readout {
+    display: flex; align-items: center; gap: 22px; flex-wrap: wrap;
+    padding: 12px 18px; border-bottom: 1px solid var(--hairline); background: var(--surface);
+  }
+  .verdict {
+    font-family: 'IBM Plex Sans Condensed', sans-serif; font-size: 19px; font-weight: 700;
+    letter-spacing: 0.04em; text-transform: uppercase; padding: 4px 14px; border-radius: 4px;
+  }
+  .verdict[data-hit="yes"] { color: var(--scores); background: rgba(61,214,140,0.12); box-shadow: inset 0 0 0 1px rgba(61,214,140,0.4); }
+  .verdict[data-hit="no"]  { color: var(--misses); background: rgba(242,85,90,0.12);  box-shadow: inset 0 0 0 1px rgba(242,85,90,0.4); }
+  .stat { display: flex; flex-direction: column; gap: 1px; }
+  .stat b { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; font-size: 18px; font-weight: 600; color: var(--ink); }
+  .stat.accent b { color: var(--pollen); }
+
+  #view { flex: 1 1 auto; min-height: 320px; position: relative; }
+  #view canvas { display: block; width: 100%; height: 100%; }
+  .viewhint {
+    position: absolute; left: 14px; bottom: 12px; pointer-events: none;
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+
+  /* ── Analysis column ─────────────────────────────────────────────── */
+  .analysis { padding: 20px 20px 40px; display: flex; flex-direction: column; gap: 28px; }
+  .panel { display: flex; flex-direction: column; gap: 8px; }
+  .panel h2 { font-size: 18px; font-weight: 700; }
+  .panel p { margin: 0; font-size: 14px; color: var(--ink-3); line-height: 1.55; }
+  .plot { position: relative; width: 100%; background: var(--surface); border: 1px solid var(--hairline); border-radius: 6px; }
+  .plot canvas { display: block; width: 100%; height: auto; border-radius: 5px; }
+
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--ink-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 11px; height: 11px; border-radius: 2px; flex: none; }
+  .ramp { width: 84px; height: 10px; border-radius: 2px; flex: none;
+          background: linear-gradient(to right, #3A2D10, #7A5A14, #B98A18, #F0B429, #FFD98A); }
+
+  footer {
+    border-top: 1px solid var(--hairline); background: var(--surface);
+    padding: 20px 20px 34px; color: var(--ink-3); font-size: 14px; line-height: 1.6;
+  }
+  footer .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 18px; max-width: 1400px; }
+  footer strong { color: var(--ink-2); font-weight: 600; }
+  footer code { font-family: 'IBM Plex Mono', monospace; color: var(--pollen); font-size: 13px; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+</head>
+<body>
+<header>
+  <h1>HIVE Shot Envelope</h1>
+  <span class="sub">BIOBUZZ presented by RTX &middot; FTC 25619 Nova Pyra</span>
+  <span class="spacer eyebrow" id="geomStamp">Figure 9-10 &middot; Team Update 01</span>
+  <a href="/season" style="margin-left:auto;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-3);text-decoration:none;border-bottom:1px solid var(--hairline);padding-bottom:2px">&larr; Nova Pyra</a>
+</header>
+
+<main>
+  <!-- ── Controls ─────────────────────────────────────────────────── -->
+  <section class="rail">
+    <div class="group">
+      <div class="eyebrow">Projectile</div>
+      <div class="seg" role="group" aria-label="Scoring element">
+        <button id="ballPollen" aria-pressed="true">POLLEN</button>
+        <button id="ballNectar" aria-pressed="false">NECTAR</button>
+      </div>
+      <div class="field"><span class="hint" id="ballSpec"></span></div>
+    </div>
+
+    <div class="group">
+      <div class="eyebrow">Launch</div>
+
+      <div class="field">
+        <label for="dist">Distance from HIVE</label>
+        <output id="distOut"></output>
+        <input type="range" id="dist" min="12" max="70" step="1" value="44">
+        <span class="hint" id="roomHint"></span>
+      </div>
+
+      <div class="field">
+        <label for="offset">Lateral offset</label>
+        <output id="offsetOut"></output>
+        <input type="range" id="offset" min="-78" max="53" step="1" value="0">
+      </div>
+
+      <div class="field">
+        <label for="height">Release height</label>
+        <output id="heightOut"></output>
+        <input type="range" id="height" min="2" max="29" step="0.5" value="22">
+        <span class="hint">Capped at 29 in &mdash; R105 vertical expansion limit</span>
+      </div>
+
+      <div class="field">
+        <label for="angle">Launch angle</label>
+        <output id="angleOut"></output>
+        <input type="range" id="angle" min="5" max="80" step="0.5" value="48">
+      </div>
+
+      <div class="field">
+        <label for="speed">Exit speed</label>
+        <output id="speedOut"></output>
+        <input type="range" id="speed" min="6" max="60" step="0.25" value="21.5">
+        <span class="hint" id="autoHint"></span>
+      </div>
+
+      <label class="check">
+        <input type="checkbox" id="autoSpeed" checked>
+        Solve exit speed for me
+      </label>
+      <span class="hint" style="margin-top:-4px">
+        Fix the angle, then move the robot: the speed re-solves to the centre of
+        the window wherever a shot exists.
+      </span>
+    </div>
+
+    <div class="group">
+      <div class="eyebrow">Model</div>
+      <label class="check"><input type="checkbox" id="showVac" checked> Show no-drag arc</label>
+      <div class="field">
+        <label for="cd">Drag coefficient</label>
+        <output id="cdOut"></output>
+        <input type="range" id="cd" min="0.2" max="0.8" step="0.01" value="0.47">
+        <span class="hint">0.47 = smooth sphere. Raise it if your ball is scuffed.</span>
+      </div>
+      <div class="field">
+        <label for="entryCone">Entry cone</label>
+        <output id="entryConeOut"></output>
+        <input type="range" id="entryCone" min="40" max="75" step="1" value="60">
+        <span class="hint">
+          How square a ball must arrive to count as going in rather than
+          skimming the lip. An assumption, not a rule &mdash; and the fixed-angle
+          answer moves a lot with it.
+        </span>
+      </div>
+
+      <div class="field">
+        <label for="maxv">Launcher ceiling</label>
+        <output id="maxvOut"></output>
+        <input type="range" id="maxv" min="15" max="60" step="1" value="45">
+        <span class="hint">Used by the field map: speeds above this are treated as unreachable.</span>
+      </div>
+      <button id="solve" style="padding:9px;background:var(--raised);color:var(--ink);border:1px solid var(--hairline);border-radius:6px;cursor:pointer;font-family:'IBM Plex Sans Condensed',sans-serif;font-weight:600;letter-spacing:0.03em;">Snap speed to centre of window</button>
+    </div>
+  </section>
+
+  <!-- ── 3D stage ─────────────────────────────────────────────────── -->
+  <section class="stage">
+    <div class="readout">
+      <span class="verdict" id="verdict" data-hit="yes">Scores</span>
+      <div class="stat"><span class="eyebrow">Entry speed</span><b id="vEntry">&mdash;</b></div>
+      <div class="stat"><span class="eyebrow">Entry angle</span><b id="aEntry">&mdash;</b></div>
+      <div class="stat"><span class="eyebrow">Apex</span><b id="apex">&mdash;</b></div>
+      <div class="stat"><span class="eyebrow">Flight</span><b id="tof">&mdash;</b></div>
+      <div class="stat"><span class="eyebrow">Lip clearance</span><b id="rimOut">&mdash;</b></div>
+      <div class="stat accent"><span class="eyebrow">Speed window</span><b id="window">&mdash;</b></div>
+    </div>
+    <div id="view"><div class="viewhint">Drag to orbit &middot; scroll to zoom</div></div>
+  </section>
+
+  <!-- ── Analysis ─────────────────────────────────────────────────── -->
+  <section class="analysis">
+    <div class="panel">
+      <h2>Solution envelope</h2>
+      <p>Every angle and speed that scores from this exact spot. The wider the band, the more launcher error the shot forgives.</p>
+      <div class="plot"><canvas id="envelope" width="720" height="520"></canvas></div>
+      <div class="legend">
+        <span><i class="swatch" style="background:var(--scores)"></i>Scores</span>
+        <span><i class="swatch" style="background:var(--pollen)"></i>Current shot</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Where a shot exists</h2>
+      <div class="seg" role="group" aria-label="Field map mode">
+        <button id="modeFixed" aria-pressed="true">This angle only</button>
+        <button id="modeBest" aria-pressed="false">Best angle per spot</button>
+      </div>
+      <p id="mapCaption">Each tile is a floor position. Colour is the width of the usable speed window &mdash; brighter means more forgiving.</p>
+      <div class="plot"><canvas id="fieldmap" width="720" height="392"></canvas></div>
+      <div class="legend">
+        <span><i class="ramp"></i></span>
+        <span class="mono" id="rampLo">0</span>
+        <span>&rarr; speed window (ft/s) &rarr;</span>
+        <span class="mono" id="rampHi">&mdash;</span>
+        <span><i class="swatch" style="background:#22262C;box-shadow:inset 0 0 0 1px var(--hairline)"></i>No solution</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Best angle for a fixed shooter</h2>
+      <p>If the hood never moves and only the exit speed changes, this is how much of the reachable floor each angle can score from <em>with a speed window at least 1&nbsp;ft/s wide</em> &mdash; a shot nobody can hold to is not coverage. Steep angles reach further but leave less margin.</p>
+      <div class="plot"><canvas id="coverage" width="720" height="300"></canvas></div>
+      <div class="legend">
+        <span><i class="swatch" style="background:var(--scores)"></i>Best angle <b class="mono" id="bestAngleOut">&mdash;</b></span>
+        <span><i class="swatch" style="background:var(--pollen)"></i>Your angle <b class="mono" id="yourAngleOut">&mdash;</b></span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="cols">
+    <div>
+      <strong>Target geometry</strong><br>
+      The two HIVEs sit 25.5 in apart <em>across</em> the opening, not downrange
+      of it &mdash; confirmed against the CAD plan view using the frame's own
+      49.46 &times; 38.95 in bounding box as the scale. So there is a full 72 in
+      of floor in front of the opening and the FIELD is off-centre sideways by
+      12.75 in.<br><br>
+      CELL opening 20 &times; 14 in, plane tilted 30&deg; from vertical, bottom lip
+      <code>53.5 in</code> and top lip <code>65.6 in</code> above the TILES
+      (Figure 9-10). Bottom of HIVE <code>30.6 in</code> per Team Update 01,
+      17 Sep 2026. Modelling the 14 in opening at 30&deg; reproduces both lip
+      heights to 0.01 in, which is what validates the tilt.
+    </div>
+    <div>
+      <strong>Ball data</strong><br>
+      POLLEN 2.8 in / 25 g, NECTAR 3.6 in / 40 g. Diameters are from the manual
+      (Sec 9.8); <em>the masses are team-measured &mdash; the manual states no
+      weight for either ball.</em> They give near-identical drag parameters
+      (<code>0.0457</code> vs <code>0.0473 m&#8315;&sup1;</code>), so the two
+      balls fly almost the same arc.
+    </div>
+    <div>
+      <strong>The entry cone is the load-bearing assumption</strong><br>
+      A ball counts as scoring if it crosses the opening within
+      <code>60&deg;</code> of square. Sweeping that from 45&deg; to 70&deg;
+      moves the best fixed hood angle from 66&deg; to 80&deg; and coverage from
+      59% to 100%, so treat the fixed-angle recommendation as provisional until
+      you have thrown real balls at a real CELL. The slider is there to be
+      corrected.
+    </div>
+    <div>
+      <strong>What this model ignores</strong><br>
+      No spin or Magnus force, no bounce-in &mdash; the ball has to fly cleanly
+      through the opening, and its full diameter has to clear all four lips
+      along the way, not merely at the instant its centre crosses the plane. The only obstacle checked is the opening plane
+      itself, so a shot that would clip the frame or the downward CELL can still
+      read as a score. Air density 1.225 kg/m&sup3;. Treat it as a design
+      envelope, not a guarantee.
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  // ── Units & constants ───────────────────────────────────────────────
+  var IN = 0.0254, G = 9.80665, RHO = 1.225;
+  var M_PER_FT = 0.3048;
+  var m2in = function (m) { return m / IN; };
+  var in2m = function (v) { return v * IN; };
+  var ms2fts = function (v) { return v / M_PER_FT; };
+  var fts2ms = function (v) { return v * M_PER_FT; };
+
+  // Target geometry — data/field-data.json → hive-structure.launch_geometry
+  var OPEN_W = 20, OPEN_H = 14, TILT = 30 * Math.PI / 180;
+  var LIP_LO = 53.5, LIP_HI = 65.6;
+  var C_H = (LIP_LO + LIP_HI) / 2;          // 59.55 in — aperture centre height
+  var FIELD = 144;                          // 12 ft square, 6 × 6 TILES of 2 ft
+
+  // The two HIVEs are 25.5 in centre-to-centre and straddle the middle of the
+  // FIELD. Checked against the CAD plan view using the frame itself as a scale:
+  // the frame's bounding box matches its known 49.46 × 38.95 in aspect (1.259
+  // vs 1.270), and on that scale the two HIVE centres come out 25.9 in apart —
+  // so the separation runs along the frame's WIDE axis, which is the pivot
+  // axis, which is the direction the opening is 20 in wide in.
+  //
+  // That makes the offset LATERAL to the shot, not downrange of it: there is a
+  // full 72 in of floor in front of the opening, and the FIELD is simply
+  // off-centre sideways by 12.75 in. Each HIVE's own two CELLs are offset along
+  // the 38.95 in axis, which is the tipping direction and the axis you shoot
+  // along.
+  var HIVE_TO_CENTER = 25.5 / 2;
+  var ROOM = FIELD / 2;                       // 72 in downrange of the opening
+  var X_MIN = -(FIELD / 2 + HIVE_TO_CENTER);  // -84.75 in — the long side
+  var X_MAX = FIELD / 2 - HIVE_TO_CENTER;     //  59.25 in — the short side
+
+  // Aperture frame, in metres. The opening leans back 30° from vertical, so its
+  // outward normal tips up by the same 30°.
+  var C = new THREE.Vector3(0, in2m(C_H), 0);
+  var U_UP = new THREE.Vector3(0, Math.cos(TILT), Math.sin(TILT));   // up-slope, in plane
+  var U_W  = new THREE.Vector3(1, 0, 0);                              // across the opening
+  var N_OUT = new THREE.Vector3(0, Math.sin(TILT), -Math.cos(TILT));  // faces the shooter
+
+  // How far off the opening's normal a ball may arrive and still be treated as
+  // going in rather than skimming past. 60° means the inward component must be
+  // at least half the ball's speed.
+  //
+  // This is a modelling choice, not a manual fact, and the fixed-angle answer
+  // is genuinely sensitive to it: sweeping it from 45° to 70° moves the best
+  // hood angle from 66° to 80° and coverage from 59% to 100%. It is a slider
+  // for that reason — tighten it once you have bounced real balls off a real
+  // CELL.
+  var ENTRY_CONE = 60;
+  var COS_ENTRY = Math.cos(ENTRY_CONE * Math.PI / 180);
+  function coneOf(state) {
+    return state.entryCone == null ? COS_ENTRY
+      : Math.cos(state.entryCone * Math.PI / 180);
+  }
+
+  var BALLS = {
+    pollen: { name: 'POLLEN', d: 2.8, m: 0.025, color: 0xF0B429 },
+    nectar: { name: 'NECTAR', d: 3.6, m: 0.040, color: 0x4C9AFF }
+  };
+
+  var S = {
+    ball: 'pollen', dist: 48, offset: 0, height: 22,
+    angle: 48, speed: 21.5, cd: 0.47, maxv: 45, showVac: true,
+    autoSpeed: true, mapMode: 'fixed', entryCone: ENTRY_CONE
+  };
+
+  // ── Physics ─────────────────────────────────────────────────────────
+  // Point mass, quadratic drag: a = g − k·|v|·v, k = ½ρ·Cd·A/m.
+  function dragK(ball, cd) {
+    var r = in2m(ball.d) / 2;
+    return 0.5 * RHO * cd * (Math.PI * r * r) / ball.m;
+  }
+
+  function launchVector(state) {
+    // Shooter stands at (offset, 0, −dist) and aims at the aperture centre in plan.
+    var sx = in2m(state.offset), sz = -in2m(state.dist);
+    var dx = -sx, dz = -sz;
+    var len = Math.hypot(dx, dz) || 1;
+    dx /= len; dz /= len;
+    var th = state.angle * Math.PI / 180, v = fts2ms(state.speed);
+    return {
+      p: new THREE.Vector3(sx, in2m(state.height), sz),
+      v: new THREE.Vector3(dx * Math.cos(th) * v, Math.sin(th) * v, dz * Math.cos(th) * v)
+    };
+  }
+
+  // Integrate until the ball crosses the aperture plane, hits the floor, or times
+  // out. Returns the path plus, if it crossed inside the opening, the entry data.
+  //
+  // Deliberately scalar: the sweeps below run millions of steps, and allocating
+  // THREE.Vector3 objects inside the loop makes the page stall on the garbage
+  // collector. Vectors are built only for the path actually drawn.
+  // The four lip segments of the opening, at full size. A ball has to pass
+  // through without its surface touching any of them, which is a different
+  // question from whether its centre lands inside the rectangle.
+  var RIM = (function () {
+    var hw = in2m(OPEN_W) / 2, hh = in2m(OPEN_H) / 2;
+    var pts = [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh]].map(function (c) {
+      return C.clone().addScaledVector(U_W, c[0]).addScaledVector(U_UP, c[1]);
+    });
+    var segs = [];
+    for (var i = 0; i < 4; i++) {
+      var a = pts[i], b = pts[(i + 1) % 4];
+      segs.push([a.x, a.y, a.z, b.x - a.x, b.y - a.y, b.z - a.z]);
+    }
+    return segs;
+  })();
+  // Only worth testing when the ball is actually near the mouth.
+  var RIM_NEAR = in2m(26), RIM_NEAR_SQ = RIM_NEAR * RIM_NEAR;
+
+  function rimClearance(px, py, pz) {
+    var best = Infinity;
+    for (var i = 0; i < 4; i++) {
+      var g = RIM[i];
+      var apx = px - g[0], apy = py - g[1], apz = pz - g[2];
+      var abx = g[3], aby = g[4], abz = g[5];
+      var t = (apx * abx + apy * aby + apz * abz) / (abx * abx + aby * aby + abz * abz);
+      t = t < 0 ? 0 : (t > 1 ? 1 : t);
+      var dx = apx - abx * t, dy = apy - aby * t, dz = apz - abz * t;
+      var d = dx * dx + dy * dy + dz * dz;
+      if (d < best) best = d;
+    }
+    return Math.sqrt(best);
+  }
+
+  var C_X = C.x, C_Y = C.y, C_Z = C.z;
+  var N_X = N_OUT.x, N_Y = N_OUT.y, N_Z = N_OUT.z;
+  var W_X = U_W.x,  W_Y = U_W.y,  W_Z = U_W.z;
+  var P_X = U_UP.x, P_Y = U_UP.y, P_Z = U_UP.z;
+  var FIELD_M = in2m(FIELD);
+
+  function simulate(state, opts) {
+    opts = opts || {};
+    var ball = BALLS[state.ball];
+    var k = opts.noDrag ? 0 : dragK(ball, state.cd);
+    var rBall = in2m(ball.d) / 2;
+    var halfWFull = in2m(OPEN_W) / 2, halfHFull = in2m(OPEN_H) / 2;
+
+    var sx = in2m(state.offset), sz = -in2m(state.dist);
+    var dx = -sx, dz = -sz, len = Math.hypot(dx, dz) || 1;
+    dx /= len; dz /= len;
+    var th = state.angle * Math.PI / 180, sp = fts2ms(state.speed);
+    var ch = Math.cos(th);
+
+    var px = sx, py = in2m(state.height), pz = sz;
+    var vx = dx * ch * sp, vy = Math.sin(th) * sp, vz = dz * ch * sp;
+
+    var collect = opts.collect !== false;
+    var pts = collect ? [new THREE.Vector3(px, py, pz)] : null;
+    var dt = opts.dt || 0.0025, tMax = opts.tMax || 5;
+    var apex = py, t = 0;
+    var minRim = Infinity;          // closest the ball centre gets to any lip
+    var prev = (px - C_X) * N_X + (py - C_Y) * N_Y + (pz - C_Z) * N_Z;
+
+    while (t < tMax) {
+      // RK4 — the drag term is velocity-dependent, so Euler visibly drifts.
+      var s1 = Math.sqrt(vx * vx + vy * vy + vz * vz);
+      var a1x = -k * s1 * vx, a1y = -G - k * s1 * vy, a1z = -k * s1 * vz;
+      var b2x = vx + a1x * dt / 2, b2y = vy + a1y * dt / 2, b2z = vz + a1z * dt / 2;
+      var s2 = Math.sqrt(b2x * b2x + b2y * b2y + b2z * b2z);
+      var a2x = -k * s2 * b2x, a2y = -G - k * s2 * b2y, a2z = -k * s2 * b2z;
+      var b3x = vx + a2x * dt / 2, b3y = vy + a2y * dt / 2, b3z = vz + a2z * dt / 2;
+      var s3 = Math.sqrt(b3x * b3x + b3y * b3y + b3z * b3z);
+      var a3x = -k * s3 * b3x, a3y = -G - k * s3 * b3y, a3z = -k * s3 * b3z;
+      var b4x = vx + a3x * dt, b4y = vy + a3y * dt, b4z = vz + a3z * dt;
+      var s4 = Math.sqrt(b4x * b4x + b4y * b4y + b4z * b4z);
+      var a4x = -k * s4 * b4x, a4y = -G - k * s4 * b4y, a4z = -k * s4 * b4z;
+
+      var nx = px + (vx + 2 * b2x + 2 * b3x + b4x) * dt / 6;
+      var ny = py + (vy + 2 * b2y + 2 * b3y + b4y) * dt / 6;
+      var nz = pz + (vz + 2 * b2z + 2 * b3z + b4z) * dt / 6;
+      var nvx = vx + (a1x + 2 * a2x + 2 * a3x + a4x) * dt / 6;
+      var nvy = vy + (a1y + 2 * a2y + 2 * a3y + a4y) * dt / 6;
+      var nvz = vz + (a1z + 2 * a2z + 2 * a3z + a4z) * dt / 6;
+
+      var cur = (nx - C_X) * N_X + (ny - C_Y) * N_Y + (nz - C_Z) * N_Z;
+
+      if (prev > 0 && cur <= 0 && (nvx * N_X + nvy * N_Y + nvz * N_Z) < 0) {
+        // Crossed inward. Interpolate to the plane and test the rectangle,
+        // shrunk by the ball radius so the whole ball fits through.
+        var f = prev / (prev - cur);
+        var hx = px + (nx - px) * f, hy = py + (ny - py) * f, hz = pz + (nz - pz) * f;
+        var hvx = vx + (nvx - vx) * f, hvy = vy + (nvy - vy) * f, hvz = vz + (nvz - vz) * f;
+        var rx = hx - C_X, ry = hy - C_Y, rz = hz - C_Z;
+        var u = rx * W_X + ry * W_Y + rz * W_Z;
+        var w = rx * P_X + ry * P_Y + rz * P_Z;
+        var hs = Math.sqrt(hvx * hvx + hvy * hvy + hvz * hvz) || 1;
+
+        // Crossing the opening rectangle is not enough on its own. A flat, fast
+        // shot can clip through the mouth almost tangentially and register as a
+        // score while really skimming past it. Require the ball to be travelling
+        // broadly INTO the CELL: at most ENTRY_CONE off the inward normal, i.e.
+        // an inward component of at least cos(ENTRY_CONE) of its speed.
+        var cosEnter = -(hvx * N_X + hvy * N_Y + hvz * N_Z) / hs;
+        var clean = cosEnter >= coneOf(state);
+        // Centre must pass through the opening at full size, AND the ball's
+        // surface must never have touched a lip on the way in. The second test
+        // is what the radius is really for — subtracting it from the rectangle
+        // only checks the instant of crossing, which misses a ball that clips
+        // the near lip while its centre is still outside the plane.
+        var rimAtEntry = rimClearance(hx, hy, hz);
+        if (rimAtEntry < minRim) minRim = rimAtEntry;
+        var centreIn = Math.abs(u) <= halfWFull && Math.abs(w) <= halfHFull;
+        var cleared = minRim >= rBall;
+        var inside = centreIn && clean && cleared;
+
+        if (pts) pts.push(new THREE.Vector3(hx, hy, hz));
+        return {
+          points: pts, scored: inside, t: t + dt * f,
+          clippedLip: centreIn && clean && !cleared,
+          rimClearance: m2in(minRim), ballRadius: m2in(rBall),
+          entrySpeed: hs,
+          entryAngle: -Math.asin(hvy / hs) * 180 / Math.PI,
+          entryCone: Math.acos(Math.max(-1, Math.min(1, cosEnter))) * 180 / Math.PI,
+          grazed: !clean && centreIn,
+          apex: Math.max(apex, hy),
+          u: m2in(u), w: m2in(w),
+          marginW: m2in(halfWFull - Math.abs(u)), marginH: m2in(halfHFull - Math.abs(w))
+        };
+      }
+
+      // Sample clearance on the way in. Cheap because it only runs inside a
+      // 26 in bubble around the mouth.
+      var rdx = nx - C_X, rdy = ny - C_Y, rdz = nz - C_Z;
+      if (rdx * rdx + rdy * rdy + rdz * rdz < RIM_NEAR_SQ) {
+        var rc = rimClearance(nx, ny, nz);
+        if (rc < minRim) minRim = rc;
+      }
+
+      px = nx; py = ny; pz = nz; vx = nvx; vy = nvy; vz = nvz;
+      t += dt; prev = cur;
+      if (py > apex) apex = py;
+      if (pts) pts.push(new THREE.Vector3(px, py, pz));
+      if (py < 0 && vy < 0) break;                   // hit the tiles
+      if (Math.abs(px) > FIELD_M || Math.abs(pz) > FIELD_M) break;
+    }
+    return { points: pts, scored: false, t: t, apex: apex };
+  }
+
+  // Cheap scoring probe used by the sweeps.
+  function scores(state) {
+    return simulate(state, { collect: false, dt: 0.005, tMax: 4 }).scored;
+  }
+
+  // Width of the contiguous band of speeds that score at a given angle.
+  function speedWindow(base, angle, vLo, vHi, steps) {
+    var st = Object.assign({}, base, { angle: angle });
+    var lo = null, hi = null, n = steps || 60;
+    for (var i = 0; i <= n; i++) {
+      st.speed = vLo + (vHi - vLo) * i / n;
+      if (scores(st)) { if (lo === null) lo = st.speed; hi = st.speed; }
+      else if (lo !== null) break;                   // first contiguous band only
+    }
+    return lo === null ? null : { lo: lo, hi: hi, width: hi - lo, mid: (lo + hi) / 2 };
+  }
+
+  function bestWindow(base, vHi, coarse) {
+    var best = null, step = coarse ? 8 : 2, n = coarse ? 22 : 44;
+    for (var a = 12; a <= 78; a += step) {
+      var w = speedWindow(base, a, 6, vHi, n);
+      if (w && (!best || w.width > best.width)) { best = w; best.angle = a; }
+    }
+    return best;
+  }
+
+  // ── 3D scene ────────────────────────────────────────────────────────
+  // No fog, and nothing translucent that matters. The first cut used fog plus
+  // 0.16-opacity panels and the HIVE simply disappeared into the ground.
+  var view = document.getElementById('view');
+  var renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x0E1114, 1);
+  view.appendChild(renderer.domElement);
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(40, 1, 0.05, 80);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+  var hemi = new THREE.HemisphereLight(0x9FB6D0, 0x20242A, 0.7);
+  scene.add(hemi);
+  var key = new THREE.DirectionalLight(0xffffff, 0.85);
+  key.position.set(in2m(70), in2m(130), -in2m(80));
+  scene.add(key);
+  var fill = new THREE.DirectionalLight(0x9FC6FF, 0.35);
+  fill.position.set(-in2m(90), in2m(60), in2m(60));
+  scene.add(fill);
+
+  // ── Field: 12 ft × 12 ft of 2 ft TILES ──────────────────────────────
+  var TILE = 24, TILES = FIELD / TILE;               // 6 × 6
+  var fieldGroup = new THREE.Group();
+  // Model origin is the target HIVE, so the FIELD is what shifts — sideways,
+  // along the opening's width, not downrange.
+  fieldGroup.position.x = -in2m(HIVE_TO_CENTER);
+  scene.add(fieldGroup);
+
+  // Checkerboard, so the 2 ft module is unmistakable at any camera angle.
+  for (var tx = 0; tx < TILES; tx++) {
+    for (var tz = 0; tz < TILES; tz++) {
+      var tile = new THREE.Mesh(
+        new THREE.PlaneGeometry(in2m(TILE) * 0.985, in2m(TILE) * 0.985),
+        new THREE.MeshLambertMaterial({ color: (tx + tz) % 2 ? 0x2A3138 : 0x232930 })
+      );
+      tile.rotation.x = -Math.PI / 2;
+      tile.position.set(
+        in2m(-FIELD / 2 + TILE / 2 + tx * TILE), 0,
+        in2m(-FIELD / 2 + TILE / 2 + tz * TILE)
+      );
+      fieldGroup.add(tile);
+    }
+  }
+
+  var seams = new THREE.GridHelper(in2m(FIELD), TILES, 0x55626F, 0x55626F);
+  seams.position.y = 0.002;
+  fieldGroup.add(seams);
+
+  // Perimeter wall — gives the eye a horizon and sells the 12 ft scale.
+  (function () {
+    var h = in2m(12), half = in2m(FIELD / 2);
+    var mat = new THREE.MeshLambertMaterial({ color: 0x39434E, side: THREE.DoubleSide });
+    [[0, -half, 0], [0, half, 0], [-half, 0, Math.PI / 2], [half, 0, Math.PI / 2]].forEach(function (w) {
+      var panel = new THREE.Mesh(new THREE.PlaneGeometry(in2m(FIELD), h), mat);
+      panel.position.set(w[0], h / 2, w[1]);
+      panel.rotation.y = w[2];
+      fieldGroup.add(panel);
+    });
+    var cap = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.BoxGeometry(in2m(FIELD), h, in2m(FIELD))),
+      new THREE.LineBasicMaterial({ color: 0x6E7B89 })
+    );
+    cap.position.y = h / 2;
+    fieldGroup.add(cap);
+  })();
+
+  // ── HIVE ────────────────────────────────────────────────────────────
+  var hive = new THREE.Group();
+  scene.add(hive);
+
+  // Frame: two A-frames, one outboard of each HIVE, joined by a crossbar that
+  // carries both pivots. It is centred on the FIELD, not on the target HIVE —
+  // the structure straddles the two HIVEs, so with the 12.75 in lateral offset
+  // it no longer sits under one of them.
+  (function () {
+    var mat = new THREE.MeshLambertMaterial({ color: 0xB4BEC9 });
+    var pivotY = in2m(43.95), halfW = in2m(49.46) / 2, halfD = in2m(38.95) / 2;
+    var mid = -in2m(HIVE_TO_CENTER);            // FIELD centre, in model coords
+
+    // Two pivot points: this HIVE at x = 0, the other at x = -25.5 in.
+    [0, -in2m(25.5)].forEach(function (apexX) {
+      // The A-frame at each end splays fore and aft along the 38.95 in axis.
+      var side = apexX === 0 ? 1 : -1;
+      [-1, 1].forEach(function (d) {
+        var foot = new THREE.Vector3(mid + side * halfW, 0, d * halfD);
+        var apex = new THREE.Vector3(apexX, pivotY, 0);
+        var len = foot.distanceTo(apex);
+        var leg = new THREE.Mesh(new THREE.CylinderGeometry(in2m(0.85), in2m(0.85), len, 8), mat);
+        leg.position.copy(foot).lerp(apex, 0.5);
+        leg.quaternion.setFromUnitVectors(
+          new THREE.Vector3(0, 1, 0), apex.clone().sub(foot).normalize());
+        hive.add(leg);
+      });
+    });
+
+    // Crossbar joining the two pivots.
+    var bar = new THREE.Mesh(
+      new THREE.CylinderGeometry(in2m(0.95), in2m(0.95), in2m(25.5) + in2m(6), 12), mat);
+    bar.rotation.z = Math.PI / 2;
+    bar.position.set(mid, pivotY, 0);
+    hive.add(bar);
+  })();
+
+  // A CELL drawn as five solid faces around an open mouth, so it reads as a
+  // scoop rather than a wireframe box.
+  function cellMesh(colorHex, live) {
+    var g = new THREE.Group();
+    var w = in2m(OPEN_W), h = in2m(OPEN_H), d = in2m(12.04);
+    var solid = new THREE.MeshLambertMaterial({
+      color: colorHex, side: THREE.DoubleSide,
+      transparent: !live, opacity: live ? 1 : 0.55
+    });
+    function face(sx, sy, px, py, pz, rx, ry) {
+      var m = new THREE.Mesh(new THREE.PlaneGeometry(sx, sy), solid);
+      m.position.set(px, py, pz);
+      if (rx) m.rotation.x = rx;
+      if (ry) m.rotation.y = ry;
+      g.add(m);
+    }
+    face(w, h, 0, 0, -d / 2);                                    // back
+    face(w, d, 0, -h / 2, 0, Math.PI / 2);                       // floor of the scoop
+    face(w, d, 0, h / 2, 0, Math.PI / 2);                        // roof
+    face(d, h, -w / 2, 0, 0, 0, Math.PI / 2);                    // left
+    face(d, h, w / 2, 0, 0, 0, Math.PI / 2);                     // right
+
+    var rim = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.BoxGeometry(w, h, d)),
+      new THREE.LineBasicMaterial({ color: live ? 0xFFFFFF : 0x7C8794 })
+    );
+    g.add(rim);
+    return g;
+  }
+
+  // Upward CELL — the target. Rotated so its mouth lies in the aperture plane.
+  var cellUp = cellMesh(0x2F6FD0, true);
+  cellUp.rotation.x = -(Math.PI / 2 - TILT);
+  cellUp.position.copy(C).addScaledVector(N_OUT, -in2m(12.04) / 2);
+  hive.add(cellUp);
+
+  // Downward CELL of the same bi-stable HIVE, mirrored through the pivot.
+  var pivotPt = new THREE.Vector3(0, in2m(43.95), 0);
+  var cellDown = cellMesh(0x2F6FD0, false);
+  cellDown.rotation.x = -(Math.PI / 2 - TILT) + Math.PI;
+  cellDown.position.copy(pivotPt).multiplyScalar(2).sub(
+    C.clone().addScaledVector(N_OUT, -in2m(12.04) / 2));
+  hive.add(cellDown);
+
+  // The opposing ALLIANCE's HIVE, 25.5 in centre-to-centre alongside this one
+  // and tipped the other way. Not a target here.
+  var other = new THREE.Group();
+  var oUp = cellMesh(0xC0392B, false);
+  oUp.rotation.x = -(Math.PI / 2 - TILT) + Math.PI;
+  oUp.position.copy(cellDown.position);
+  var oDown = cellMesh(0xC0392B, false);
+  oDown.rotation.x = -(Math.PI / 2 - TILT);
+  oDown.position.copy(cellUp.position);
+  other.add(oUp); other.add(oDown);
+  other.position.x = -in2m(25.5);  // alongside, on the far side of FIELD centre
+  hive.add(other);
+
+  // The aperture: a bright filled panel plus rim. This rectangle IS the test.
+  (function () {
+    var w = in2m(OPEN_W), h = in2m(OPEN_H);
+    var panel = new THREE.Mesh(
+      new THREE.PlaneGeometry(w, h),
+      new THREE.MeshBasicMaterial({
+        color: 0xF0B429, transparent: true, opacity: 0.22, side: THREE.DoubleSide
+      })
+    );
+    panel.rotation.x = -(Math.PI / 2 - TILT);
+    panel.position.copy(C);
+    hive.add(panel);
+
+    var rim = new THREE.LineLoop(
+      new THREE.BufferGeometry().setFromPoints([
+        C.clone().addScaledVector(U_W, -w / 2).addScaledVector(U_UP, -h / 2),
+        C.clone().addScaledVector(U_W,  w / 2).addScaledVector(U_UP, -h / 2),
+        C.clone().addScaledVector(U_W,  w / 2).addScaledVector(U_UP,  h / 2),
+        C.clone().addScaledVector(U_W, -w / 2).addScaledVector(U_UP,  h / 2)
+      ]),
+      new THREE.LineBasicMaterial({ color: 0xFFD166 })
+    );
+    hive.add(rim);
+  })();
+
+  // ── Trajectory ──────────────────────────────────────────────────────
+  // A tube, not a Line: WebGL ignores linewidth on almost every platform, so a
+  // THREE.Line arc renders one pixel wide and vanishes against the field.
+  var trailMat = new THREE.MeshLambertMaterial({ color: 0x3DD68C, emissive: 0x18402C });
+  var trail = new THREE.Mesh(new THREE.BufferGeometry(), trailMat);
+  scene.add(trail);
+
+  var vacMat = new THREE.LineDashedMaterial({
+    color: 0xB9C3CF, dashSize: in2m(2.5), gapSize: in2m(2.5)
+  });
+  var vac = new THREE.Line(new THREE.BufferGeometry(), vacMat);
+  scene.add(vac);
+
+  // Ground track + drop line: the cheapest way to make a 3D arc read as 3D.
+  var shadowMat = new THREE.LineBasicMaterial({ color: 0x0E1114 });
+  var shadow = new THREE.Line(new THREE.BufferGeometry(), shadowMat);
+  scene.add(shadow);
+
+  var robot = new THREE.Mesh(
+    new THREE.BoxGeometry(in2m(18), in2m(18), in2m(18)),
+    new THREE.MeshLambertMaterial({ color: 0x4A5563 })
+  );
+  scene.add(robot);
+  var robotEdges = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(in2m(18), in2m(18), in2m(18))),
+    new THREE.LineBasicMaterial({ color: 0x93A0AE })
+  );
+  scene.add(robotEdges);
+
+  var muzzle = new THREE.Mesh(
+    new THREE.SphereGeometry(in2m(1.8), 16, 12),
+    new THREE.MeshBasicMaterial({ color: 0xF0B429 })
+  );
+  scene.add(muzzle);
+
+  var dropMat = new THREE.LineDashedMaterial({
+    color: 0x7A8794, dashSize: in2m(1.5), gapSize: in2m(1.5)
+  });
+  var drop = new THREE.Line(new THREE.BufferGeometry(), dropMat);
+  scene.add(drop);
+
+  function setLine(line, pts, dashed) {
+    line.geometry.dispose();
+    line.geometry = new THREE.BufferGeometry().setFromPoints(pts || []);
+    if (dashed && pts && pts.length > 1) line.computeLineDistances();
+  }
+
+  function setTrail(pts, scored) {
+    trail.geometry.dispose();
+    if (!pts || pts.length < 2) { trail.geometry = new THREE.BufferGeometry(); return; }
+    var curve = new THREE.CatmullRomCurve3(pts);
+    trail.geometry = new THREE.TubeGeometry(
+      curve, Math.min(220, Math.max(24, pts.length >> 1)), in2m(0.7), 8, false);
+    trailMat.color.setHex(scored ? 0x3DD68C : 0xF2555A);
+    trailMat.emissive.setHex(scored ? 0x18402C : 0x451417);
+  }
+
+  // Simple orbit — OrbitControls is not in the core UMD bundle and one drag
+  // handler is cheaper than another dependency.
+  var cam = { az: -0.75, el: 0.30, r: in2m(190), target: new THREE.Vector3(0, in2m(40), 0) };
+  function placeCamera() {
+    camera.position.set(
+      cam.target.x + cam.r * Math.cos(cam.el) * Math.sin(cam.az),
+      cam.target.y + cam.r * Math.sin(cam.el),
+      cam.target.z + cam.r * Math.cos(cam.el) * Math.cos(cam.az)
+    );
+    camera.lookAt(cam.target);
+  }
+  // Pointer does double duty: grab the ROBOT to reposition it, grab anywhere
+  // else to orbit. onRobotMoved is supplied further down, once the controls
+  // exist to write back to.
+  var raycaster = new THREE.Raycaster();
+  var groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+  var onRobotMoved = null;
+  var dragging = false, movingRobot = false, lastX = 0, lastY = 0;
+
+  function pointerNdc(e) {
+    var r = renderer.domElement.getBoundingClientRect();
+    return new THREE.Vector2(
+      ((e.clientX - r.left) / r.width) * 2 - 1,
+      -((e.clientY - r.top) / r.height) * 2 + 1
+    );
+  }
+
+  function floorPointUnder(e) {
+    raycaster.setFromCamera(pointerNdc(e), camera);
+    var hit = new THREE.Vector3();
+    return raycaster.ray.intersectPlane(groundPlane, hit) ? hit : null;
+  }
+
+  function robotUnder(e) {
+    raycaster.setFromCamera(pointerNdc(e), camera);
+    return raycaster.intersectObjects([robot, muzzle], false).length > 0;
+  }
+
+  renderer.domElement.addEventListener('pointerdown', function (e) {
+    movingRobot = robotUnder(e);
+    dragging = !movingRobot;
+    lastX = e.clientX; lastY = e.clientY;
+    renderer.domElement.setPointerCapture(e.pointerId);
+    if (movingRobot) renderer.domElement.style.cursor = 'grabbing';
+  });
+
+  renderer.domElement.addEventListener('pointermove', function (e) {
+    if (movingRobot) {
+      var pt = floorPointUnder(e);
+      if (pt && onRobotMoved) onRobotMoved(m2in(pt.x), m2in(pt.z));
+      return;
+    }
+    if (!dragging) {
+      renderer.domElement.style.cursor = robotUnder(e) ? 'grab' : 'default';
+      return;
+    }
+    cam.az -= (e.clientX - lastX) * 0.006;
+    cam.el = Math.max(0.05, Math.min(1.35, cam.el + (e.clientY - lastY) * 0.005));
+    lastX = e.clientX; lastY = e.clientY; placeCamera(); render();
+  });
+
+  renderer.domElement.addEventListener('pointerup', function (e) {
+    if (movingRobot && onRobotMoved) onRobotMoved(null, null, true);  // settle: redo the map
+    dragging = false; movingRobot = false;
+    renderer.domElement.style.cursor = 'default';
+    try { renderer.domElement.releasePointerCapture(e.pointerId); } catch (err) {}
+  });
+  renderer.domElement.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    cam.r = Math.max(in2m(60), Math.min(in2m(400), cam.r * (1 + Math.sign(e.deltaY) * 0.08)));
+    placeCamera(); render();
+  }, { passive: false });
+
+  function resize() {
+    var w = view.clientWidth, h = view.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+    render();
+  }
+  function render() { renderer.render(scene, camera); }
+
+  // ── Charts ──────────────────────────────────────────────────────────
+  var ENV = document.getElementById('envelope');
+  var MAP = document.getElementById('fieldmap');
+  var A_LO = 10, A_HI = 78, V_LO = 6;
+
+  function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+  function drawEnvelope() {
+    var ctx = ENV.getContext('2d'), W = ENV.width, H = ENV.height;
+    var pad = { l: 58, r: 14, t: 14, b: 46 };
+    var pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+    var vHi = S.maxv;
+
+    ctx.fillStyle = css('--surface'); ctx.fillRect(0, 0, W, H);
+
+    var nA = 58, nV = 46;
+    var base = Object.assign({}, S);
+    var cellW = pw / nA, cellH = ph / nV;
+
+    ctx.fillStyle = css('--scores');
+    for (var i = 0; i < nA; i++) {
+      var ang = A_LO + (A_HI - A_LO) * (i + 0.5) / nA;
+      base.angle = ang;
+      for (var j = 0; j < nV; j++) {
+        var sp = V_LO + (vHi - V_LO) * (j + 0.5) / nV;
+        base.speed = sp;
+        if (scores(base)) {
+          ctx.globalAlpha = 0.85;
+          ctx.fillRect(pad.l + i * cellW, pad.t + ph - (j + 1) * cellH, cellW + 0.5, cellH + 0.5);
+        }
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    // Axes last, so marks never sit on top of the labels.
+    ctx.strokeStyle = css('--hairline'); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, pad.t + ph); ctx.lineTo(pad.l + pw, pad.t + ph); ctx.stroke();
+
+    ctx.fillStyle = css('--ink-3');
+    ctx.font = '500 15px "IBM Plex Mono", monospace';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    for (var a = 20; a <= 70; a += 10) {
+      var x = pad.l + pw * (a - A_LO) / (A_HI - A_LO);
+      ctx.fillText(a + '°', x, pad.t + ph + 8);
+    }
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for (var s = 10; s <= vHi; s += 10) {
+      var y = pad.t + ph - ph * (s - V_LO) / (vHi - V_LO);
+      ctx.fillText(s, pad.l - 8, y);
+    }
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.font = '600 14px "IBM Plex Sans", sans-serif';
+    ctx.fillText('launch angle', pad.l + pw / 2, H - 8);
+    ctx.save(); ctx.translate(14, pad.t + ph / 2); ctx.rotate(-Math.PI / 2);
+    ctx.fillText('exit speed (ft/s)', 0, 0); ctx.restore();
+
+    // Current shot.
+    var cx = pad.l + pw * (S.angle - A_LO) / (A_HI - A_LO);
+    var cy = pad.t + ph - ph * (S.speed - V_LO) / (vHi - V_LO);
+    ctx.strokeStyle = css('--pollen'); ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(cx, cy, 7, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx - 12, cy); ctx.lineTo(cx + 12, cy);
+    ctx.moveTo(cx, cy - 12); ctx.lineTo(cx, cy + 12); ctx.stroke();
+  }
+
+  // Sequential amber ramp, dark → bright, for magnitude on a dark surface.
+  function rampColor(t) {
+    var stops = [[58, 45, 16], [122, 90, 20], [185, 138, 24], [240, 180, 41], [255, 217, 138]];
+    var x = Math.max(0, Math.min(1, t)) * (stops.length - 1);
+    var i = Math.min(stops.length - 2, Math.floor(x)), f = x - i;
+    var a = stops[i], b = stops[i + 1];
+    return 'rgb(' + Math.round(a[0] + (b[0] - a[0]) * f) + ',' +
+                    Math.round(a[1] + (b[1] - a[1]) * f) + ',' +
+                    Math.round(a[2] + (b[2] - a[2]) * f) + ')';
+  }
+
+  // Plan view of the half-field in front of the opening: 144 in across by 72 in
+  // deep, so the drawn region is 2:1 and tiles stay square.
+  var MAP_X = FIELD, MAP_Z = ROOM, MAP_NX = 24, MAP_NZ = 12, MAP_TOP = 26;
+  var mapToken = 0;
+
+  function drawFieldMap() {
+    var ctx = MAP.getContext('2d'), W = MAP.width, H = MAP.height;
+    var plotH = H - MAP_TOP;
+    var cw = W / MAP_NX, chh = plotH / MAP_NZ;
+
+    var token = ++mapToken;
+    var results = [], maxW = 0, row = 0;
+
+    // Chunked by row so a re-solve never locks the page.
+    function step() {
+      if (token !== mapToken) return;
+      var t0 = performance.now();
+      while (row < MAP_NZ && performance.now() - t0 < 24) {
+        var zi = row, arr = new Array(MAP_NX);
+        var z = -(zi + 0.5) * MAP_Z / MAP_NZ;
+        // The physics is symmetric about the opening's centre line but the
+        // FIELD is not — it sits 12.75 in off to one side — so every column is
+        // solved rather than mirrored.
+        for (var xi = 0; xi < MAP_NX; xi++) {
+          var x = X_MIN + (xi + 0.5) * MAP_X / MAP_NX;
+          // dist is measured straight out from the opening and offset sideways,
+          // which is exactly how launchVector places the shooter. Using the
+          // radial distance here instead would evaluate a different point.
+          var cand = Object.assign({}, S, { dist: -z, offset: x });
+          var reach = Math.hypot(x, z);
+          var bw = null;
+          if (reach >= 12 && reach <= 96) {
+            bw = S.mapMode === 'fixed'
+              ? speedWindow(cand, S.angle, V_LO, S.maxv, 28)
+              : bestWindow(cand, S.maxv, true);
+            if (bw) maxW = Math.max(maxW, bw.width);
+          }
+          arr[xi] = bw;
+        }
+        results[zi] = arr; row++;
+      }
+      paint();
+      if (row < MAP_NZ) requestAnimationFrame(step);
+    }
+
+    function paint() {
+      ctx.fillStyle = css('--surface'); ctx.fillRect(0, 0, W, H);
+
+      for (var zi = 0; zi < results.length; zi++) {
+        if (!results[zi]) continue;
+        for (var xi = 0; xi < MAP_NX; xi++) {
+          var r = results[zi][xi];
+          ctx.fillStyle = r ? rampColor(maxW ? r.width / maxW : 0) : '#22262C';
+          ctx.fillRect(xi * cw + 1, MAP_TOP + zi * chh + 1, cw - 2, chh - 2);
+        }
+      }
+
+      // The HIVE opening sits along the top edge, facing down the map.
+      ctx.strokeStyle = css('--pollen'); ctx.lineWidth = 4;
+      ctx.beginPath();
+      var hiveX = ((0 - X_MIN) / MAP_X) * W;      // the opening is off-centre now
+      ctx.moveTo(hiveX - (OPEN_W / MAP_X) * W / 2, MAP_TOP - 4);
+      ctx.lineTo(hiveX + (OPEN_W / MAP_X) * W / 2, MAP_TOP - 4);
+      ctx.stroke();
+      ctx.fillStyle = css('--ink-3');
+      ctx.font = '500 13px "IBM Plex Mono", monospace';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      ctx.fillText('HIVE OPENING', hiveX, 4);
+
+      // FIELD centre line, so the 12.75 in sideways offset is visible.
+      var midX = ((-HIVE_TO_CENTER - X_MIN) / MAP_X) * W;
+      ctx.strokeStyle = 'rgba(255,255,255,0.16)'; ctx.lineWidth = 1;
+      ctx.setLineDash([4, 5]);
+      ctx.beginPath(); ctx.moveTo(midX, MAP_TOP); ctx.lineTo(midX, H); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Depth ticks, so the map reads in inches rather than tiles.
+      ctx.textAlign = 'left';
+      for (var d = 24; d <= MAP_Z - 6; d += 24) {
+        var y = MAP_TOP + (d / MAP_Z) * plotH;
+        ctx.strokeStyle = 'rgba(255,255,255,0.10)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+        ctx.fillText(d + ' in', 6, y + 4);
+      }
+
+      // Current shooter position.
+      var sx = ((S.offset - X_MIN) / MAP_X) * W;
+      var sy = MAP_TOP + (Math.min(S.dist, MAP_Z) / MAP_Z) * plotH;
+      ctx.strokeStyle = css('--ink'); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(sx, sy, 8, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(sx, sy, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = css('--ink'); ctx.fill();
+
+      document.getElementById('rampHi').textContent = maxW ? maxW.toFixed(1) : '—';
+    }
+
+    step();
+  }
+
+  // ── Coverage by angle ───────────────────────────────────────────────
+  // For a fixed-hood shooter the question is not "can this spot score?" but
+  // "which single angle scores from the most spots?" — so sweep angle against
+  // the share of reachable floor that still has a solution.
+  var COV = document.getElementById('coverage');
+  // A shot nobody can actually hold to is not coverage. Positions only count
+  // when the speed window is at least this wide.
+  var USABLE_WINDOW = 1.0;
+  var covToken = 0, covData = null;
+
+  function samplePositions() {
+    var out = [];
+    for (var d = 14; d <= ROOM - 10; d += 5) {
+      for (var x = X_MIN + 10; x <= X_MAX - 10; x += 9) {
+        var reach = Math.hypot(x, d);
+        if (reach >= 12 && reach <= 96) out.push({ dist: d, offset: x });
+      }
+    }
+    return out;
+  }
+
+  function computeCoverage() {
+    var token = ++covToken;
+    var pos = samplePositions();
+    var angles = [];
+    for (var a = 16; a <= 76; a += 2) angles.push(a);
+    var res = [], i = 0;
+
+    function step() {
+      if (token !== covToken) return;
+      var t0 = performance.now();
+      while (i < angles.length && performance.now() - t0 < 24) {
+        var a = angles[i], hits = 0, widths = [];
+        for (var j = 0; j < pos.length; j++) {
+          var st = Object.assign({}, S, pos[j], { angle: a });
+          // 70 steps, not 26: at coarse resolution any window narrower than the
+          // step reads as zero width, which made near-vertical lobs look both
+          // universal and tolerance-free.
+          var w = speedWindow(st, a, V_LO, S.maxv, 70);
+          if (w && w.width >= USABLE_WINDOW) { hits++; widths.push(w.width); }
+        }
+        widths.sort(function (x, y) { return x - y; });
+        res.push({
+          angle: a,
+          frac: hits / pos.length,
+          med: widths.length ? widths[widths.length >> 1] : 0
+        });
+        i++;
+      }
+      covData = { rows: res, total: pos.length };
+      drawCoverage();
+      if (i < angles.length) requestAnimationFrame(step);
+    }
+    step();
+  }
+
+  function drawCoverage() {
+    var ctx = COV.getContext('2d'), W = COV.width, H = COV.height;
+    var pad = { l: 52, r: 14, t: 14, b: 44 };
+    var pw = W - pad.l - pad.r, ph = H - pad.t - pad.b;
+    ctx.fillStyle = css('--surface'); ctx.fillRect(0, 0, W, H);
+    if (!covData || !covData.rows.length) return;
+
+    var rows = covData.rows;
+    var best = rows.reduce(function (a, b) { return b.frac > a.frac ? b : a; }, rows[0]);
+    var A0 = 16, A1 = 76;
+    var bw = pw / ((A1 - A0) / 2 + 1);
+
+    // Gridlines first, so bars sit on top of them.
+    ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 1;
+    ctx.fillStyle = css('--ink-3');
+    ctx.font = '500 15px "IBM Plex Mono", monospace';
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for (var p = 0; p <= 100; p += 25) {
+      var y = pad.t + ph - (p / 100) * ph;
+      ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + pw, y); ctx.stroke();
+      ctx.fillText(p + '%', pad.l - 8, y);
+    }
+
+    rows.forEach(function (r) {
+      var x = pad.l + ((r.angle - A0) / 2) * bw;
+      var h = r.frac * ph;
+      var isBest = r.angle === best.angle;
+      var isMine = Math.abs(r.angle - S.angle) < 1.0;
+      ctx.fillStyle = isMine ? css('--pollen') : (isBest ? css('--scores') : '#3C4854');
+      ctx.fillRect(x + 1.5, pad.t + ph - h, bw - 3, h);
+    });
+
+    ctx.strokeStyle = css('--hairline'); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad.l, pad.t + ph); ctx.lineTo(pad.l + pw, pad.t + ph); ctx.stroke();
+
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    for (var a = 20; a <= 70; a += 10) {
+      ctx.fillStyle = css('--ink-3');
+      ctx.fillText(a + '°', pad.l + ((a - A0) / 2) * bw + bw / 2, pad.t + ph + 8);
+    }
+    ctx.font = '600 14px "IBM Plex Sans", sans-serif';
+    ctx.fillText('fixed hood angle', pad.l + pw / 2, H - 8);
+
+    document.getElementById('bestAngleOut').textContent =
+      best.angle + '° · ' + Math.round(best.frac * 100) + '% · ±' + (best.med / 2).toFixed(1) + ' ft/s';
+    var mine = rows.reduce(function (a, b) {
+      return Math.abs(b.angle - S.angle) < Math.abs(a.angle - S.angle) ? b : a;
+    }, rows[0]);
+    document.getElementById('yourAngleOut').textContent =
+      S.angle.toFixed(0) + '° · ' + Math.round(mine.frac * 100) + '% · ±' + (mine.med / 2).toFixed(1) + ' ft/s';
+  }
+
+  // ── Wiring ──────────────────────────────────────────────────────────
+  var els = {};
+  ['dist', 'offset', 'height', 'angle', 'speed', 'cd', 'maxv', 'entryCone'].forEach(function (id) {
+    els[id] = document.getElementById(id);
+  });
+
+  function syncLabels() {
+    document.getElementById('distOut').textContent = S.dist.toFixed(0) + ' in';
+    var roomHint = document.getElementById('roomHint');
+    var clear = ROOM - S.dist;
+    var sideClear = Math.min(S.offset - X_MIN, X_MAX - S.offset);
+    roomHint.textContent = clear < 9
+      ? 'only ' + clear.toFixed(0) + ' in to the back wall — an 18 in ROBOT will not fit'
+      : sideClear < 9
+        ? 'only ' + sideClear.toFixed(0) + ' in to the side wall'
+        : ROOM + ' in downrange · FIELD runs ' + X_MIN.toFixed(1) + ' to +' + X_MAX.toFixed(1) + ' in across';
+    roomHint.style.color = (clear < 9 || sideClear < 9) ? 'var(--misses)' : 'var(--ink-3)';
+    document.getElementById('offsetOut').textContent = (S.offset > 0 ? '+' : '') + S.offset.toFixed(0) + ' in';
+    document.getElementById('heightOut').textContent = S.height.toFixed(1) + ' in';
+    document.getElementById('angleOut').textContent = S.angle.toFixed(1) + '°';
+    var cap = document.getElementById('mapCaption');
+    if (S.mapMode === 'fixed' && cap) {
+      cap.textContent = 'Each tile is a floor position. Colour is the usable speed window at your fixed ' +
+        S.angle.toFixed(0) + '° hood — dark tiles cannot be scored from at this angle.';
+    }
+    document.getElementById('speedOut').textContent = S.speed.toFixed(2) + ' ft/s';
+    document.getElementById('cdOut').textContent = S.cd.toFixed(2);
+    document.getElementById('maxvOut').textContent = S.maxv.toFixed(0) + ' ft/s';
+    document.getElementById('entryConeOut').textContent = S.entryCone.toFixed(0) + '°';
+    var b = BALLS[S.ball];
+    document.getElementById('ballSpec').textContent =
+      b.d.toFixed(1) + ' in · ' + Math.round(b.m * 1000) + ' g · drag k = ' +
+      dragK(b, S.cd).toFixed(4) + ' m⁻¹';
+  }
+
+  // With a fixed-angle shooter the speed is the only free variable, so solving
+  // for it is the normal way to drive this tool: set the hood angle once, then
+  // move the robot and watch the required speed follow.
+  function applyAutoSpeed() {
+    if (!S.autoSpeed) { document.getElementById('autoHint').textContent = ''; return; }
+    var w = speedWindow(S, S.angle, V_LO, S.maxv, 110);
+    var hint = document.getElementById('autoHint');
+    if (w) {
+      S.speed = Math.round(w.mid * 4) / 4;
+      els.speed.value = S.speed;
+      hint.textContent = 'solved · window ' + w.lo.toFixed(1) + '–' + w.hi.toFixed(1) + ' ft/s';
+      hint.style.color = 'var(--scores)';
+    } else {
+      hint.textContent = 'no speed scores at ' + S.angle.toFixed(1) + '° from here';
+      hint.style.color = 'var(--misses)';
+    }
+    els.speed.disabled = true;
+  }
+
+  function updateShot() {
+    applyAutoSpeed();
+    var res = simulate(S);
+    var vacRes = S.showVac ? simulate(S, { noDrag: true }) : null;
+
+    setTrail(res.points, res.scored);
+    setLine(vac, vacRes ? vacRes.points : [], true);
+    vac.visible = !!vacRes;
+
+    // Ground track of the same arc, plus a drop line at the muzzle. Without
+    // these the arc floats and you cannot tell how far downrange it is.
+    setLine(shadow, (res.points || []).map(function (p) {
+      return new THREE.Vector3(p.x, 0.004, p.z);
+    }));
+
+    var start = launchVector(S);
+    muzzle.position.copy(start.p);
+    setLine(drop, [start.p.clone(), new THREE.Vector3(start.p.x, 0, start.p.z)], true);
+    robot.position.set(start.p.x, in2m(9), start.p.z);
+    robotEdges.position.copy(robot.position);
+
+    var v = document.getElementById('verdict');
+    v.textContent = res.scored ? 'Scores' : (res.clippedLip ? 'Clips lip' : 'Misses');
+    v.dataset.hit = res.scored ? 'yes' : 'no';
+
+    document.getElementById('vEntry').textContent = res.entrySpeed ? ms2fts(res.entrySpeed).toFixed(1) + ' ft/s' : '—';
+    document.getElementById('aEntry').textContent = res.entryAngle !== undefined ? res.entryAngle.toFixed(0) + '° down' : '—';
+    document.getElementById('apex').textContent = m2in(res.apex).toFixed(1) + ' in';
+    document.getElementById('tof').textContent = res.t.toFixed(2) + ' s';
+    var rimEl = document.getElementById('rimOut');
+    if (res.rimClearance === undefined || !isFinite(res.rimClearance)) {
+      rimEl.textContent = '—'; rimEl.style.color = '';
+    } else {
+      var slack = res.rimClearance - res.ballRadius;
+      rimEl.textContent = (slack >= 0 ? '+' : '') + slack.toFixed(2) + ' in';
+      rimEl.style.color = res.clippedLip ? 'var(--misses)'
+        : (slack < 0.5 ? 'var(--gold, #F0B429)' : 'var(--scores)');
+    }
+
+    var w = speedWindow(S, S.angle, V_LO, S.maxv, 80);
+    document.getElementById('window').textContent = w ? w.width.toFixed(1) + ' ft/s' : 'none';
+
+    render();
+  }
+
+  var mapTimer = null;
+  function scheduleMap() {
+    clearTimeout(mapTimer);
+    mapTimer = setTimeout(drawFieldMap, 220);
+  }
+
+  function refresh(opts) {
+    syncLabels();
+    updateShot();
+    drawEnvelope();
+    if (!opts || opts.map !== false) scheduleMap();
+  }
+
+  Object.keys(els).forEach(function (id) {
+    els[id].addEventListener('input', function () {
+      S[id] = parseFloat(this.value);
+      syncLabels(); updateShot(); drawEnvelope(); drawCoverage();
+      // In fixed-angle mode the map is a function of the angle, so it has to
+      // follow that slider too.
+      if (id !== 'speed' && !(id === 'angle' && S.mapMode !== 'fixed')) scheduleMap();
+      if (id === 'cd' || id === 'maxv' || id === 'height' || id === 'entryCone') scheduleCoverage();
+    });
+  });
+
+  document.getElementById('showVac').addEventListener('change', function () {
+    S.showVac = this.checked; updateShot();
+  });
+
+  // ── Auto-speed ──────────────────────────────────────────────────────
+  var autoBox = document.getElementById('autoSpeed');
+  autoBox.addEventListener('change', function () {
+    S.autoSpeed = this.checked;
+    els.speed.disabled = S.autoSpeed;
+    refresh({ map: false });
+  });
+  els.speed.disabled = S.autoSpeed;
+
+  // ── Field map mode ──────────────────────────────────────────────────
+  function pickMapMode(mode) {
+    S.mapMode = mode;
+    document.getElementById('modeFixed').setAttribute('aria-pressed', String(mode === 'fixed'));
+    document.getElementById('modeBest').setAttribute('aria-pressed', String(mode === 'best'));
+    document.getElementById('mapCaption').textContent = mode === 'fixed'
+      ? 'Each tile is a floor position. Colour is the usable speed window at your fixed ' +
+        S.angle.toFixed(0) + '° hood — dark tiles cannot be scored from at this angle.'
+      : 'Each tile is a floor position. Colour is the speed window at that spot\'s own best angle — the ceiling if the hood could move.';
+    scheduleMap();
+  }
+  document.getElementById('modeFixed').addEventListener('click', function () { pickMapMode('fixed'); });
+  document.getElementById('modeBest').addEventListener('click', function () { pickMapMode('best'); });
+
+  function pickBall(which) {
+    S.ball = which;
+    document.getElementById('ballPollen').setAttribute('aria-pressed', String(which === 'pollen'));
+    document.getElementById('ballNectar').setAttribute('aria-pressed', String(which === 'nectar'));
+    refresh();
+  }
+  document.getElementById('ballPollen').addEventListener('click', function () { pickBall('pollen'); });
+  document.getElementById('ballNectar').addEventListener('click', function () { pickBall('nectar'); });
+
+  document.getElementById('solve').addEventListener('click', function () {
+    var w = speedWindow(S, S.angle, V_LO, S.maxv, 120);
+    if (!w) {
+      var b = bestWindow(S, S.maxv);
+      if (!b) return;
+      S.angle = b.angle; els.angle.value = b.angle; w = b;
+    }
+    S.speed = Math.round(w.mid * 4) / 4;
+    els.speed.value = S.speed;
+    refresh({ map: false });
+  });
+
+  // Dragging the ROBOT is just another way to set distance and offset, so it
+  // writes through the same sliders and the same refresh path.
+  onRobotMoved = function (xIn, zIn, settled) {
+    if (settled) { scheduleMap(); return; }
+    var dist = Math.max(12, Math.min(70, -zIn));
+    var offset = Math.max(-78, Math.min(53, xIn));
+    S.dist = Math.round(dist);
+    S.offset = Math.round(offset);
+    els.dist.value = S.dist;
+    els.offset.value = S.offset;
+    syncLabels(); updateShot(); drawEnvelope();
+  };
+
+  var covTimer = null;
+  function scheduleCoverage() {
+    clearTimeout(covTimer);
+    covTimer = setTimeout(computeCoverage, 320);
+  }
+
+  window.addEventListener('resize', function () { resize(); });
+
+  // The header wraps at some widths, so measure it rather than hard-coding.
+  function syncHeaderHeight() {
+    var h = document.querySelector('header');
+    if (h) document.documentElement.style.setProperty('--header-h', h.offsetHeight + 'px');
+  }
+  syncHeaderHeight();
+  window.addEventListener('resize', function () { syncHeaderHeight(); resize(); });
+
+  placeCamera();
+  resize();
+  refresh();
+  computeCoverage();
+})();
+</script>
+
+</body>
+</html>

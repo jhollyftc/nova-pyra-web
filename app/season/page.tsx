@@ -5,6 +5,7 @@ import Reveal from "@/components/Reveal";
 import SeasonPulse from "@/components/home/SeasonPulse";
 import UpcomingEvents from "@/components/season/UpcomingEvents";
 import SeasonArchive from "@/components/season/SeasonArchive";
+import ShotSimCard from "@/components/season/ShotSimCard";
 import { getSeason, getSeasonArchive, getSectionCopy, getSettings } from "@/lib/content";
 import { buildDay } from "@/lib/dates";
 
@@ -105,6 +106,13 @@ export default async function SeasonPage() {
           <UpcomingEvents events={season.upcoming} />
         </Section>
       )}
+
+      {/* This season's actual engineering, and the strongest thing on the
+          page while BIOBUZZ has no results yet. It sits above the archive
+          because it is current work, not history. */}
+      <Section {...copy("season.tools")}>
+        <ShotSimCard />
+      </Section>
 
       {season?.strategy && (
         <Section {...copy("season.strategy")}>

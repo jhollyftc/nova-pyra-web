@@ -10,6 +10,9 @@ const ROUTES = [
   { path: "/team", priority: 0.8 },
   { path: "/impact", priority: 0.8 },
   { path: "/season", priority: 0.7 },
+  // The shot simulator is a real page at its own URL (a rewrite onto a static
+  // file), and the kind of thing worth finding.
+  { path: "/season/shot-sim", priority: 0.7 },
   { path: "/awards", priority: 0.7 },
   { path: "/sponsors", priority: 0.8 },
   { path: "/sponsors/join", priority: 0.9 },
