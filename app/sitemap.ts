@@ -7,6 +7,7 @@ const ROUTES = [
   { path: "/", priority: 1 },
   { path: "/robot", priority: 0.9 },
   { path: "/engineering", priority: 0.8 },
+  { path: "/engineering/pid-lab", priority: 0.6 },
   { path: "/team", priority: 0.8 },
   { path: "/impact", priority: 0.8 },
   { path: "/season", priority: 0.7 },

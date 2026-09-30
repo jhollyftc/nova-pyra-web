@@ -5,6 +5,7 @@ import Reveal from "@/components/Reveal";
 import ProcessRing from "@/components/home/ProcessRing";
 import NotebookLink from "@/components/NotebookLink";
 import TestingChart from "@/components/TestingChart";
+import PidLabCard from "@/components/engineering/PidLabCard";
 import { getEdp, getProblems, getSectionCopy, getTestingCharts } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -92,6 +93,10 @@ export default async function EngineeringPage() {
             </Reveal>
           ))}
         </div>
+      </Section>
+
+      <Section {...copy("engineering.pidLab")}>
+        <PidLabCard />
       </Section>
     </>
   );

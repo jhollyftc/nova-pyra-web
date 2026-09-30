@@ -76,6 +76,7 @@ export const SECTION_DEFAULTS = {
     intro:
       "The failures are the interesting part. Each of these cost us matches before it cost us a redesign.",
   },
+  "engineering.pidLab": { eyebrow: "Try it yourself", title: "Tuning a closed loop" },
   "engineering.testing": {
     eyebrow: "Testing & Data",
     title: "We measured it",

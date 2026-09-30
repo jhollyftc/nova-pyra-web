@@ -66,3 +66,25 @@ Those belong in the source too.
 
 This is the one exception to "never commit media to `public/`": it is a tool,
 not an asset, and it is code the team wrote.
+
+# The PID lab
+
+`public/tools/pid-lab/` is the Motor PID Lab, served at `/engineering/pid-lab`
+via a rewrite in `next.config.js`. Same shape as the shot simulator — a
+self-contained tool with its own full-viewport design system, so it gets its
+own URL rather than living inside a page with the site's chrome.
+
+One difference from the shot sim: this one came in from a claude.ai artifact,
+not a live folder the team keeps editing, so there is no `sync-*.mjs` script
+for it. The file in `public/` is the source now — edit it directly like any
+other file in the repo. It needed the same one-time head repair as the shot
+sim did (the artifact publishes without its own doctype/charset/viewport;
+Claude's artifact viewer supplies those at view time, but a static file served
+from this repo has to carry them itself), plus a link back to the site in the
+header. If the artifact gets a substantial rework later, re-import it the same
+way: fetch it, strip the artifact-viewer's wrapper tags, and reapply the head
+and back-link by hand.
+
+Unlike the shot sim, it is light/dark aware (`prefers-color-scheme`), so it
+was not forced into `--color-bg` opacity handling — it paints its own ground
+either way.

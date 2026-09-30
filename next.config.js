@@ -18,7 +18,10 @@ const nextConfig = {
    * its own full-screen URL instead, and the site links to it.
    */
   async rewrites() {
-    return [{ source: "/season/shot-sim", destination: "/tools/shot-sim/index.html" }];
+    return [
+      { source: "/season/shot-sim", destination: "/tools/shot-sim/index.html" },
+      { source: "/engineering/pid-lab", destination: "/tools/pid-lab/index.html" },
+    ];
   },
 };
 

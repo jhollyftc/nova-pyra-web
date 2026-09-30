@@ -1,0 +1,891 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="An interactive PID control simulator: tune a simulated DC motor holding a position or a flywheel speed, and see overshoot, rise time and steady-state error respond live. Built by FTC Team 25619 Nova Pyra.">
+
+<title>Motor PID Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --page:#eef1f3; --surface:#ffffff; --surface-2:#f5f7f8;
+  --ink:#10161b; --ink-2:#48535c; --muted:#6f7b84;
+  --line:#dbe1e5; --grid:#e8ecee; --axis:#c3cbd1;
+  --p:#2a78d6; --i:#eb6834; --d:#1baf7a;
+  --ok:#0ca30c; --warn:#fab219; --crit:#d03b3b;
+  --btn:#10161b; --btn-ink:#ffffff; --chip:#e7ecef;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --page:#0c0f12; --surface:#151a1f; --surface-2:#1b2127;
+    --ink:#eef2f5; --ink-2:#b5bec5; --muted:#8a959e;
+    --line:#262e35; --grid:#1f262c; --axis:#3a434b;
+    --p:#3987e5; --i:#d95926; --d:#199e70;
+    --btn:#eef2f5; --btn-ink:#10161b; --chip:#232a31;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --page:#0c0f12; --surface:#151a1f; --surface-2:#1b2127;
+  --ink:#eef2f5; --ink-2:#b5bec5; --muted:#8a959e;
+  --line:#262e35; --grid:#1f262c; --axis:#3a434b;
+  --p:#3987e5; --i:#d95926; --d:#199e70;
+  --btn:#eef2f5; --btn-ink:#10161b; --chip:#232a31;
+}
+*{box-sizing:border-box}
+body{background:var(--page);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5}
+.app{max-width:1320px;margin:0 auto;padding-inline:20px;padding-block:20px 56px;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{margin:0;text-wrap:balance}
+p{margin:0}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
+.brand h1{font-family:var(--mono);font-weight:500;font-size:26px;letter-spacing:-.01em}
+.brand h1 span{color:var(--muted)}
+.brand p{color:var(--ink-2);max-width:62ch;margin-top:4px}
+.seg{display:inline-flex;background:var(--chip);border-radius:8px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;color:var(--ink-2);font:500 13px var(--sans);padding:7px 14px;border-radius:6px;cursor:pointer}
+.seg button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+
+/* layout */
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:20px;align-items:start}
+@media (max-width:980px){.grid{grid-template-columns:minmax(0,1fr)}}
+.col{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+/* stage */
+.stage{position:relative;aspect-ratio:16/10;max-width:100%;border-radius:10px;overflow:hidden;background:#0f1519}
+.stage canvas{display:block;width:100%;height:100%;touch-action:pan-y;cursor:grab}
+.stage canvas:active{cursor:grabbing}
+.hud{position:absolute;left:12px;top:12px;display:grid;grid-template-columns:auto auto;gap:2px 14px;padding:10px 12px;border-radius:8px;background:rgba(10,14,17,.72);color:#dfe6eb;font:12px var(--mono);font-variant-numeric:tabular-nums;backdrop-filter:blur(4px);pointer-events:none}
+.hud dt{color:#8b98a2}
+.hud dd{margin:0;text-align:right;min-width:9ch}
+.sat{display:inline-block;margin-left:6px;padding:0 5px;border-radius:3px;background:#d03b3b;color:#fff;font-size:10px;letter-spacing:.06em}
+.stage-hint{position:absolute;right:12px;top:12px;color:#8b98a2;font:11px var(--mono);pointer-events:none}
+.stage-bar{position:absolute;left:12px;right:12px;bottom:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.stage-bar .spacer{flex:1}
+.sbtn{border:1px solid rgba(255,255,255,.14);background:rgba(10,14,17,.72);color:#e8eef2;font:500 12px var(--sans);padding:7px 12px;border-radius:6px;cursor:pointer;backdrop-filter:blur(4px)}
+.sbtn:hover{background:rgba(30,38,44,.9)}
+.sbtn.kick{border-color:#e8a33d;color:#ffd08a}
+.stage-bar label.sbtn{display:flex;gap:6px;align-items:center}
+.stage-bar select{background:transparent;color:#e8eef2;border:0;font:500 12px var(--sans)}
+.stage-bar select option{color:#10161b}
+
+/* cards */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.card-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 14px;margin-bottom:8px}
+.card-head h2{font-size:13px;font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;color:var(--ink-2);font-size:12px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.lg-line{width:16px;height:0;border-top:2px solid currentColor}
+.lg-dash{width:16px;height:0;border-top:2px dashed var(--muted)}
+
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:620px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.metric{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.metric .k{font-size:11px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
+.metric .v{font:500 20px var(--mono);font-variant-numeric:tabular-nums;margin-top:2px}
+.metric .n{font-size:12px;color:var(--ink-2)}
+
+.chart-wrap{position:relative}
+.chart-wrap canvas{display:block;width:100%;height:180px}
+.tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.14);border-radius:6px;padding:6px 9px;font:12px var(--mono);font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap;z-index:2}
+.tip .row{display:flex;align-items:center;gap:6px}
+.tip .sw{width:8px;height:8px;border-radius:2px}
+.tip .t{color:var(--muted)}
+
+/* panel */
+.panel{display:flex;flex-direction:column;gap:14px}
+.panel h2{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.gain{display:flex;flex-direction:column;gap:4px;padding-block:8px;border-top:1px solid var(--line)}
+.gain:first-of-type{border-top:0}
+.gain-head{display:flex;align-items:center;gap:8px}
+.gain-head label{flex:1;font-weight:600;font-size:14px}
+.gain-head label small{font-weight:400;color:var(--muted);font-size:12px;margin-left:4px}
+.sw{width:10px;height:10px;border-radius:3px;background:var(--c);flex:none}
+.gain input[type=number]{width:84px;padding:4px 6px;border:1px solid var(--line);border-radius:5px;background:var(--surface-2);color:var(--ink);font:13px var(--mono);text-align:right}
+.unit{font:11px var(--mono);color:var(--muted);min-width:64px}
+input[type=range]{width:100%;accent-color:var(--c,var(--ink));margin:4px 0}
+.gain-note{font-size:12px;color:var(--ink-2)}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chipbtn{border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font:500 12px var(--sans);padding:5px 10px;border-radius:999px;cursor:pointer}
+.chipbtn:hover{border-color:var(--ink-2)}
+.sp-row{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.sp-row output{font:500 18px var(--mono)}
+.check{display:flex;gap:10px;align-items:flex-start;padding-block:6px;cursor:pointer}
+.check input{margin-top:3px;accent-color:var(--ink)}
+.check b{font-weight:500;display:block}
+.check small{color:var(--ink-2);font-size:12px;display:block}
+
+.eq{font:13px var(--mono);color:var(--ink-2)}
+.terms{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.term{display:grid;grid-template-columns:18px 1fr 64px;align-items:center;gap:8px;font:12px var(--mono);font-variant-numeric:tabular-nums}
+.term .bar{position:relative;height:10px;background:var(--grid);border-radius:3px}
+.term .bar::after{content:"";position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--axis)}
+.term .fill{position:absolute;top:0;bottom:0;background:var(--c);border-radius:2px}
+.term .val{text-align:right}
+.term.total{border-top:1px solid var(--line);padding-top:6px}
+
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--p);outline-offset:2px}
+
+/* learn */
+.learn{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+@media (max-width:980px){.learn{grid-template-columns:minmax(0,1fr)}}
+.learn h2{font-size:18px;font-weight:600;margin-bottom:4px}
+.learn .lede{color:var(--ink-2);max-width:62ch;margin-bottom:12px}
+.exp-list{display:flex;flex-direction:column;gap:0}
+.exp{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:start;padding-block:12px;border-top:1px solid var(--line)}
+.exp:first-child{border-top:0}
+.exp .num{font:500 13px var(--mono);color:var(--muted);padding-top:1px}
+.exp h3{font-size:14px;font-weight:600}
+.exp p{color:var(--ink-2);font-size:13px;margin-top:2px;max-width:60ch}
+.btn{border:0;background:var(--btn);color:var(--btn-ink);font:500 12px var(--sans);padding:7px 12px;border-radius:6px;cursor:pointer;white-space:nowrap}
+.diagram{overflow-x:auto}
+.diagram svg{display:block;min-width:560px;width:100%;height:auto}
+.dg-box{fill:var(--surface-2);stroke:var(--axis);stroke-width:1.5}
+.dg-line{stroke:var(--ink-2);stroke-width:1.5;fill:none}
+.dg-head{fill:var(--ink-2)}
+.dg-t{fill:var(--ink);font:500 13px var(--sans)}
+.dg-s{fill:var(--muted);font:12px var(--mono)}
+.explain{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+@media (max-width:620px){.explain{grid-template-columns:minmax(0,1fr)}}
+.explain div{border-top:3px solid var(--c);padding-top:8px}
+.explain h3{font-size:14px;font-weight:600}
+.explain p{font-size:13px;color:var(--ink-2);margin-top:4px}
+.explain code{font:12px var(--mono);color:var(--ink)}
+.foot{color:var(--muted);font-size:12px;max-width:80ch}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto}}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <h1>Motor PID Lab <span>/ closed-loop test stand</span></h1>
+      <p>A simulated DC motor holds an arm at a target angle, or spins a flywheel at a target speed. Change the P, I and D gains and watch how the response changes.</p>
+    </div>
+    <div class="seg" role="tablist" aria-label="Control mode">
+      <button id="mode-pos" role="tab" aria-selected="true">Position control</button>
+      <button id="mode-vel" role="tab" aria-selected="false">Speed control</button>
+    </div>
+      <a href="/engineering" style="align-self:flex-end;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line);padding-bottom:2px;white-space:nowrap">&larr; Nova Pyra</a>
+  </header>
+
+  <main class="grid">
+    <section class="col">
+      <div class="stage" id="stage">
+        <canvas id="gl" aria-label="3D view of the motor, rotor and target indicator"></canvas>
+        <dl class="hud" id="hud">
+          <dt id="h-yl">Angle</dt><dd id="h-y">0.0°</dd>
+          <dt>Target</dt><dd id="h-r">0°</dd>
+          <dt>Error</dt><dd id="h-e">0.0°</dd>
+          <dt>Motor</dt><dd id="h-u">0.00 V</dd>
+        </dl>
+        <div class="stage-hint">drag to orbit · scroll to zoom</div>
+        <div class="stage-bar">
+          <button class="sbtn" id="btn-pause">Pause</button>
+          <button class="sbtn" id="btn-reset">Reset</button>
+          <button class="sbtn kick" id="btn-kick" title="Apply a short torque disturbance">Kick the load</button>
+          <span class="spacer"></span>
+          <label class="sbtn" for="speed">Sim speed
+            <select id="speed"><option value="1">1×</option><option value="0.5">0.5×</option><option value="0.25">0.25×</option></select>
+          </label>
+        </div>
+      </div>
+
+      <div class="metrics" aria-live="off">
+        <div class="metric"><div class="k">Overshoot</div><div class="v" id="m-os">—</div><div class="n">peak past target</div></div>
+        <div class="metric"><div class="k">Rise time</div><div class="v" id="m-rise">—</div><div class="n">10% → 90% of step</div></div>
+        <div class="metric"><div class="k">Settling</div><div class="v" id="m-settle">—</div><div class="n" id="m-settle-n">within 2% band</div></div>
+        <div class="metric"><div class="k">Steady error</div><div class="v" id="m-sse">—</div><div class="n">averaged, last 0.3 s</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2 id="c1-title">Response · shaft angle</h2>
+          <div class="legend"><span style="color:var(--ink)"><i class="lg-line"></i>Measured</span><span><i class="lg-dash"></i>Setpoint</span></div>
+        </div>
+        <div class="chart-wrap"><canvas id="c1"></canvas><div class="tip" id="tip1" hidden></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Controller output · volts</h2>
+          <div class="legend">
+            <span style="color:var(--p)"><i class="lg-line"></i><b style="color:var(--ink-2);font-weight:400">P term</b></span>
+            <span style="color:var(--i)"><i class="lg-line"></i><b style="color:var(--ink-2);font-weight:400">I term</b></span>
+            <span style="color:var(--d)"><i class="lg-line"></i><b style="color:var(--ink-2);font-weight:400">D term</b></span>
+            <span style="color:var(--ink)"><i class="lg-line"></i><b style="color:var(--ink-2);font-weight:400">Motor voltage (after limit)</b></span>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="c2"></canvas><div class="tip" id="tip2" hidden></div></div>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <div class="card">
+        <h2>Gains</h2>
+        <div class="gain" style="--c:var(--p)">
+          <div class="gain-head"><span class="sw"></span><label for="kp-range">P<small>proportional</small></label><input id="kp-num" type="number" min="0" aria-label="Kp value"><span class="unit" id="kp-unit"></span></div>
+          <input id="kp-range" type="range">
+          <p class="gain-note">Reacts to the error right now. More P pushes harder, but past a point it overshoots and rings.</p>
+        </div>
+        <div class="gain" style="--c:var(--i)">
+          <div class="gain-head"><span class="sw"></span><label for="ki-range">I<small>integral</small></label><input id="ki-num" type="number" min="0" aria-label="Ki value"><span class="unit" id="ki-unit"></span></div>
+          <input id="ki-range" type="range">
+          <p class="gain-note">Adds up error over time, so it removes the leftover offset a steady load causes. Too much and it winds up and oscillates.</p>
+        </div>
+        <div class="gain" style="--c:var(--d)">
+          <div class="gain-head"><span class="sw"></span><label for="kd-range">D<small>derivative</small></label><input id="kd-num" type="number" min="0" aria-label="Kd value"><span class="unit" id="kd-unit"></span></div>
+          <input id="kd-range" type="range">
+          <p class="gain-note">Reacts to how fast the error is changing. It brakes the motion before overshoot, but it amplifies sensor noise.</p>
+        </div>
+        <div class="presets" id="presets"></div>
+      </div>
+
+      <div class="card">
+        <div class="sp-row"><h2><label for="sp">Setpoint</label></h2><output id="sp-out" class="mono">0°</output></div>
+        <input id="sp" type="range" style="--c:var(--ink)">
+        <label class="check"><input type="checkbox" id="auto"><span><b>Auto-step every 4 s</b><small>Cycles through targets so you can compare step responses.</small></span></label>
+      </div>
+
+      <div class="card">
+        <h2>Conditions</h2>
+        <label class="check"><input type="checkbox" id="load"><span><b id="load-t">Payload on the arm</b><small id="load-s">Gravity pulls the weight down. P alone can't fully hold it; I can.</small></span></label>
+        <label class="check"><input type="checkbox" id="noise"><span><b>Sensor noise</b><small>Adds jitter to the encoder reading. Watch the D term.</small></span></label>
+        <label class="check"><input type="checkbox" id="aw"><span><b>Anti-windup</b><small>Stops integrating while the motor is at its ±12 V limit.</small></span></label>
+        <label class="check"><input type="checkbox" id="dmeas"><span><b>Derivative on measurement</b><small>Uses the shaft's motion instead of the error, so setpoint jumps don't cause a D spike.</small></span></label>
+      </div>
+
+      <div class="card">
+        <h2>Live equation</h2>
+        <p class="eq" style="margin-top:6px">u = K<sub>p</sub>·e + K<sub>i</sub>·∫e dt + K<sub>d</sub>·de/dt</p>
+        <div class="terms" id="terms">
+          <div class="term" style="--c:var(--p)"><span>P</span><div class="bar"><div class="fill" id="tb-p"></div></div><span class="val" id="tv-p">0.00</span></div>
+          <div class="term" style="--c:var(--i)"><span>I</span><div class="bar"><div class="fill" id="tb-i"></div></div><span class="val" id="tv-i">0.00</span></div>
+          <div class="term" style="--c:var(--d)"><span>D</span><div class="bar"><div class="fill" id="tb-d"></div></div><span class="val" id="tv-d">0.00</span></div>
+          <div class="term total" style="--c:var(--ink)"><span>u</span><div class="bar"><div class="fill" id="tb-u"></div></div><span class="val" id="tv-u">0.00</span></div>
+        </div>
+        <p class="gain-note" style="margin-top:8px">Bars span ±12 V, the motor's supply limit. Each term's share of the push is visible at a glance.</p>
+      </div>
+    </aside>
+  </main>
+
+  <section class="learn">
+    <div class="card">
+      <h2>Guided experiments</h2>
+      <p class="lede">Each one loads a set of gains and conditions in position mode. Read what to watch for, then press Load.</p>
+      <div class="exp-list" id="exps"></div>
+    </div>
+    <div class="card">
+      <h2>How the loop works</h2>
+      <p class="lede">Every millisecond the controller reads the encoder, compares it with the setpoint, and sets the motor voltage. The difference is the error, <i>e</i>.</p>
+      <div class="diagram">
+        <svg viewBox="0 0 640 210" role="img" aria-label="Feedback loop: setpoint minus measurement gives error, PID turns error into voltage, the motor turns, and the encoder feeds the angle back.">
+          <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="dg-head"/></marker></defs>
+          <text x="10" y="68" class="dg-s">setpoint r</text>
+          <path d="M10 80H112" class="dg-line" marker-end="url(#ah)"/>
+          <circle cx="130" cy="80" r="17" class="dg-box"/>
+          <text x="130" y="85" text-anchor="middle" class="dg-t">Σ</text>
+          <text x="104" y="112" class="dg-s">−</text><text x="102" y="72" class="dg-s">+</text>
+          <path d="M147 80H222" class="dg-line" marker-end="url(#ah)"/>
+          <text x="170" y="70" class="dg-s">e</text>
+          <rect x="224" y="52" width="130" height="56" rx="6" class="dg-box"/>
+          <text x="289" y="77" text-anchor="middle" class="dg-t">PID controller</text>
+          <text x="289" y="95" text-anchor="middle" class="dg-s">P + I + D</text>
+          <path d="M354 80H424" class="dg-line" marker-end="url(#ah)"/>
+          <text x="364" y="70" class="dg-s">u (V)</text>
+          <rect x="426" y="52" width="120" height="56" rx="6" class="dg-box"/>
+          <text x="486" y="77" text-anchor="middle" class="dg-t">Motor + load</text>
+          <text x="486" y="95" text-anchor="middle" class="dg-s">J·θ̈ = τ − bθ̇</text>
+          <path d="M486 14V50" class="dg-line" marker-end="url(#ah)"/>
+          <text x="494" y="26" class="dg-s">disturbance</text>
+          <path d="M546 80H630" class="dg-line" marker-end="url(#ah)"/>
+          <text x="566" y="70" class="dg-s">θ or ω</text>
+          <path d="M600 80V170H354" class="dg-line" marker-end="url(#ah)"/>
+          <rect x="224" y="146" width="130" height="48" rx="6" class="dg-box"/>
+          <text x="289" y="175" text-anchor="middle" class="dg-t">Encoder</text>
+          <path d="M224 170H130V99" class="dg-line" marker-end="url(#ah)"/>
+        </svg>
+      </div>
+      <div class="explain">
+        <div style="--c:var(--p)"><h3>P · present</h3><p><code>Kp·e</code>. Big error, big push. Alone it leaves a small offset whenever a steady load (like gravity) needs a constant voltage to hold.</p></div>
+        <div style="--c:var(--i)"><h3>I · past</h3><p><code>Ki·∫e</code>. Keeps growing while any error remains, so it finds the holding voltage by itself. Slow to react, and it can overshoot.</p></div>
+        <div style="--c:var(--d)"><h3>D · future</h3><p><code>Kd·de/dt</code>. Opposes fast change, acting like a shock absorber. Reduces overshoot, but noisy sensors make it jittery.</p></div>
+      </div>
+    </div>
+  </section>
+  <p class="foot">Model: J·θ̈ = 50·u − 2·θ̇ − load − disturbance (rad/s², u in volts, clamped to ±12 V). The controller and physics run at 1 kHz with a 10 ms derivative filter. Units are scaled for teaching, not a specific motor datasheet.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+const DEG = Math.PI / 180, RPM = 60 / (2 * Math.PI);
+const DT = 0.001, UMAX = 12, KT = 50, BD = 2, TAU_D = 0.01, WINDOW = 10;
+
+const MODES = {
+  pos: {
+    name: 'pos', yLabel: 'Angle', chartTitle: 'Response · shaft angle', unit: '°', toDisp: 1 / DEG,
+    range: { kp: [0, 10, 0.05], ki: [0, 20, 0.1], kd: [0, 1, 0.005] },
+    units: { kp: 'V/rad', ki: 'V/(rad·s)', kd: 'V·s/rad' },
+    sp: [-180, 180, 1], auto: [45, -30, 90, 0], minSpan: 20, bandMin: 0.5, noise: 1 * DEG,
+    loadT: 'Payload on the arm', loadS: "Gravity pulls the weight down. P alone can't fully hold it; I can.",
+    defaults: { kp: 3, ki: 4, kd: 0.25 },
+    presets: [['P only', { kp: 2, ki: 0, kd: 0 }], ['PD', { kp: 2, ki: 0, kd: 0.2 }], ['PID tuned', { kp: 3, ki: 4, kd: 0.25 }], ['Unstable', { kp: 2, ki: 15, kd: 0.05 }]]
+  },
+  vel: {
+    name: 'vel', yLabel: 'Speed', chartTitle: 'Response · flywheel speed', unit: ' RPM', toDisp: RPM,
+    range: { kp: [0, 0.5, 0.002], ki: [0, 5, 0.02], kd: [0, 0.02, 0.0002] },
+    units: { kp: 'V·s/rad', ki: 'V/rad', kd: 'V·s²/rad' },
+    sp: [0, 2000, 10], auto: [600, 1500, 300, 1000], minSpan: 200, bandMin: 10, noise: 3,
+    loadT: 'Friction brake', loadS: 'A constant drag torque. The motor needs extra voltage to hold speed, which I supplies.',
+    defaults: { kp: 0.1, ki: 1, kd: 0 },
+    presets: [['P only', { kp: 0.1, ki: 0, kd: 0 }], ['PI tuned', { kp: 0.1, ki: 1, kd: 0 }], ['Weak P, big I', { kp: 0.02, ki: 3, kd: 0 }], ['High D', { kp: 0.1, ki: 1, kd: 0.008 }]]
+  }
+};
+
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+function gauss() { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+
+// ---------- state ----------
+const saved = (() => { try { return JSON.parse(localStorage.getItem('pidlab.v1') || 'null'); } catch (e) { return null; } })();
+const store = {
+  gains: { pos: { ...MODES.pos.defaults }, vel: { ...MODES.vel.defaults } },
+  sp: { pos: 45, vel: 1000 }
+};
+if (saved && saved.gains) { Object.assign(store.gains.pos, saved.gains.pos || {}); Object.assign(store.gains.vel, saved.gains.vel || {}); }
+function persist() { try { localStorage.setItem('pidlab.v1', JSON.stringify({ gains: store.gains })); } catch (e) {} }
+
+let mode = MODES.pos;
+const opt = { load: true, noise: false, aw: true, dmeas: false, auto: true };
+let paused = false, speed = 1;
+const S = {};
+let buf = [];
+let stepRec = null, sseAvg = 0, nextAuto = 4, autoIdx = 0;
+
+function resetSim() {
+  Object.assign(S, { t: 0, th: 0, w: 0, integ: 0, ePrev: 0, yPrev: 0, dF: 0, first: true, P: 0, I: 0, D: 0, u: 0, sat: false, dist: 0, yMeas: 0, n: 0 });
+  buf = []; stepRec = null; sseAvg = 0; nextAuto = 4; autoIdx = 0;
+  if (opt.auto) { store.sp[mode.name] = mode.auto[0]; syncSetpointUI(); }
+  recordStep();
+}
+
+function target() { return store.sp[mode.name] / mode.toDisp; }
+function yTrue() { return mode.name === 'pos' ? S.th : S.w; }
+
+function recordStep() {
+  const y0 = yTrue() * mode.toDisp;
+  stepRec = { t0: S.t, y0, r: store.sp[mode.name], peak: 0, t10: null, t90: null, lastOut: S.t };
+}
+
+function physicsStep() {
+  const g = store.gains[mode.name];
+  const r = target();
+  const y = yTrue();
+  const yMeas = y + (opt.noise ? gauss() * mode.noise : 0);
+  const e = r - yMeas;
+  let raw = opt.dmeas ? -(yMeas - S.yPrev) / DT : (e - S.ePrev) / DT;
+  if (S.first) { raw = 0; S.first = false; }
+  S.dF += (raw - S.dF) * DT / (TAU_D + DT);
+  const P = g.kp * e, D = g.kd * S.dF;
+  const tentative = S.integ + e * DT;
+  if (opt.aw) {
+    const uTry = P + g.ki * tentative + D;
+    if (Math.abs(uTry) <= UMAX || Math.sign(e) !== Math.sign(uTry)) S.integ = tentative;
+  } else S.integ = tentative;
+  S.integ = clamp(S.integ, -1e3, 1e3);
+  const I = g.ki * S.integ;
+  const uRaw = P + I + D;
+  const u = clamp(uRaw, -UMAX, UMAX);
+  S.P = P; S.I = I; S.D = D; S.u = u; S.sat = Math.abs(uRaw) > UMAX;
+  S.ePrev = e; S.yPrev = yMeas; S.yMeas = yMeas;
+
+  let load = 0;
+  if (opt.load) load = mode.name === 'pos' ? 20 * Math.cos(S.th) : 60 * Math.tanh(S.w / 5);
+  let dist = 0;
+  if (S.dist > 0) { dist = mode.name === 'pos' ? -130 : -450; S.dist -= DT; }
+  const a = KT * u - BD * S.w - load + dist;
+  S.w += a * DT;
+  S.th += S.w * DT;
+  S.t += DT;
+  S.n++;
+
+  if (opt.auto && S.t >= nextAuto) {
+    nextAuto += 4; autoIdx = (autoIdx + 1) % mode.auto.length;
+    store.sp[mode.name] = mode.auto[autoIdx]; syncSetpointUI(); recordStep();
+  }
+  if (S.n % 10 === 0) sample();
+}
+
+function sample() {
+  const y = S.yMeas * mode.toDisp, r = store.sp[mode.name];
+  buf.push({ t: S.t, r, y, p: S.P, i: S.I, d: S.D, u: S.u });
+  while (buf.length && buf[0].t < S.t - WINDOW - 0.05) buf.shift();
+  sseAvg += (Math.abs(r - yTrue() * mode.toDisp) - sseAvg) * 0.01 / 0.3;
+  const s = stepRec; if (!s) return;
+  const span = s.r - s.y0; if (Math.abs(span) < 1e-6) return;
+  const yt = yTrue() * mode.toDisp;
+  const frac = (yt - s.y0) / span;
+  if (s.t10 == null && frac >= 0.1) s.t10 = S.t;
+  if (s.t90 == null && frac >= 0.9) s.t90 = S.t;
+  s.peak = Math.max(s.peak, frac - 1);
+  const band = Math.max(Math.abs(span) * 0.02, mode.bandMin);
+  if (Math.abs(yt - s.r) > band) s.lastOut = S.t;
+}
+
+// ---------- UI ----------
+const gainIds = ['kp', 'ki', 'kd'];
+function decimals(step) { const s = String(step); return s.includes('.') ? s.split('.')[1].length : 0; }
+function applyModeUI() {
+  $('mode-pos').setAttribute('aria-selected', mode.name === 'pos');
+  $('mode-vel').setAttribute('aria-selected', mode.name === 'vel');
+  for (const k of gainIds) {
+    const [mn, mx, st] = mode.range[k];
+    const r = $(k + '-range'), n = $(k + '-num');
+    r.min = mn; r.max = mx; r.step = st; n.min = mn; n.step = st;
+    $(k + '-unit').textContent = mode.units[k];
+  }
+  syncGainsUI();
+  const sp = $('sp'); sp.min = mode.sp[0]; sp.max = mode.sp[1]; sp.step = mode.sp[2];
+  syncSetpointUI();
+  $('load-t').textContent = mode.loadT; $('load-s').textContent = mode.loadS;
+  $('h-yl').textContent = mode.yLabel;
+  $('c1-title').textContent = mode.chartTitle;
+  const pr = $('presets'); pr.innerHTML = '';
+  for (const [name, g] of mode.presets) {
+    const b = document.createElement('button'); b.className = 'chipbtn'; b.textContent = name;
+    b.addEventListener('click', () => { setGains(g); });
+    pr.appendChild(b);
+  }
+  scene3d.setMode(mode.name);
+}
+function syncGainsUI() {
+  const g = store.gains[mode.name];
+  for (const k of gainIds) {
+    $(k + '-range').value = g[k];
+    $(k + '-num').value = (+g[k]).toFixed(decimals(mode.range[k][2]));
+  }
+}
+function setGains(g) { Object.assign(store.gains[mode.name], g); syncGainsUI(); persist(); }
+function syncSetpointUI() {
+  const v = store.sp[mode.name];
+  $('sp').value = v; $('sp-out').textContent = fmtY(v, 0);
+}
+function fmtY(v, d = 1) { return v.toFixed(d) + mode.unit; }
+function syncOptsUI() { for (const k of ['load', 'noise', 'aw', 'dmeas', 'auto']) $(k).checked = opt[k]; }
+
+for (const k of gainIds) {
+  $(k + '-range').addEventListener('input', e => { store.gains[mode.name][k] = +e.target.value; $(k + '-num').value = (+e.target.value).toFixed(decimals(mode.range[k][2])); persist(); });
+  $(k + '-num').addEventListener('change', e => {
+    let v = parseFloat(e.target.value); if (!isFinite(v) || v < 0) v = 0;
+    store.gains[mode.name][k] = v; syncGainsUI(); persist();
+  });
+}
+$('sp').addEventListener('input', e => {
+  store.sp[mode.name] = +e.target.value; $('sp-out').textContent = fmtY(+e.target.value, 0);
+  if (opt.auto) { opt.auto = false; $('auto').checked = false; }
+  recordStep();
+});
+for (const k of ['load', 'noise', 'aw', 'dmeas', 'auto']) $(k).addEventListener('change', e => {
+  opt[k] = e.target.checked;
+  if (k === 'auto' && opt.auto) nextAuto = S.t + 0.01;
+  if (k === 'load') scene3d.setLoad(opt.load);
+});
+$('btn-pause').addEventListener('click', () => { paused = !paused; $('btn-pause').textContent = paused ? 'Resume' : 'Pause'; });
+$('btn-reset').addEventListener('click', resetSim);
+$('btn-kick').addEventListener('click', () => { S.dist = mode.name === 'pos' ? 0.2 : 0.25; scene3d.flash(); });
+$('speed').addEventListener('change', e => { speed = +e.target.value; });
+function setMode(m) { if (mode === m) return; mode = m; applyModeUI(); resetSim(); }
+$('mode-pos').addEventListener('click', () => setMode(MODES.pos));
+$('mode-vel').addEventListener('click', () => setMode(MODES.vel));
+
+// ---------- experiments ----------
+const EXPS = [
+  { t: 'P alone', d: 'The arm swings past the target and rings for a while. When it settles, gravity leaves it short of the target: that gap is steady-state error.', g: { kp: 2, ki: 0, kd: 0 }, o: {} },
+  { t: 'Add D to damp the swing', d: 'The ringing is gone and the arm glides in. The gap under gravity is still there, because D only acts while things are moving.', g: { kp: 2, ki: 0, kd: 0.2 }, o: {} },
+  { t: 'Add I to close the gap', d: 'Watch the orange I trace climb until it supplies exactly the voltage gravity needs. Steady error drops to about zero.', g: { kp: 3, ki: 4, kd: 0.25 }, o: {} },
+  { t: 'Integral windup', d: 'A 170° jump with anti-windup off. The motor saturates at 12 V while I keeps growing, so the arm overshoots badly. Tick Anti-windup and move the setpoint to compare.', g: { kp: 3, ki: 8, kd: 0.25 }, o: { aw: false, auto: false }, sp: 170 },
+  { t: 'Derivative kick', d: 'With D on the error, every setpoint jump makes the green D trace spike to the limit. Tick "Derivative on measurement" and the spikes disappear.', g: { kp: 3, ki: 4, kd: 0.5 }, o: { dmeas: false } },
+  { t: 'Noise vs. D', d: 'A jittery encoder plus a large Kd makes the motor voltage chatter. Lower Kd and watch the output calm down.', g: { kp: 3, ki: 4, kd: 0.7 }, o: { noise: true } },
+  { t: 'Too much I', d: 'Ki is so high the loop goes unstable and swings between the voltage limits. Lower Ki until the swinging dies out.', g: { kp: 2, ki: 15, kd: 0.05 }, o: {} },
+];
+const expList = $('exps');
+EXPS.forEach((x, i) => {
+  const row = document.createElement('div'); row.className = 'exp';
+  row.innerHTML = `<span class="num">${String(i + 1).padStart(2, '0')}</span><div><h3></h3><p></p></div><button class="btn">Load</button>`;
+  row.querySelector('h3').textContent = x.t; row.querySelector('p').textContent = x.d;
+  row.querySelector('button').addEventListener('click', () => {
+    if (mode !== MODES.pos) { mode = MODES.pos; applyModeUI(); }
+    Object.assign(opt, { load: true, noise: false, aw: true, dmeas: false, auto: true }, x.o);
+    syncOptsUI(); scene3d.setLoad(opt.load);
+    setGains(x.g);
+    resetSim();
+    if (x.sp != null) { store.sp.pos = 0; syncSetpointUI(); recordStep(); setTimeout(() => { store.sp.pos = x.sp; syncSetpointUI(); recordStep(); }, 600 / speed); }
+    if (paused) $('btn-pause').click();
+    $('stage').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+  });
+  expList.appendChild(row);
+});
+
+// ---------- 3D ----------
+const scene3d = (() => {
+  const canvas = $('gl'), stage = $('stage');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0f1519);
+  scene.fog = new THREE.Fog(0x0f1519, 16, 30);
+  const camera = new THREE.PerspectiveCamera(34, 1.6, 0.1, 100);
+  const AY = 2.7, TGT = new THREE.Vector3(-0.2, AY - 0.3, -0.6);
+  let az = 0.95, el = 0.3, dist = 12.5;
+
+  scene.add(new THREE.HemisphereLight(0xcfe3ff, 0x1a1410, 0.55));
+  const key = new THREE.DirectionalLight(0xffffff, 1.1);
+  key.position.set(5, 9, 7); key.castShadow = true;
+  key.shadow.mapSize.set(1024, 1024);
+  Object.assign(key.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6, near: 1, far: 30 });
+  scene.add(key);
+  const rim = new THREE.DirectionalLight(0x8fb8ff, 0.5); rim.position.set(-6, 4, -6); scene.add(rim);
+
+  const M = (c, m = 0.3, r = 0.5) => new THREE.MeshStandardMaterial({ color: c, metalness: m, roughness: r });
+  const mesh = (geo, mat, cast = true) => { const o = new THREE.Mesh(geo, mat); o.castShadow = cast; o.receiveShadow = true; return o; };
+  const zCyl = (r, len, seg = 48, mat) => { const g = new THREE.CylinderGeometry(r, r, len, seg); g.rotateX(Math.PI / 2); return mesh(g, mat); };
+
+  // bench
+  const bench = mesh(new THREE.BoxGeometry(9, 0.3, 6), M(0x1d252b, 0.2, 0.85), false);
+  bench.position.set(0, -0.15, -0.8); scene.add(bench);
+  const grid = new THREE.GridHelper(9, 18, 0x33414b, 0x25303a); grid.position.set(0, 0.005, -0.8); grid.scale.z = 6 / 9; scene.add(grid);
+
+  // motor
+  const body = zCyl(0.95, 2.2, 64, M(0x2b3339, 0.65, 0.4)); body.position.set(0, AY, -1.55); scene.add(body);
+  for (let i = 0; i < 14; i++) { // cooling fins
+    const f = zCyl(1.0, 0.05, 64, M(0x3a444b, 0.6, 0.45)); f.position.set(0, AY, -2.45 + i * 0.1); scene.add(f);
+  }
+  const band = zCyl(0.97, 0.3, 64, M(0xb87333, 0.8, 0.35)); band.position.set(0, AY, -0.75); scene.add(band);
+  const capF = zCyl(0.9, 0.12, 64, M(0x9aa4ab, 0.8, 0.3)); capF.position.set(0, AY, -0.4); scene.add(capF);
+  const capB = zCyl(0.9, 0.12, 64, M(0x9aa4ab, 0.8, 0.3)); capB.position.set(0, AY, -2.7); scene.add(capB);
+  const encoder = zCyl(0.45, 0.4, 32, M(0x14191d, 0.2, 0.6)); encoder.position.set(0, AY, -2.95); scene.add(encoder);
+  const encLed = mesh(new THREE.SphereGeometry(0.05, 12, 12), new THREE.MeshBasicMaterial({ color: 0x3ee07a })); encLed.position.set(0.25, AY + 0.2, -3.16); scene.add(encLed);
+  const mount = mesh(new THREE.BoxGeometry(2.3, 0.2, 2.3), M(0x4a545b, 0.5, 0.5)); mount.position.set(0, AY - 1.35, -1.65); scene.add(mount);
+  const saddle = mesh(new THREE.BoxGeometry(1.5, AY - 1.45, 2.0), M(0x3a444b, 0.5, 0.5)); saddle.position.set(0, (AY - 1.45) / 2, -1.55); scene.add(saddle);
+  const plate = mesh(new THREE.BoxGeometry(0.8, 0.02, 0.5), M(0xc9d1d6, 0.4, 0.4)); plate.position.set(0, AY + 0.955, -1.6); scene.add(plate);
+  const shaft = zCyl(0.11, 0.7, 24, M(0xd4dade, 0.9, 0.2)); shaft.position.set(0, AY, -0.05); scene.add(shaft);
+
+  // dial
+  const dialCanvas = document.createElement('canvas'); dialCanvas.width = dialCanvas.height = 1024;
+  const dialTex = new THREE.CanvasTexture(dialCanvas); dialTex.encoding = THREE.sRGBEncoding; dialTex.anisotropy = 4;
+  const DR = 2.45;
+  function drawDial() {
+    const g = dialCanvas.getContext('2d'), c = 512, R = 512;
+    g.clearRect(0, 0, 1024, 1024);
+    g.fillStyle = '#161e24'; g.beginPath(); g.arc(c, c, R, 0, Math.PI * 2); g.fill();
+    for (let deg = -180; deg < 180; deg += 5) {
+      const a = -deg * DEG, major = deg % 30 === 0, mid = deg % 15 === 0;
+      const r0 = R * (major ? 0.84 : mid ? 0.89 : 0.92), r1 = R * 0.97;
+      g.strokeStyle = major ? '#d5dde3' : '#5d6a74'; g.lineWidth = major ? 5 : 2.5;
+      g.beginPath(); g.moveTo(c + Math.cos(a) * r0, c + Math.sin(a) * r0); g.lineTo(c + Math.cos(a) * r1, c + Math.sin(a) * r1); g.stroke();
+      if (major) {
+        g.fillStyle = '#aab6bf'; g.font = '500 34px "IBM Plex Mono", ui-monospace, monospace'; g.textAlign = 'center'; g.textBaseline = 'middle';
+        const lr = R * 0.73; g.fillText((deg === -180 ? 180 : deg) + '°', c + Math.cos(a) * lr, c + Math.sin(a) * lr);
+      }
+    }
+    dialTex.needsUpdate = true;
+  }
+  drawDial(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawDial);
+  const dial = mesh(new THREE.RingGeometry(1.02, DR, 128), new THREE.MeshStandardMaterial({ map: dialTex, metalness: 0.1, roughness: 0.8 }), false);
+  dial.position.set(0, AY, -0.3); scene.add(dial);
+
+  // error wedge + ghost target
+  const wedgeMat = new THREE.MeshBasicMaterial({ color: 0xff7a59, transparent: true, opacity: 0.28, side: THREE.DoubleSide, depthWrite: false });
+  let wedge = new THREE.Mesh(new THREE.CircleGeometry(2.1, 4, 0, 0.001), wedgeMat); wedge.position.set(0, AY, -0.27); scene.add(wedge);
+  let wedgeKey = '';
+  const ghost = new THREE.Group(); ghost.position.set(0, AY, 0.05);
+  const ghostMat = new THREE.MeshBasicMaterial({ color: 0x8fd3ff, transparent: true, opacity: 0.35, depthWrite: false });
+  const ghostArm = new THREE.Mesh(new THREE.BoxGeometry(2.05, 0.2, 0.08), ghostMat); ghostArm.position.x = 1.02; ghost.add(ghostArm);
+  const ghostTip = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.3, 16), ghostMat); ghostTip.rotation.z = -Math.PI / 2; ghostTip.position.x = 2.2; ghost.add(ghostTip);
+  scene.add(ghost);
+
+  // rotor
+  const rotor = new THREE.Group(); rotor.position.set(0, AY, 0.32); scene.add(rotor);
+  const hub = zCyl(0.3, 0.32, 32, M(0x9aa4ab, 0.85, 0.25)); rotor.add(hub);
+  const armGroup = new THREE.Group(); rotor.add(armGroup);
+  const arm = mesh(new THREE.BoxGeometry(2.0, 0.22, 0.12), M(0xe8a33d, 0.3, 0.45)); arm.position.x = 1.05; armGroup.add(arm);
+  const stripe = mesh(new THREE.BoxGeometry(1.7, 0.05, 0.13), M(0x10161b, 0.2, 0.6)); stripe.position.x = 1.15; armGroup.add(stripe);
+  const weight = mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), M(0x8b949b, 0.9, 0.3)); weight.position.x = 2.05; armGroup.add(weight);
+  const tip = mesh(new THREE.ConeGeometry(0.12, 0.28, 16), M(0xe8a33d, 0.3, 0.45)); tip.rotation.z = -Math.PI / 2; tip.position.x = 2.2; armGroup.add(tip);
+
+  const fly = new THREE.Group(); rotor.add(fly);
+  const disc = zCyl(1.6, 0.18, 96, M(0x9aa4ab, 0.85, 0.3)); fly.add(disc);
+  const rimM = zCyl(1.62, 0.26, 96, M(0x5f6970, 0.8, 0.35)); fly.add(rimM);
+  const markMat = M(0xe8a33d, 0.3, 0.45); markMat.transparent = true;
+  const marks = [];
+  for (let i = 0; i < 3; i++) { const m = mesh(new THREE.BoxGeometry(1.2, 0.18, 0.2), markMat); const a = i * 2 * Math.PI / 3; m.position.set(Math.cos(a) * 0.85, Math.sin(a) * 0.85, 0.02); m.rotation.z = a; fly.add(m); marks.push(m); }
+  const blurMat = new THREE.MeshBasicMaterial({ color: 0xe8a33d, transparent: true, opacity: 0, depthWrite: false });
+  const blur = new THREE.Mesh(new THREE.RingGeometry(0.3, 1.45, 64), blurMat); blur.position.z = 0.12; fly.add(blur);
+
+  // torque arc
+  const arcMat = new THREE.MeshBasicMaterial({ color: 0xe8a33d });
+  const arcCache = [];
+  const ARC_R = 0.62, ARC_STEPS = 60, ARC_MAX = Math.PI * 1.5;
+  function arcGeo(k) { if (!arcCache[k]) arcCache[k] = new THREE.TorusGeometry(ARC_R, 0.045, 8, Math.max(2, k), (k / ARC_STEPS) * ARC_MAX); return arcCache[k]; }
+  const arc = new THREE.Mesh(arcGeo(1), arcMat); arc.position.set(0, AY, 0.6); scene.add(arc);
+  const arcHead = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.22, 12), arcMat); arcHead.position.z = 0.6; scene.add(arcHead);
+
+  // disturbance arrow
+  const kickArrow = new THREE.ArrowHelper(new THREE.Vector3(0, -1, 0), new THREE.Vector3(), 1.1, 0xff5a4f, 0.35, 0.25);
+  kickArrow.visible = false; scene.add(kickArrow);
+  let flashT = 0;
+  const bodyMat = body.material, bodyBase = bodyMat.color.clone();
+
+  let curMode = 'pos', loadOn = true;
+  function setMode(m) {
+    curMode = m;
+    const pos = m === 'pos';
+    armGroup.visible = pos; fly.visible = !pos; dial.visible = pos; ghost.visible = pos; wedge.visible = pos;
+    weight.visible = pos && loadOn;
+  }
+  function setLoad(on) { loadOn = on; weight.visible = curMode === 'pos' && on; }
+  function flash() { flashT = 0.45; }
+
+  function resize() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false); camera.aspect = w / h;
+    camera.fov = w / h < 1.2 ? 44 : 34;
+    camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(resize).observe(stage); resize();
+
+  let drag = null;
+  canvas.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, az, el }; canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener('pointermove', e => { if (!drag) return; az = drag.az - (e.clientX - drag.x) * 0.008; el = clamp(drag.el + (e.clientY - drag.y) * 0.006, -0.05, 1.2); });
+  const end = () => { drag = null; };
+  canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', end);
+  canvas.addEventListener('wheel', e => { e.preventDefault(); dist = clamp(dist * (1 + e.deltaY * 0.001), 6, 20); }, { passive: false });
+
+  function render(realDt) {
+    const th = S.th;
+    rotor.rotation.z = th;
+    if (curMode === 'pos') {
+      const r = target();
+      ghost.rotation.z = r;
+      const a0 = Math.min(th, r), len = Math.min(Math.abs(r - th), Math.PI * 2);
+      const k = a0.toFixed(3) + ':' + len.toFixed(3);
+      if (k !== wedgeKey) {
+        wedgeKey = k; wedge.geometry.dispose();
+        wedge.geometry = new THREE.CircleGeometry(2.1, Math.max(2, Math.ceil(len * 20)), a0, Math.max(len, 0.0001));
+      }
+    } else {
+      const sp = Math.abs(S.w);
+      const f = clamp((sp - 20) / 80, 0, 1);
+      marks.forEach(m => { m.visible = f < 0.98; });
+      markMat.opacity = 1 - f;
+      blurMat.opacity = f * 0.45;
+    }
+    const mag = Math.abs(S.u) / UMAX;
+    const steps = Math.round(mag * ARC_STEPS);
+    arc.visible = arcHead.visible = steps > 0;
+    if (steps > 0) {
+      arc.geometry = arcGeo(steps);
+      const sweep = (steps / ARC_STEPS) * ARC_MAX, s0 = Math.PI / 2;
+      const dir = Math.sign(S.u);
+      arc.rotation.z = dir > 0 ? s0 : s0 - sweep;
+      const endA = dir > 0 ? s0 + sweep : s0 - sweep;
+      arcHead.position.x = Math.cos(endA) * ARC_R; arcHead.position.y = AY + Math.sin(endA) * ARC_R;
+      arcHead.rotation.z = dir > 0 ? endA : endA + Math.PI;
+      arcMat.color.setHex(S.sat ? 0xff5a4f : 0xe8a33d);
+    }
+    if (S.dist > 0) {
+      kickArrow.visible = true;
+      if (curMode === 'pos') {
+        const tipP = new THREE.Vector3(Math.cos(th) * 2.1, AY + Math.sin(th) * 2.1, 0.32);
+        const d = new THREE.Vector3(Math.sin(th), -Math.cos(th), 0);
+        kickArrow.setDirection(d); kickArrow.position.copy(tipP.clone().addScaledVector(d, -1.25));
+      } else {
+        const d = new THREE.Vector3(Math.sign(S.w || 1), 0, 0);
+        kickArrow.setDirection(d); kickArrow.position.set(-d.x * 1.3, AY + 1.85, 0.32);
+      }
+    } else kickArrow.visible = false;
+    if (flashT > 0) { flashT -= realDt; bodyMat.color.copy(bodyBase).lerp(new THREE.Color(0x7a2a24), Math.max(0, flashT / 0.45)); }
+    else bodyMat.color.copy(bodyBase);
+    encLed.material.color.setHex(S.sat ? 0xff5a4f : 0x3ee07a);
+
+    camera.position.set(TGT.x + dist * Math.cos(el) * Math.sin(az), TGT.y + dist * Math.sin(el), TGT.z + dist * Math.cos(el) * Math.cos(az));
+    camera.lookAt(TGT);
+    renderer.render(scene, camera);
+  }
+  return { render, setMode, setLoad, flash };
+})();
+
+// ---------- charts ----------
+let C = {};
+function readTheme() {
+  const s = getComputedStyle(document.documentElement), g = n => s.getPropertyValue(n).trim();
+  C = { ink: g('--ink'), ink2: g('--ink-2'), muted: g('--muted'), grid: g('--grid'), axis: g('--axis'), surface: g('--surface'), p: g('--p'), i: g('--i'), d: g('--d'), crit: g('--crit'), mono: '11px ' + g('--mono') };
+}
+readTheme();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readTheme);
+new MutationObserver(readTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class', 'style'] });
+
+function niceStep(span, count) {
+  const raw = span / count, mag = Math.pow(10, Math.floor(Math.log10(raw))), n = raw / mag;
+  return (n < 1.5 ? 1 : n < 3 ? 2 : n < 7 ? 5 : 10) * mag;
+}
+function prep(cv) {
+  const dpr = Math.min(devicePixelRatio || 1, 2), w = cv.clientWidth, h = cv.clientHeight;
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+  return { ctx, w, h };
+}
+const PAD = { l: 52, r: 12, t: 8, b: 22 };
+function frame(ctx, w, h, yMin, yMax, tMin, tMax, fmt) {
+  const X = t => PAD.l + (t - tMin) / (tMax - tMin) * (w - PAD.l - PAD.r);
+  const Y = v => PAD.t + (1 - (v - yMin) / (yMax - yMin)) * (h - PAD.t - PAD.b);
+  ctx.font = C.mono; ctx.lineWidth = 1;
+  const st = niceStep(yMax - yMin, 4);
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  for (let v = Math.ceil(yMin / st) * st; v <= yMax + 1e-9; v += st) {
+    const y = Math.round(Y(v)) + 0.5;
+    ctx.strokeStyle = Math.abs(v) < st * 1e-6 ? C.axis : C.grid;
+    ctx.beginPath(); ctx.moveTo(PAD.l, y); ctx.lineTo(w - PAD.r, y); ctx.stroke();
+    ctx.fillStyle = C.muted; ctx.fillText(fmt(v, st), PAD.l - 6, y);
+  }
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for (let t = Math.ceil(tMin); t <= tMax; t++) {
+    if (t % 2) continue;
+    ctx.fillStyle = C.muted; ctx.fillText(t + ' s', X(t), h - PAD.b + 6);
+  }
+  ctx.strokeStyle = C.axis; ctx.beginPath(); ctx.moveTo(PAD.l, h - PAD.b + 0.5); ctx.lineTo(w - PAD.r, h - PAD.b + 0.5); ctx.stroke();
+  return { X, Y };
+}
+function line(ctx, X, Y, key, color, width, dash, step) {
+  if (buf.length < 2) return;
+  ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineJoin = 'round'; ctx.setLineDash(dash || []);
+  ctx.beginPath();
+  for (let k = 0; k < buf.length; k++) {
+    const x = X(buf[k].t), y = Y(buf[k][key]);
+    if (!k) ctx.moveTo(x, y);
+    else if (step) { ctx.lineTo(x, Y(buf[k - 1][key])); ctx.lineTo(x, y); }
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke(); ctx.restore();
+}
+function dot(ctx, x, y, color) { ctx.fillStyle = C.surface; ctx.beginPath(); ctx.arc(x, y, 5, 0, 7); ctx.fill(); ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, y, 3.5, 0, 7); ctx.fill(); }
+function nearest(t) { let lo = 0, hi = buf.length - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (buf[m].t < t) lo = m; else hi = m; } return Math.abs(buf[lo].t - t) < Math.abs(buf[hi].t - t) ? buf[lo] : buf[hi]; }
+
+const hover = { c1: null, c2: null };
+const tRange = () => { const tMax = Math.max(WINDOW, S.t); return [tMax - WINDOW, tMax]; };
+['c1', 'c2'].forEach(id => {
+  const cv = $(id);
+  cv.addEventListener('pointermove', e => {
+    const r = cv.getBoundingClientRect(), x = e.clientX - r.left;
+    if (x < PAD.l || x > r.width - PAD.r) { hover[id] = null; return; }
+    const [a, b] = tRange(); hover[id] = { t: a + (x - PAD.l) / (r.width - PAD.l - PAD.r) * (b - a), x };
+  });
+  cv.addEventListener('pointerleave', () => { hover[id] = null; });
+});
+function placeTip(tip, x, w) { tip.hidden = false; const tw = tip.offsetWidth; tip.style.left = (x + 12 + tw > w ? x - tw - 12 : x + 12) + 'px'; tip.style.top = '8px'; }
+
+function drawCharts() {
+  const [tMin, tMax] = tRange();
+  const dispD = mode.name === 'pos' ? 0 : 0;
+  // response
+  {
+    const { ctx, w, h } = prep($('c1'));
+    let lo = Infinity, hi = -Infinity;
+    for (const s of buf) { lo = Math.min(lo, s.y, s.r); hi = Math.max(hi, s.y, s.r); }
+    if (!isFinite(lo)) { lo = 0; hi = 1; }
+    const mid = (lo + hi) / 2, span = Math.max(hi - lo, mode.minSpan) * 1.15;
+    const { X, Y } = frame(ctx, w, h, mid - span / 2, mid + span / 2, tMin, tMax, (v, st) => v.toFixed(st < 1 ? 1 : dispD) + (mode.name === 'pos' ? '°' : ''));
+    ctx.save(); ctx.beginPath(); ctx.rect(PAD.l, 0, w - PAD.l - PAD.r, h - PAD.b); ctx.clip();
+    line(ctx, X, Y, 'r', C.muted, 1.5, [5, 4], true);
+    line(ctx, X, Y, 'y', C.ink, 2);
+    if (buf.length) { const L = buf[buf.length - 1]; dot(ctx, X(L.t), Y(L.y), C.ink); }
+    ctx.restore();
+    const hv = hover.c1, tip = $('tip1');
+    if (hv && buf.length) {
+      const s = nearest(hv.t), x = X(s.t);
+      ctx.strokeStyle = C.axis; ctx.beginPath(); ctx.moveTo(x + .5, PAD.t); ctx.lineTo(x + .5, h - PAD.b); ctx.stroke();
+      dot(ctx, x, Y(s.y), C.ink);
+      tip.innerHTML = `<div class="t">t = ${s.t.toFixed(2)} s</div><div class="row">Measured ${fmtY(s.y)}</div><div class="row">Setpoint ${fmtY(s.r, 0)}</div><div class="row">Error ${fmtY(s.r - s.y)}</div>`;
+      placeTip(tip, x, w);
+    } else tip.hidden = true;
+  }
+  // output
+  {
+    const { ctx, w, h } = prep($('c2'));
+    let m = 13;
+    for (const s of buf) m = Math.max(m, Math.abs(s.p), Math.abs(s.i), Math.abs(s.d));
+    m = Math.min(m * 1.08, 80);
+    const { X, Y } = frame(ctx, w, h, -m, m, tMin, tMax, v => v.toFixed(0) + ' V');
+    ctx.save(); ctx.setLineDash([3, 4]); ctx.strokeStyle = C.crit; ctx.globalAlpha = 0.7;
+    for (const v of [UMAX, -UMAX]) { ctx.beginPath(); ctx.moveTo(PAD.l, Y(v) + .5); ctx.lineTo(w - PAD.r, Y(v) + .5); ctx.stroke(); }
+    ctx.restore();
+    ctx.fillStyle = C.muted; ctx.font = C.mono; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+    ctx.fillText('±12 V limit', w - PAD.r - 2, Y(UMAX) - 2);
+    ctx.save(); ctx.beginPath(); ctx.rect(PAD.l, 0, w - PAD.l - PAD.r, h - PAD.b); ctx.clip();
+    line(ctx, X, Y, 'p', C.p, 1.5); line(ctx, X, Y, 'i', C.i, 1.5); line(ctx, X, Y, 'd', C.d, 1.5);
+    line(ctx, X, Y, 'u', C.ink, 2);
+    ctx.restore();
+    const hv = hover.c2, tip = $('tip2');
+    if (hv && buf.length) {
+      const s = nearest(hv.t), x = X(s.t);
+      ctx.strokeStyle = C.axis; ctx.beginPath(); ctx.moveTo(x + .5, PAD.t); ctx.lineTo(x + .5, h - PAD.b); ctx.stroke();
+      const yc = v => clamp(Y(v), PAD.t, h - PAD.b);
+      dot(ctx, x, yc(s.p), C.p); dot(ctx, x, yc(s.i), C.i); dot(ctx, x, yc(s.d), C.d); dot(ctx, x, yc(s.u), C.ink);
+      const row = (c, n, v) => `<div class="row"><span class="sw" style="background:${c}"></span>${n} ${v.toFixed(2)} V</div>`;
+      tip.innerHTML = `<div class="t">t = ${s.t.toFixed(2)} s</div>` + row(C.p, 'P', s.p) + row(C.i, 'I', s.i) + row(C.d, 'D', s.d) + row(C.ink, 'u', s.u);
+      placeTip(tip, x, w);
+    } else tip.hidden = true;
+  }
+}
+
+// ---------- readouts ----------
+function setBar(id, v) {
+  const el = $(id), f = clamp(v / UMAX, -1, 1) * 50;
+  el.style.left = (f >= 0 ? 50 : 50 + f) + '%'; el.style.width = Math.abs(f) + '%';
+}
+function updateReadouts() {
+  const y = yTrue() * mode.toDisp, r = store.sp[mode.name];
+  $('h-y').textContent = fmtY(y); $('h-r').textContent = fmtY(r, 0); $('h-e').textContent = fmtY(r - y);
+  $('h-u').innerHTML = S.u.toFixed(2) + ' V' + (S.sat ? '<span class="sat">LIMIT</span>' : '');
+  for (const [k, v] of [['p', S.P], ['i', S.I], ['d', S.D], ['u', S.u]]) { setBar('tb-' + k, v); $('tv-' + k).textContent = v.toFixed(2); }
+  const s = stepRec;
+  if (s && Math.abs(s.r - s.y0) > 1e-6) {
+    $('m-os').textContent = (Math.max(0, s.peak) * 100).toFixed(1) + '%';
+    $('m-rise').textContent = s.t10 != null && s.t90 != null ? (s.t90 - s.t10).toFixed(2) + ' s' : '—';
+    const settled = S.t - s.lastOut > 0.5;
+    $('m-settle').textContent = settled ? (s.lastOut - s.t0).toFixed(2) + ' s' : (S.t - s.t0 > 3 ? 'not settled' : '…');
+    $('m-settle-n').textContent = 'within 2% band';
+  } else { $('m-os').textContent = $('m-rise').textContent = $('m-settle').textContent = '—'; }
+  $('m-sse').textContent = fmtY(sseAvg, mode.name === 'pos' ? 1 : 0);
+}
+
+// ---------- boot ----------
+syncOptsUI();
+applyModeUI();
+scene3d.setLoad(opt.load);
+resetSim();
+let last = performance.now(), fcount = 0;
+function loop(now) {
+  const real = Math.min(0.05, (now - last) / 1000); last = now;
+  if (!paused) { const n = Math.round(real * speed / DT); for (let k = 0; k < n; k++) physicsStep(); }
+  scene3d.render(real);
+  drawCharts();
+  if (++fcount % 3 === 0) updateReadouts();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
