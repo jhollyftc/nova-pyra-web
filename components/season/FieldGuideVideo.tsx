@@ -20,16 +20,12 @@ import Reveal from "@/components/Reveal";
  * Single MP4, no WebM alternative. The bandwidth argument for a second,
  * smaller format is about what loads for every visitor automatically — moot
  * here, since this only downloads for someone who chose to press play.
+ *
+ * No copy underneath. A fact sheet about the video's own runtime and contents
+ * is a note for whoever produced it, not for a sponsor or a parent looking at
+ * the page — the title card and sixty seconds of narration already say what
+ * it is far better than a caption could.
  */
-const FACTS = [
-  {
-    label: "Covers",
-    value: "The field, both scoring pieces, the HIVE mechanic, FLOWER territory and Ranking Points",
-  },
-  { label: "Runs", value: "56 seconds, with sound" },
-  { label: "Closes with", value: "Nova Pyra's own read on how to play it" },
-];
-
 export default function FieldGuideVideo({
   src,
   poster,
@@ -38,38 +34,18 @@ export default function FieldGuideVideo({
   poster: string | null;
 }) {
   return (
-    <div>
-      <Reveal variant="settle" className="hud-frame scanlines relative overflow-hidden bg-black">
-        {/* No <track> for captions: there is no dialogue to transcribe — every
-            beat is on-screen text over a music bed. */}
-        <video
-          src={src}
-          poster={poster ?? undefined}
-          controls
-          playsInline
-          preload="none"
-          className="block aspect-video w-full"
-          aria-label="BIOBUZZ field guide: a one-minute explainer of the game, built by the team"
-        />
-      </Reveal>
-
-      <dl className="mt-6 grid gap-4 sm:grid-cols-3">
-        {FACTS.map((f) => (
-          <div
-            key={f.label}
-            className="border-l-2 pl-4"
-            style={{ borderColor: "var(--color-border-active)" }}
-          >
-            <dt className="micro">{f.label}</dt>
-            <dd
-              className="mt-1 text-[var(--color-text-secondary)]"
-              style={{ fontSize: "15px", lineHeight: 1.5 }}
-            >
-              {f.value}
-            </dd>
-          </div>
-        ))}
-      </dl>
-    </div>
+    <Reveal variant="settle" className="hud-frame scanlines relative overflow-hidden bg-black">
+      {/* No <track> for captions: there is no dialogue to transcribe — every
+          beat is on-screen text over a music bed. */}
+      <video
+        src={src}
+        poster={poster ?? undefined}
+        controls
+        playsInline
+        preload="none"
+        className="block aspect-video w-full"
+        aria-label="BIOBUZZ field guide: a one-minute explainer of the game, built by the team"
+      />
+    </Reveal>
   );
 }
