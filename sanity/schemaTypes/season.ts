@@ -80,6 +80,22 @@ export default defineType({
     }),
     defineField({ name: "gameYear", title: "Season", type: "string", description: "e.g. 2025–2026" }),
     defineField({ name: "description", title: "The challenge", type: "text", rows: 5 }),
+    defineField({
+      name: "explainerVideo",
+      title: "Field guide video",
+      type: "file",
+      options: { accept: "video/mp4" },
+      description:
+        "A short game explainer, MP4. Shown with its own player and sound — not " +
+        "looped or muted like the background clips elsewhere on the site, so this " +
+        "is the place for something meant to be watched, not glanced at.",
+    }),
+    defineField({
+      name: "explainerPoster",
+      title: "Field guide poster frame",
+      type: "image",
+      description: "Shown before play. A title card reads better here than a random frame.",
+    }),
     defineField({ name: "strategy", title: "Our strategy", type: "text", rows: 5 }),
     goalArray("Robot goals", "Shown as progress bars on the front page."),
     goalArray("Award goals", "Shown on the season page."),

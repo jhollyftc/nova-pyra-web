@@ -6,6 +6,7 @@ import SeasonPulse from "@/components/home/SeasonPulse";
 import UpcomingEvents from "@/components/season/UpcomingEvents";
 import SeasonArchive from "@/components/season/SeasonArchive";
 import ShotSimCard from "@/components/season/ShotSimCard";
+import FieldGuideVideo from "@/components/season/FieldGuideVideo";
 import { getSeason, getSeasonArchive, getSectionCopy, getSettings } from "@/lib/content";
 import { buildDay } from "@/lib/dates";
 
@@ -101,6 +102,15 @@ export default async function SeasonPage() {
         team's to write once they have read the manual — and an empty heading
         over blank space reads as a broken site rather than an early one.
       */}
+      {/* The game, before anything else on the page assumes you know it. The
+          shot sim right after is our engineering answer to this; it reads
+          backwards without this going first. */}
+      {season?.explainerVideo && (
+        <Section {...copy("season.explainer", { game: season?.gameName ?? "" })}>
+          <FieldGuideVideo src={season.explainerVideo} poster={season.explainerPoster} />
+        </Section>
+      )}
+
       {season.upcoming.length > 0 && (
         <Section {...copy("season.upcoming")}>
           <UpcomingEvents events={season.upcoming} />

@@ -131,7 +131,8 @@ export const timelineQuery = groq`*[_type == "timelineEvent"] | order(orderRank)
 
 const seasonFields = `
   _id, gameName, gameYear, "slug": slug.current, isCurrent, kickoff,
-  description, strategy, robotGoals, awardGoals`;
+  description, strategy, robotGoals, awardGoals,
+  ${fileUrl("explainerVideo")}, ${img("explainerPoster", 1600)}`;
 
 /** The season shown by default: whichever is flagged current. */
 export const currentSeasonQuery = groq`*[_type == "season"] | order(isCurrent desc, gameYear desc)[0]{${seasonFields}

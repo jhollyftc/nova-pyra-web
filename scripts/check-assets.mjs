@@ -1,11 +1,11 @@
 /**
  * Verify every asset a page references actually resolves.
  *
- * Catches two things the type checker cannot: a Sanity image that failed to
- * upload or was deleted from the dataset, and a file referenced from public/
- * that is missing or misspelled. Casing bugs used to be the common case —
- * `/images/Sponsors/MO.png` resolves on Windows and 404s on Vercel's Linux
- * hosts — which is how twelve broken sponsor logos were found.
+ * Catches things the type checker cannot: a Sanity image or file that failed
+ * to upload or was deleted from the dataset, and a file referenced from
+ * public/ that is missing or misspelled. Casing bugs used to be the common
+ * case — `/images/Sponsors/MO.png` resolves on Windows and 404s on Vercel's
+ * Linux hosts — which is how twelve broken sponsor logos were found.
  *
  * Run it against a dev or start server:
  *   npm run check:assets            # localhost:3000
@@ -43,10 +43,22 @@ for (const route of ROUTES) {
   )) {
     seen.set(m[1], route);
   }
+  // Sanity-hosted files and video posters never go through next/image, so they
+  // reach the page as a bare https:// URL — the two checks above both miss
+  // them (neither matches an absolute URL). Found when the BIOBUZZ field
+  // guide's <video src> and poster turned out invisible to this script despite
+  // being real, uploaded, CDN-served assets. Scoped to our own CDN host rather
+  // than any https:// URL, so an unrelated external link never gets fetched.
+  for (const m of html.matchAll(
+    /(?:src|href|poster)="(https:\/\/cdn\.sanity\.io\/[^"]+)"/gi,
+  )) {
+    seen.set(m[1].replace(/&amp;/g, "&"), route);
+  }
 }
 
 for (const [url, route] of seen) {
-  const res = await fetch(BASE + url);
+  // Sanity URLs are already absolute; public/ paths need BASE prepended.
+  const res = await fetch(url.startsWith("http") ? url : BASE + url);
   if (res.ok) ok++;
   else {
     console.log(`  ${res.status}  ${route}  ${url.slice(0, 120)}`);

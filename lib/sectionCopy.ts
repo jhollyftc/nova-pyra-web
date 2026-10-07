@@ -120,6 +120,7 @@ export const SECTION_DEFAULTS = {
   "home.updates": { eyebrow: "Latest", title: "From the team" },
 
   /* ── Season ───────────────────────────────────────────────────────── */
+  "season.explainer": { eyebrow: "New this season", title: "What is {game}?" },
   "season.upcoming": { eyebrow: "Next", title: "On the calendar" },
   "season.tools": { eyebrow: "Design work", title: "Modelling the shot" },
   "season.strategy": { eyebrow: "Approach", title: "Our strategy" },

@@ -125,6 +125,8 @@ export type SeasonDoc = {
   strategy: string;
   robotGoals: Goal[];
   awardGoals: Goal[];
+  explainerVideo: string | null;
+  explainerPoster: string | null;
 };
 
 export type Member = {
